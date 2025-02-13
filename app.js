@@ -8,15 +8,25 @@ const ADMIN_ID = Number(process.env.ADMIN_ID);
 let players = [];
 let queue = [];
 let MAX_PLAYERS = 14;
+let location = "Локация пока не определена";
 let collectionDate = null;
 
 const sendPlayerList = (ctx) => {
     let formattedList = '';
 
     if (collectionDate) {
-        const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const options = { 
+            year: 'numeric', 
+            month: 'numeric', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            weekday: 'long' // Добавляем день недели
+        };
         formattedList += `📅 <b>Сбор игроков:</b> ${collectionDate.toLocaleString('ru-RU', options)}\n\n`;
     }
+
+    formattedList += `📍 <b>Локация:</b> ${location}\n\n`; // Добавляем локацию в список
 
     if (players.length > 0) {
         formattedList += `\n⚽ <b>В игре:</b>\n`;
@@ -45,8 +55,29 @@ bot.command('start', (ctx) => {
 
     const userInput = ctx.message.text.trim().slice(7).trim();
     if (/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/.test(userInput)) {
-        collectionDate = new Date(userInput.replace('.', '/'));
-        ctx.reply(`✅ Сбор игроков начнётся ${collectionDate.toLocaleString('ru-RU', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}.`);
+        // Разбиваем строку на компоненты
+        const [datePart, timePart] = userInput.split(' ');
+        const [day, month, year] = datePart.split('.').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+
+        // Создаем объект Date с правильными значениями
+        collectionDate = new Date(year, month - 1, day, hours, minutes);
+
+        if (isNaN(collectionDate.getTime())) {
+            ctx.reply('⚠️ Неверный формат даты! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ');
+        } else {
+            // Форматируем дату с днем недели
+            const options = { 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                weekday: 'long' 
+            };
+            const formattedDate = collectionDate.toLocaleString('ru-RU', options);
+            ctx.reply(`✅ Сбор игроков начнётся ${formattedDate}.`);
+        }
     } else {
         ctx.reply('⚠️ Неверный формат! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ');
     }
@@ -123,7 +154,7 @@ bot.command('add', (ctx) => {
         const basePlayer = `${firstName} ${lastName} ${username ? `(${username})` : ''}`.trim();
 
         // Формируем имя друга с указанием, кто его добавил
-        const friendWithAddedBy = `${friendName} (добавил: ${basePlayer})`;
+        const friendWithAddedBy = `${friendName} (от: ${basePlayer})`;
 
         if (!players.includes(friendWithAddedBy) && !queue.includes(friendWithAddedBy)) {
             players.length < MAX_PLAYERS ? players.push(friendWithAddedBy) : queue.push(friendWithAddedBy);
