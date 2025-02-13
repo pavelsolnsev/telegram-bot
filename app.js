@@ -62,18 +62,35 @@ bot.command('end', (ctx) => {
 
 bot.command('limit', (ctx) => {
     if (!isAdmin(ctx)) return ctx.reply('⛔ У вас нет прав для этой команды.');
+
     const match = ctx.message.text.match(/^\/limit (\d+)$/);
     if (match && [1, 14, 21, 28].includes(Number(match[1]))) {
-        MAX_PLAYERS = Number(match[1]);
+        const newLimit = Number(match[1]);
+
+        // Логика перераспределения игроков
+        if (newLimit < MAX_PLAYERS) {
+            // Если новый лимит меньше текущего, перемещаем лишних игроков в очередь
+            const playersToMove = players.slice(newLimit); // Игроки, которые не помещаются в новый лимит
+            queue.unshift(...playersToMove); // Добавляем их в начало очереди
+            players = players.slice(0, newLimit); // Оставляем только игроков, которые помещаются в новый лимит
+        } else if (newLimit > MAX_PLAYERS) {
+            // Если новый лимит больше текущего, перемещаем игроков из очереди в основной список
+            const availableSlots = newLimit - players.length; // Свободные места в основном списке
+            const playersToAdd = queue.splice(0, availableSlots); // Берем игроков из очереди
+            players.push(...playersToAdd); // Добавляем их в основной список
+        }
+
+        MAX_PLAYERS = newLimit; // Обновляем лимит
         ctx.reply(`✅ Лимит игроков установлен на ${MAX_PLAYERS}.`);
+        sendPlayerList(ctx);
     } else {
         ctx.reply('⚠️ Недопустимый лимит! Разрешенные значения: 1, 14, 21, 28.');
     }
 });
 
-bot.command('remove', (ctx) => {
+bot.command('delete', (ctx) => {
     if (!isAdmin(ctx)) return ctx.reply('⛔ У вас нет прав для этой команды.');
-    const match = ctx.message.text.match(/^\/remove (.+)$/);
+    const match = ctx.message.text.match(/^\/delete (.+)$/);
     if (match) {
         const playerName = match[1].trim();
         players = players.filter(p => p !== playerName);
@@ -81,7 +98,7 @@ bot.command('remove', (ctx) => {
         ctx.reply(`✅ ${playerName} удалён из списка!`);
         sendPlayerList(ctx);
     } else {
-        ctx.reply('⚠️ Неверный формат команды! Используй: /remove <имя игрока>.');
+        ctx.reply('⚠️ Неверный формат команды! Используй: /delete <имя игрока>.');
     }
 });
 
@@ -91,6 +108,73 @@ bot.command('clear', (ctx) => {
     queue = [];
     ctx.reply('🗑️ Список и очередь очищены!');
     sendPlayerList(ctx);
+});
+
+bot.command('add', (ctx) => {
+    const chatId = ctx.chat.id;
+    if (chatId !== GROUP_ID) return;
+
+    const match = ctx.message.text.match(/^\/add (.+)$/);
+    if (match) {
+        const friendName = match[1].trim();
+        const firstName = ctx.message.from.first_name || '';
+        const lastName = ctx.message.from.last_name || '';
+        const username = ctx.message.from.username ? `@${ctx.message.from.username}` : '';
+        const basePlayer = `${firstName} ${lastName} ${username ? `(${username})` : ''}`.trim();
+
+        // Формируем имя друга с указанием, кто его добавил
+        const friendWithAddedBy = `${friendName} (добавил: ${basePlayer})`;
+
+        if (!players.includes(friendWithAddedBy) && !queue.includes(friendWithAddedBy)) {
+            players.length < MAX_PLAYERS ? players.push(friendWithAddedBy) : queue.push(friendWithAddedBy);
+            ctx.reply(`✅ ${friendWithAddedBy} добавлен в ${players.length <= MAX_PLAYERS ? 'список' : 'очередь'}!`);
+            sendPlayerList(ctx);
+        } else {
+            ctx.reply('⚠️ Этот игрок уже в списке или в очереди!');
+        }
+    } else {
+        ctx.reply('⚠️ Неверный формат команды! Используй: /add <имя друга>.');
+    }
+});
+
+bot.command('remove', (ctx) => {
+    const chatId = ctx.chat.id;
+    if (chatId !== GROUP_ID) return;
+
+    const match = ctx.message.text.match(/^\/remove (.+)$/);
+    if (match) {
+        const friendName = match[1].trim(); // Имя друга, которое нужно удалить
+        const firstName = ctx.message.from.first_name || '';
+        const lastName = ctx.message.from.last_name || '';
+        const username = ctx.message.from.username ? `@${ctx.message.from.username}` : '';
+        const basePlayer = `${firstName} ${lastName} ${username ? `(${username})` : ''}`.trim();
+
+        // Функция для поиска игрока по имени друга (без учета части "добавил: ...")
+        const findPlayerByName = (name) => {
+            return players.find(player => player.startsWith(name)) || queue.find(player => player.startsWith(name));
+        };
+
+        // Ищем игрока по имени
+        const playerToRemove = findPlayerByName(friendName);
+
+        if (playerToRemove) {
+            // Удаляем игрока из списка или очереди
+            players = players.filter(p => p !== playerToRemove);
+            queue = queue.filter(p => p !== playerToRemove);
+
+            // Если удалили из основного списка, добавляем первого из очереди в основной список
+            if (players.length < MAX_PLAYERS && queue.length > 0) {
+                players.push(queue.shift());
+            }
+
+            ctx.reply(`✅ ${playerToRemove} удалён из списка от имени ${basePlayer}!`);
+            sendPlayerList(ctx);
+        } else {
+            ctx.reply('⚠️ Этот игрок не в списке!');
+        }
+    } else {
+        ctx.reply('⚠️ Неверный формат команды! Используй: /remove <имя друга>.');
+    }
 });
 
 bot.on('text', (ctx) => {
