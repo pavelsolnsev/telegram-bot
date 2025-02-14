@@ -27,12 +27,11 @@ let location = "Локация пока не определена";
 // Дата и время сбора игроков, по умолчанию не установлены
 let collectionDate = null;
 
-const deleteMessageAfterDelay = (ctx, messageId, delay = 3000) => {
+const deleteMessageAfterDelay = (ctx, messageId, delay = 2000) => {
     setTimeout(() => {
         ctx.telegram.deleteMessage(ctx.chat.id, messageId).catch(() => {});
     }, delay);
 };
-
 
 // Функция для отправки списка игроков в чат
 const sendPlayerList = async (ctx) => {
@@ -91,27 +90,65 @@ const isAdmin = (ctx) => ctx.from.id === ADMIN_ID;
 
 // Команда /start для установки даты и времени сбора игроков
 bot.command("start", async (ctx) => {
+    // Удаляем сообщение с командой /start
+    await ctx.deleteMessage().catch(() => {});
+
     if (!isAdmin(ctx)) {
         const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
         return deleteMessageAfterDelay(ctx, message.message_id);
     }
-    
+
     const userInput = ctx.message.text.trim().slice(7).trim();
     if (/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/.test(userInput)) {
-      const [datePart, timePart] = userInput.split(" ");
-      const [day, month, year] = datePart.split(".").map(Number);
-      const [hours, minutes] = timePart.split(":").map(Number);
-      collectionDate = new Date(year, month - 1, day, hours, minutes);
-      if (isNaN(collectionDate.getTime())) {
-        const message = await ctx.reply("⚠️ Неверный формат даты! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ");
-        return deleteMessageAfterDelay(ctx, message.message_id);
-      } else {
-        await sendPlayerList(ctx);
-      }
+        const [datePart, timePart] = userInput.split(" ");
+        const [day, month, year] = datePart.split(".").map(Number);
+        const [hours, minutes] = timePart.split(":").map(Number);
+        collectionDate = new Date(year, month - 1, day, hours, minutes);
+        if (isNaN(collectionDate.getTime())) {
+            const message = await ctx.reply("⚠️ Неверный формат даты! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ");
+            return deleteMessageAfterDelay(ctx, message.message_id);
+        } else {
+            // Очищаем список игроков и очередь при повторной команде /start
+            players = [];
+            queue = [];
+            await sendPlayerList(ctx);
+        }
     } else {
-      const message = await ctx.reply("⚠️ Неверный формат! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ");
-      deleteMessageAfterDelay(ctx, message.message_id);
+        const message = await ctx.reply("⚠️ Неверный формат! Используй: /start ДД.ММ.ГГГГ ЧЧ:ММ");
+        deleteMessageAfterDelay(ctx, message.message_id);
     }
+});
+
+bot.command('end', async (ctx) => {
+    // Удаляем сообщение с командой /end
+    await ctx.deleteMessage().catch(() => {});
+
+    if (!isAdmin(ctx)) {
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
+        return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    // Очищаем список игроков и очередь
+    players = [];
+    queue = [];
+
+    // Сбрасываем дату сбора и локацию
+    collectionDate = null;
+    location = "Локация пока не определена";
+
+    // Удаляем сообщение со списком игроков, если оно существует
+    if (listMessageId) {
+        try {
+            await ctx.telegram.deleteMessage(ctx.chat.id, listMessageId);
+        } catch (error) {
+            console.error("Ошибка при удалении сообщения:", error);
+        }
+        listMessageId = null; // Сбрасываем ID сообщения
+    }
+
+    // Отправляем сообщение о завершении сбора
+    const message = await ctx.reply('❌ Сбор игроков завершен. Список очищен и закрыт.');
+    deleteMessageAfterDelay(ctx, message.message_id);
 });
 
 // Обработка текстовых сообщений в группе
