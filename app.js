@@ -119,6 +119,203 @@ bot.command("start", async (ctx) => {
     }
 });
 
+bot.command('rm', async (ctx) => {
+    // Удаляем сообщение с командой /rm
+    await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, является ли пользователь администратором
+    if (!isAdmin(ctx)) {
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
+        return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    // Проверяем, что команда выполнена в нужной группе
+    const chatId = ctx.chat.id;
+    if (chatId !== GROUP_ID) return;
+
+    // Извлекаем имя друга из команды
+    const match = ctx.message.text.match(/^\/rm (.+)$/);
+    if (match) {
+        const friendName = match[1].trim(); // Имя друга, которое нужно удалить
+
+        // Функция для поиска игрока по имени друга (без учета части "добавил: ...")
+        const findPlayerByName = (name) => {
+            return players.find(player => player.startsWith(name)) || queue.find(player => player.startsWith(name));
+        };
+
+        // Ищем игрока по имени
+        const playerToRemove = findPlayerByName(friendName);
+
+        if (playerToRemove) {
+            // Удаляем игрока из списка или очереди
+            players = players.filter(p => p !== playerToRemove);
+            queue = queue.filter(p => p !== playerToRemove);
+
+            // Если удалили из основного списка, добавляем первого из очереди в основной список
+            if (players.length < MAX_PLAYERS && queue.length > 0) {
+                players.push(queue.shift());
+            }
+
+            // Отправляем сообщение об успешном удалении
+            const message = await ctx.reply(`✅ ${playerToRemove} удалён из списка!`);
+            deleteMessageAfterDelay(ctx, message.message_id);
+
+            // Обновляем список игроков
+            await sendPlayerList(ctx);
+        } else {
+            // Если игрок не найден, отправляем сообщение об ошибке
+            const message = await ctx.reply('⚠️ Этот игрок не в списке!');
+            deleteMessageAfterDelay(ctx, message.message_id);
+        }
+    } else {
+        // Если формат команды неверный, отправляем сообщение об ошибке
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /rm <имя друга>.');
+        deleteMessageAfterDelay(ctx, message.message_id);
+    }
+});
+
+bot.command('pay', async (ctx) => {
+    // Удаляем сообщение с командой /pay
+    await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, является ли пользователь администратором
+    if (!isAdmin(ctx)) {
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
+        return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    // Получаем номер игрока из команды
+    const match = ctx.message.text.match(/^\/pay (\d+)$/);
+    if (match) {
+        const playerNumber = Number(match[1]);
+
+        // Проверяем, что номер игрока корректен
+        if (playerNumber <= 0 || playerNumber > players.length) {
+            const message = await ctx.reply('⚠️ Неверный номер игрока!');
+            return deleteMessageAfterDelay(ctx, message.message_id);
+        }
+
+        // Получаем игрока по номеру
+        const playerIndex = playerNumber - 1;
+        const playerName = players[playerIndex];
+
+        // Удаляем возможные лишние символы ✅ (если они уже есть)
+        const cleanedPlayerName = playerName.replace(/✅/g, '').trim();
+
+        // Проверяем, не был ли игрок уже отмечен как оплативший
+        if (!playerName.includes('✅')) {
+            // Добавляем значок ✅ к имени игрока
+            players[playerIndex] = `${cleanedPlayerName} ✅`;
+
+            // Отправляем сообщение об успешной отметке оплаты
+            const message = await ctx.reply(`✅ Игрок ${cleanedPlayerName} отмечен как оплативший игру!`);
+            deleteMessageAfterDelay(ctx, message.message_id);
+
+            // Обновляем список игроков
+            await sendPlayerList(ctx);
+        } else {
+            // Если игрок уже отмечен как оплативший, отправляем сообщение об ошибке
+            const message = await ctx.reply('⚠️ Этот игрок уже отмечен как оплативший!');
+            deleteMessageAfterDelay(ctx, message.message_id);
+        }
+    } else {
+        // Если формат команды неверный, отправляем сообщение об ошибке
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /pay <номер игрока>.');
+        deleteMessageAfterDelay(ctx, message.message_id);
+    }
+});
+
+
+bot.command('limit', async (ctx) => {
+    // Удаляем сообщение с командой /limit
+    await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, является ли пользователь администратором
+    if (!isAdmin(ctx)) {
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
+        return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    // Получаем новое значение лимита из команды
+    const match = ctx.message.text.match(/^\/limit (\d+)$/);
+    if (match) {
+        const newLimit = Number(match[1]);
+
+        // Проверяем, что лимит положительный
+        if (newLimit <= 0) {
+            const message = await ctx.reply('⚠️ Лимит должен быть положительным числом!');
+            return deleteMessageAfterDelay(ctx, message.message_id);
+        }
+
+        // Если новый лимит меньше текущего, перемещаем лишних игроков в очередь
+        if (newLimit < MAX_PLAYERS) {
+            const playersToMove = players.slice(newLimit); // Игроки, которые не помещаются в новый лимит
+            queue.unshift(...playersToMove); // Добавляем их в начало очереди
+            players = players.slice(0, newLimit); // Оставляем только игроков, которые помещаются в новый лимит
+        } else if (newLimit > MAX_PLAYERS) {
+            // Если новый лимит больше текущего, перемещаем игроков из очереди в основной список
+            const availableSlots = newLimit - players.length; // Свободные места в основном списке
+            const playersToAdd = queue.splice(0, availableSlots); // Берем игроков из очереди
+            players.push(...playersToAdd); // Добавляем их в основной список
+        }
+
+        MAX_PLAYERS = newLimit;
+
+        // Отправляем сообщение об успешном изменении лимита
+        const message = await ctx.reply(`✅ Лимит игроков установлен на ${MAX_PLAYERS}.`);
+        deleteMessageAfterDelay(ctx, message.message_id);
+
+        // Обновляем список игроков
+        await sendPlayerList(ctx);
+    } else {
+        // Если формат команды неверный, отправляем сообщение об ошибке
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /limit <число>.');
+        deleteMessageAfterDelay(ctx, message.message_id);
+    }
+});
+
+// Обработка текстовых сообщений в группе
+bot.on("text", async (ctx) => {
+    if (!collectionDate) return;
+    const chatId = ctx.chat.id;
+    const text = ctx.message.text.trim();
+    if (chatId !== GROUP_ID) return;
+  
+    const firstName = ctx.message.from.first_name || "";
+    const lastName = ctx.message.from.last_name || "";
+    const username = ctx.message.from.username ? `@${ctx.message.from.username}` : "";
+    const basePlayer = `${firstName} ${lastName} ${username ? `(${username})` : ""}`.trim();
+  
+    if (text === "+") {
+      if (!players.includes(basePlayer) && !queue.includes(basePlayer)) {
+        players.length < MAX_PLAYERS ? players.push(basePlayer) : queue.push(basePlayer);
+        const message = await ctx.reply(`✅ ${basePlayer} добавлен в ${players.length <= MAX_PLAYERS ? "список" : "очередь"}!`);
+        deleteMessageAfterDelay(ctx, message.message_id);
+        await sendPlayerList(ctx);
+      } else {
+        const message = await ctx.reply("⚠️ Ты уже в списке или в очереди!");
+        deleteMessageAfterDelay(ctx, message.message_id);
+      }
+      // Удаляем сообщение с "+"
+      deleteMessageAfterDelay(ctx, ctx.message.message_id);
+    } else if (text === "-") {
+      if (players.includes(basePlayer)) {
+        players = players.filter((p) => p !== basePlayer);
+        if (queue.length > 0) players.push(queue.shift());
+        const message = await ctx.reply(`✅ ${basePlayer} удалён из списка!`);
+        deleteMessageAfterDelay(ctx, message.message_id);
+        await sendPlayerList(ctx);
+      } else {
+        const message = await ctx.reply("⚠️ Ты не в списке игроков!");
+        deleteMessageAfterDelay(ctx, message.message_id);
+      }
+      // Удаляем сообщение с "-"
+      deleteMessageAfterDelay(ctx, ctx.message.message_id);
+    } else if (text === "/list") {
+      await sendPlayerList(ctx);
+    }
+});
+
 bot.command('end', async (ctx) => {
     // Удаляем сообщение с командой /end
     await ctx.deleteMessage().catch(() => {});
@@ -151,44 +348,7 @@ bot.command('end', async (ctx) => {
     deleteMessageAfterDelay(ctx, message.message_id);
 });
 
-// Обработка текстовых сообщений в группе
-bot.on("text", async (ctx) => {
-    if (!collectionDate) return;
-    const chatId = ctx.chat.id;
-    const text = ctx.message.text.trim();
-    if (chatId !== GROUP_ID) return;
-  
-    const firstName = ctx.message.from.first_name || "";
-    const lastName = ctx.message.from.last_name || "";
-    const username = ctx.message.from.username ? `@${ctx.message.from.username}` : "";
-    const basePlayer = `${firstName} ${lastName} ${username ? `(${username})` : ""}`.trim();
-  
-    if (text === "+") {
-      if (!players.includes(basePlayer) && !queue.includes(basePlayer)) {
-        players.length < MAX_PLAYERS ? players.push(basePlayer) : queue.push(basePlayer);
-        const message = await ctx.reply(`✅ ${basePlayer} добавлен в ${players.length <= MAX_PLAYERS ? "список" : "очередь"}!`);
-        deleteMessageAfterDelay(ctx, message.message_id);
-        await sendPlayerList(ctx);
-      } else {
-        const message = await ctx.reply("⚠️ Ты уже в списке или в очереди!");
-        deleteMessageAfterDelay(ctx, message.message_id);
-      }
-    } else if (text === "-") {
-      if (players.includes(basePlayer)) {
-        players = players.filter((p) => p !== basePlayer);
-        if (queue.length > 0) players.push(queue.shift());
-        const message = await ctx.reply(`✅ ${basePlayer} удалён из списка!`);
-        deleteMessageAfterDelay(ctx, message.message_id);
-        await sendPlayerList(ctx);
-      } else {
-        const message = await ctx.reply("⚠️ Ты не в списке игроков!");
-        deleteMessageAfterDelay(ctx, message.message_id);
-      }
-    } else if (text === "/list") {
-      await sendPlayerList(ctx);
-    }
-});
-
 // Запуск бота
+// /start 15.02.2025 18:00
 bot.launch();
 console.log("Бот запущен!");
