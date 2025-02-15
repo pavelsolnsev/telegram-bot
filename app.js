@@ -310,13 +310,47 @@ bot.hears(/^list$/i, async (ctx) => {
   } catch (error) {
       console.error("Ошибка при прокрутке к закрепленному сообщению:", error);
       const message = await ctx.reply("⚠️ Не удалось найти закрепленное сообщение.");
-      deleteMessageAfterDelay(ctx, message.message_id, 5000); // Удаляем через 5 секунд
+      deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
   }
+});
+
+// Команда для изменения времени тренировки (t ДД.ММ.ГГГГ ЧЧ:ММ)
+bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
+  // Удаляем сообщение с командой
+  await ctx.deleteMessage().catch(() => {});
+
+  // Проверяем, является ли пользователь администратором
+  if (!isAdmin(ctx)) return;
+
+  // Получаем введенное время
+  const userInput = ctx.message.text.trim().slice(2).trim(); // Убираем "t "
+  const [datePart, timePart] = userInput.split(" ");
+  const [day, month, year] = datePart.split(".").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+
+  // Создаем новую дату
+  const newDate = new Date(year, month - 1, day, hours, minutes);
+
+  // Проверяем, что дата корректна
+  if (isNaN(newDate.getTime())) {
+      const message = await ctx.reply("⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+  }
+
+  // Обновляем время тренировки
+  collectionDate = newDate;
+
+  // Отправляем уведомление об успешном изменении времени
+  const message = await ctx.reply(`✅ Время тренировки изменено на: ${userInput}`);
+  deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+
+  // Обновляем список игроков
+  await sendPlayerList(ctx);
 });
 
 // Обработка текстовых сообщений в группе
 bot.on("text", async (ctx) => {
-  if (!isMatchStarted) return; // Игнорируем сообщения, если матч не запущен
+ 
   const chatId = ctx.chat.id;
   const text = ctx.message.text.trim();
   if (chatId !== GROUP_ID) return;
@@ -331,6 +365,11 @@ bot.on("text", async (ctx) => {
   }`.trim();
 
   if (text === "+") {
+    await ctx.deleteMessage().catch(() => {});
+    if (!isMatchActive(ctx)) {
+      const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+    }
     if (!players.includes(basePlayer) && !queue.includes(basePlayer)) {
       players.length < MAX_PLAYERS
         ? players.push(basePlayer)
@@ -348,6 +387,11 @@ bot.on("text", async (ctx) => {
     }
     deleteMessageAfterDelay(ctx, ctx.message.message_id);
   } else if (text === "-") {
+    await ctx.deleteMessage().catch(() => {});
+    if (!isMatchActive(ctx)) {
+      const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+    }
     if (players.includes(basePlayer)) {
       players = players.filter((p) => p !== basePlayer);
       if (queue.length > 0) players.push(queue.shift());
