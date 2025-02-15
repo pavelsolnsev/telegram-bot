@@ -89,12 +89,18 @@ const sendPlayerList = async (ctx) => {
           // Если сообщение не существует, отправляем новое
           const sentMessage = await ctx.reply(formattedList, { parse_mode: "HTML" });
           listMessageId = sentMessage.message_id;
+
+          // Закрепляем сообщение
+          await ctx.telegram.pinChatMessage(ctx.chat.id, listMessageId);
       }
   } catch (error) {
       // Если сообщение не найдено, отправляем новое
       if (error.description === "Bad Request: message to edit not found") {
           const sentMessage = await ctx.reply(formattedList, { parse_mode: "HTML" });
           listMessageId = sentMessage.message_id;
+
+          // Закрепляем новое сообщение
+          await ctx.telegram.pinChatMessage(ctx.chat.id, listMessageId);
       } else {
           console.error("Ошибка при отправке списка игроков:", error);
       }
@@ -278,6 +284,33 @@ bot.hears(/^u \d+$/i, async (ctx) => {
       "⚠️ Этот игрок ещё не отмечен как оплативший!"
     );
     deleteMessageAfterDelay(ctx, message.message_id);
+  }
+});
+
+bot.hears(/^list$/i, async (ctx) => {
+  // Удаляем команду `list`
+  await ctx.deleteMessage().catch(() => {});
+
+  if (!isMatchActive(ctx)) {
+    const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
+    return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+  }
+
+  if (!listMessageId) {
+      const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+  }
+
+  try {
+      // Прокручиваем чат до закрепленного сообщения
+      const sentMessage = await ctx.telegram.forwardMessage(ctx.chat.id, ctx.chat.id, listMessageId);
+
+      // Удаляем сообщение со списком через 5 секунд
+      deleteMessageAfterDelay(ctx, sentMessage.message_id, 10000);
+  } catch (error) {
+      console.error("Ошибка при прокрутке к закрепленному сообщению:", error);
+      const message = await ctx.reply("⚠️ Не удалось найти закрепленное сообщение.");
+      deleteMessageAfterDelay(ctx, message.message_id, 5000); // Удаляем через 5 секунд
   }
 });
 
