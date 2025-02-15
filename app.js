@@ -119,8 +119,8 @@ bot.command("start", async (ctx) => {
     }
 });
 
-bot.command('r', async (ctx) => {
-    // Удаляем сообщение с командой /r
+bot.command('rm', async (ctx) => {
+    // Удаляем сообщение с командой /rm
     await ctx.deleteMessage().catch(() => {});
 
     // Проверяем, является ли пользователь администратором
@@ -134,7 +134,7 @@ bot.command('r', async (ctx) => {
     if (chatId !== GROUP_ID) return;
 
     // Извлекаем имя друга из команды
-    const match = ctx.message.text.match(/^\/r (.+)$/);
+    const match = ctx.message.text.match(/^\/rm (.+)$/);
     if (match) {
         const friendName = match[1].trim(); // Имя друга, которое нужно удалить
 
@@ -169,12 +169,12 @@ bot.command('r', async (ctx) => {
         }
     } else {
         // Если формат команды неверный, отправляем сообщение об ошибке
-        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /r <имя друга>.');
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /rm <имя друга>.');
         deleteMessageAfterDelay(ctx, message.message_id);
     }
 });
 
-bot.command('p', async (ctx) => {
+bot.command('pay', async (ctx) => {
     // Удаляем сообщение с командой /pay
     await ctx.deleteMessage().catch(() => {});
 
@@ -185,7 +185,7 @@ bot.command('p', async (ctx) => {
     }
 
     // Получаем номер игрока из команды
-    const match = ctx.message.text.match(/^\/p (\d+)$/);
+    const match = ctx.message.text.match(/^\/pay (\d+)$/);
     if (match) {
         const playerNumber = Number(match[1]);
 
@@ -220,13 +220,13 @@ bot.command('p', async (ctx) => {
         }
     } else {
         // Если формат команды неверный, отправляем сообщение об ошибке
-        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /p <номер игрока>.');
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /pay <номер игрока>.');
         deleteMessageAfterDelay(ctx, message.message_id);
     }
 });
 
 
-bot.command('l', async (ctx) => {
+bot.command('limit', async (ctx) => {
     // Удаляем сообщение с командой /limit
     await ctx.deleteMessage().catch(() => {});
 
@@ -237,7 +237,7 @@ bot.command('l', async (ctx) => {
     }
 
     // Получаем новое значение лимита из команды
-    const match = ctx.message.text.match(/^\/l (\d+)$/);
+    const match = ctx.message.text.match(/^\/limit (\d+)$/);
     if (match) {
         const newLimit = Number(match[1]);
 
@@ -269,7 +269,7 @@ bot.command('l', async (ctx) => {
         await sendPlayerList(ctx);
     } else {
         // Если формат команды неверный, отправляем сообщение об ошибке
-        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /l <число>.');
+        const message = await ctx.reply('⚠️ Неверный формат команды! Используй: /limit <число>.');
         deleteMessageAfterDelay(ctx, message.message_id);
     }
 });
@@ -320,25 +320,33 @@ bot.command('end', async (ctx) => {
     // Удаляем сообщение с командой /end
     await ctx.deleteMessage().catch(() => {});
 
-    // Проверяем, является ли пользователь администратором
     if (!isAdmin(ctx)) {
-        const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
         return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     // Очищаем список игроков и очередь
     players = [];
     queue = [];
+
+    // Сбрасываем дату сбора и локацию
     collectionDate = null;
+    location = "Локация пока не определена";
 
-    // Отправляем сообщение о завершении набора
-    const message = await ctx.reply("✅ Набор на игру завершён! Все списки очищены.");
+    // Удаляем сообщение со списком игроков, если оно существует
+    if (listMessageId) {
+        try {
+            await ctx.telegram.deleteMessage(ctx.chat.id, listMessageId);
+        } catch (error) {
+            console.error("Ошибка при удалении сообщения:", error);
+        }
+        listMessageId = null; // Сбрасываем ID сообщения
+    }
+
+    // Отправляем сообщение о завершении сбора
+    const message = await ctx.reply('❌ Сбор игроков завершен. Список очищен и закрыт.');
     deleteMessageAfterDelay(ctx, message.message_id);
-
-    // Обновляем сообщение со списком
-    await sendPlayerList(ctx);
 });
-
 
 // Запуск бота
 // /start 15.02.2025 18:00
