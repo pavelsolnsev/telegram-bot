@@ -2,13 +2,14 @@
 require("dotenv").config();
 
 // Подключаем библиотеку Telegraf для работы с Telegram Bot API
-const { Telegraf } = require("telegraf");
+const { Telegraf, Markup } = require("telegraf");
 // Создаем экземпляр бота, используя токен из переменных окружения
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // Получаем ID группы и ID администратора из переменных окружения
 const GROUP_ID = Number(process.env.ID);
 const ADMIN_ID = Number(process.env.ADMIN_ID);
+const IMAGE_URL = process.env.IMAGE_URL || "https://www.meme-arsenal.com/memes/a69b26bcf26d80f28a6422ebac425b5f.jpg";
 
 let listMessageId = null;
 
@@ -54,13 +55,13 @@ const sendPlayerList = async (ctx) => {
       const [weekday, date, time] = formattedDate.split(", ");
       const cleanedDate = date.replace(" г.", "");
       const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-      formattedList += `🕒 <b>${capitalizedWeekday}, ${cleanedDate}, начало в ${time}</b>\n\n`;
+      formattedList += `🕒 <b>${capitalizedWeekday}, ${cleanedDate}, ${time}</b>\n\n`;
   }
 
   formattedList += `📍 <b>Локация:</b> ${location}\n\n`;
-  formattedList += `💰 <b>400 ₽</b> — Полный комплект услуг: вода, манишки, съёмка матча и аптечка! 🎥⚽💧💊\n`;
+  formattedList += `💰 <b>400 ₽</b> — Услуги: мячи, вода, аптечка, манишки, фото и съёмка матча! 🎥⚽💧💊\n`;
   formattedList += `📲 <b>Перевод по номеру:</b> <code>89166986185</code>\n`;
-  formattedList += `💳 <b>Оплата на карту:</b> <code>2212 3124 1241 2412</code>\n`;
+  formattedList += `💳 <b>Карта:</b> <code>2212312412412412</code>\n`;
   formattedList += `💵 <b>Наличные:</b> Можно оплатить на месте.\n`;
 
   if (players.length > 0) {
@@ -81,32 +82,48 @@ const sendPlayerList = async (ctx) => {
 
   formattedList += `\n📋 <b>Список игроков:</b> ${players.length} / ${MAX_PLAYERS}`;
 
+  // Создаем кнопку "Записаться на матч"
+  const inlineKeyboard = Markup.inlineKeyboard([
+      Markup.button.callback("⚽ Записаться на матч", "join_match"),
+  ]);
+
   try {
-      if (listMessageId) {
-          // Пытаемся отредактировать существующее сообщение
-          await ctx.telegram.editMessageText(ctx.chat.id, listMessageId, null, formattedList, { parse_mode: "HTML" });
-      } else {
-          // Если сообщение не существует, отправляем новое
-          const sentMessage = await ctx.reply(formattedList, { parse_mode: "HTML" });
-          listMessageId = sentMessage.message_id;
-
-          // Закрепляем сообщение
-          await ctx.telegram.pinChatMessage(ctx.chat.id, listMessageId);
-      }
+    if (listMessageId) {
+      // Редактируем существующее сообщение
+      await ctx.telegram.editMessageCaption(
+        ctx.chat.id,
+        listMessageId,
+        null,
+        formattedList,
+        {
+          parse_mode: "HTML",
+          reply_markup: inlineKeyboard.reply_markup,
+        }
+      );
+    } else {
+      // Отправляем новое сообщение с изображением и кнопкой
+      const sentMessage = await ctx.replyWithPhoto(IMAGE_URL, {
+        caption: formattedList,
+        parse_mode: "HTML",
+        reply_markup: inlineKeyboard.reply_markup,
+      });
+      listMessageId = sentMessage.message_id;
+    }
   } catch (error) {
-      // Если сообщение не найдено, отправляем новое
-      if (error.description === "Bad Request: message to edit not found") {
-          const sentMessage = await ctx.reply(formattedList, { parse_mode: "HTML" });
-          listMessageId = sentMessage.message_id;
-
-          // Закрепляем новое сообщение
-          await ctx.telegram.pinChatMessage(ctx.chat.id, listMessageId);
-      } else {
-          console.error("Ошибка при отправке списка игроков:", error);
-      }
+    if (error.description.includes('message to edit not found')) {
+      // Если сообщение было удалено, сбрасываем ID и отправляем новое
+      listMessageId = null;
+      const sentMessage = await ctx.replyWithPhoto(IMAGE_URL, {
+        caption: formattedList,
+        parse_mode: "HTML",
+        reply_markup: inlineKeyboard.reply_markup,
+      });
+      listMessageId = sentMessage.message_id;
+    } else {
+      console.error("Ошибка при отправке списка игроков:", error);
+    }
   }
 };
-
 // Функция для проверки, является ли пользователь администратором
 const isAdmin = (ctx) => ctx.from.id === ADMIN_ID;
 
@@ -117,6 +134,7 @@ const isMatchActive = (ctx) => {
   }
   return true;
 };
+
 
 // Команда s (start) для запуска матча
 bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
@@ -139,39 +157,54 @@ bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
     players = [];
     queue = [];
     isMatchStarted = true; // Матч запущен
+
+    // Отправляем список игроков и закрепляем сообщение
     await sendPlayerList(ctx);
+
+    // Закрепляем сообщение
+    if (listMessageId) {
+      try {
+        await ctx.telegram.pinChatMessage(ctx.chat.id, listMessageId);
+      } catch (error) {
+        console.error("Ошибка при закреплении сообщения:", error);
+      }
+    }
   }
 });
 
-// Команда p (pay) для отметки оплаты игрока
-bot.hears(/^p \d+$/i, async (ctx) => {
+
+// Команда для изменения времени тренировки (t ДД.ММ.ГГГГ ЧЧ:ММ)
+bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
+  // Удаляем сообщение с командой
   await ctx.deleteMessage().catch(() => {});
-  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
-  if (!isAdmin(ctx)) {
-    const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-    return deleteMessageAfterDelay(ctx, message.message_id);
+
+  // Проверяем, является ли пользователь администратором
+  if (!isAdmin(ctx)) return;
+
+  // Получаем введенное время
+  const userInput = ctx.message.text.trim().slice(2).trim(); // Убираем "t "
+  const [datePart, timePart] = userInput.split(" ");
+  const [day, month, year] = datePart.split(".").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+
+  // Создаем новую дату
+  const newDate = new Date(year, month - 1, day, hours, minutes);
+
+  // Проверяем, что дата корректна
+  if (isNaN(newDate.getTime())) {
+      const message = await ctx.reply("⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
   }
-  const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
-  if (playerNumber <= 0 || playerNumber > players.length) {
-    const message = await ctx.reply("⚠️ Неверный номер игрока!");
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  const playerIndex = playerNumber - 1;
-  const playerName = players[playerIndex];
-  const cleanedPlayerName = playerName.replace(/✅/g, "").trim();
-  if (!playerName.includes("✅")) {
-    players[playerIndex] = `${cleanedPlayerName} ✅`;
-    const message = await ctx.reply(
-      `✅ Игрок ${cleanedPlayerName} отмечен как оплативший игру!`
-    );
-    deleteMessageAfterDelay(ctx, message.message_id);
-    await sendPlayerList(ctx);
-  } else {
-    const message = await ctx.reply(
-      "⚠️ Этот игрок уже отмечен как оплативший!"
-    );
-    deleteMessageAfterDelay(ctx, message.message_id);
-  }
+
+  // Обновляем время тренировки
+  collectionDate = newDate;
+
+  // Отправляем уведомление об успешном изменении времени
+  const message = await ctx.reply(`✅ Время тренировки изменено на: ${userInput}`);
+  deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+
+  // Обновляем список игроков
+  await sendPlayerList(ctx);
 });
 
 // Команда l (limit) для изменения лимита игроков
@@ -206,14 +239,15 @@ bot.hears(/^l \d+$/i, async (ctx) => {
   await sendPlayerList(ctx);
 });
 
-// Команда r (rm) для удаления игрока по номеру
-bot.hears(/^r \d+$/i, async (ctx) => {
+
+// Команда p (pay) для отметки оплаты игрока
+bot.hears(/^p \d+$/i, async (ctx) => {
   await ctx.deleteMessage().catch(() => {});
+  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
   if (!isAdmin(ctx)) {
     const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
     return deleteMessageAfterDelay(ctx, message.message_id);
   }
-  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
   const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
   if (playerNumber <= 0 || playerNumber > players.length) {
     const message = await ctx.reply("⚠️ Неверный номер игрока!");
@@ -221,13 +255,20 @@ bot.hears(/^r \d+$/i, async (ctx) => {
   }
   const playerIndex = playerNumber - 1;
   const playerName = players[playerIndex];
-  players.splice(playerIndex, 1);
-  if (queue.length > 0) {
-    players.push(queue.shift());
+  const cleanedPlayerName = playerName.replace(/✅/g, "").trim();
+  if (!playerName.includes("✅")) {
+    players[playerIndex] = `${cleanedPlayerName} ✅`;
+    // const message = await ctx.reply(
+    //   `✅ Игрок ${cleanedPlayerName} отмечен как оплативший игру!`
+    // );
+    // deleteMessageAfterDelay(ctx, message.message_id);
+    await sendPlayerList(ctx);
+  } else {
+    // const message = await ctx.reply(
+    //   "⚠️ Этот игрок уже отмечен как оплативший!"
+    // );
+    // deleteMessageAfterDelay(ctx, message.message_id);
   }
-  const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);
-  deleteMessageAfterDelay(ctx, message.message_id);
-  await sendPlayerList(ctx);
 });
 
 // Команда e (end) для завершения сбора и обнуления данных
@@ -274,16 +315,16 @@ bot.hears(/^u \d+$/i, async (ctx) => {
   const cleanedPlayerName = playerName.replace(/✅/g, "").trim();
   if (playerName.includes("✅")) {
     players[playerIndex] = cleanedPlayerName; // Убираем флажок оплаты
-    const message = await ctx.reply(
-      `✅ Флажок оплаты у игрока ${cleanedPlayerName} снят!`
-    );
-    deleteMessageAfterDelay(ctx, message.message_id);
+    // const message = await ctx.reply(
+    //   `✅ Флажок оплаты у игрока ${cleanedPlayerName} снят!`
+    // );
+    // deleteMessageAfterDelay(ctx, message.message_id);
     await sendPlayerList(ctx);
   } else {
-    const message = await ctx.reply(
-      "⚠️ Этот игрок ещё не отмечен как оплативший!"
-    );
-    deleteMessageAfterDelay(ctx, message.message_id);
+    // const message = await ctx.reply(
+    //   "⚠️ Этот игрок ещё не отмечен как оплативший!"
+    // );
+    // deleteMessageAfterDelay(ctx, message.message_id);
   }
 });
 
@@ -314,39 +355,30 @@ bot.hears(/^list$/i, async (ctx) => {
   }
 });
 
-// Команда для изменения времени тренировки (t ДД.ММ.ГГГГ ЧЧ:ММ)
-bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
-  // Удаляем сообщение с командой
+// Команда r (rm) для удаления игрока по номеру
+bot.hears(/^r \d+$/i, async (ctx) => {
   await ctx.deleteMessage().catch(() => {});
-
-  // Проверяем, является ли пользователь администратором
-  if (!isAdmin(ctx)) return;
-
-  // Получаем введенное время
-  const userInput = ctx.message.text.trim().slice(2).trim(); // Убираем "t "
-  const [datePart, timePart] = userInput.split(" ");
-  const [day, month, year] = datePart.split(".").map(Number);
-  const [hours, minutes] = timePart.split(":").map(Number);
-
-  // Создаем новую дату
-  const newDate = new Date(year, month - 1, day, hours, minutes);
-
-  // Проверяем, что дата корректна
-  if (isNaN(newDate.getTime())) {
-      const message = await ctx.reply("⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ");
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+  if (!isAdmin(ctx)) {
+    const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+    return deleteMessageAfterDelay(ctx, message.message_id);
   }
-
-  // Обновляем время тренировки
-  collectionDate = newDate;
-
-  // Отправляем уведомление об успешном изменении времени
-  const message = await ctx.reply(`✅ Время тренировки изменено на: ${userInput}`);
-  deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
-
-  // Обновляем список игроков
+  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
+  const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
+  if (playerNumber <= 0 || playerNumber > players.length) {
+    const message = await ctx.reply("⚠️ Неверный номер игрока!");
+    return deleteMessageAfterDelay(ctx, message.message_id);
+  }
+  const playerIndex = playerNumber - 1;
+  const playerName = players[playerIndex];
+  players.splice(playerIndex, 1);
+  if (queue.length > 0) {
+    players.push(queue.shift());
+  }
+  const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);
+  deleteMessageAfterDelay(ctx, message.message_id);
   await sendPlayerList(ctx);
 });
+
 
 // Обработка текстовых сообщений в группе
 bot.on("text", async (ctx) => {
@@ -407,6 +439,38 @@ bot.on("text", async (ctx) => {
     await sendPlayerList(ctx);
   }
 });
+
+
+bot.action("join_match", async (ctx) => {
+  // Получаем информацию о пользователе
+  const firstName = ctx.from.first_name || "";
+  const lastName = ctx.from.last_name || "";
+  const username = ctx.from.username ? `@${ctx.from.username}` : "";
+  const basePlayer = `${firstName} ${lastName} ${
+      username ? `(${username})` : ""
+  }`.trim();
+
+  // Проверяем, не записан ли пользователь уже
+  if (!players.includes(basePlayer)) {
+      if (players.length < MAX_PLAYERS) {
+          players.push(basePlayer); // Добавляем в список
+      } else {
+          queue.push(basePlayer); // Добавляем в очередь
+      }
+
+      // Отправляем уведомление
+      await ctx.answerCbQuery(
+          `✅ Вы добавлены в ${players.length <= MAX_PLAYERS ? "список" : "очередь"}!`
+      );
+
+      // Обновляем список игроков
+      await sendPlayerList(ctx);
+  } else {
+      // Если пользователь уже в списке
+      await ctx.answerCbQuery("⚠️ Вы уже в списке или в очереди!");
+  }
+});
+
 
 // / s 16.02.2025 18:00
 
