@@ -1,13 +1,24 @@
+// Функция для формирования и отправки списка игроков
+const { GlobalState } = require("../store");
 const { Markup } = require("telegraf");
 
-module.exports = async (ctx, players, queue, MAX_PLAYERS, collectionDate, location, IMAGE_URL, listMessageId) => {
-  let formattedList = "";
 
+const sendPlayerList = async (ctx) => {
+  let collectionDate = GlobalState.getCollectionDate();
+  let players = GlobalState.getPlayers();
+  let queue = GlobalState.getQueue();
+  let location = GlobalState.setLocation('нету локации');
+  let listMessageId = GlobalState.getListMessageId();
+  const IMAGE_URL = GlobalState.getIMAGE_URL();
+
+  let formattedList = "";
   if (collectionDate) {
     const options = { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", weekday: "long" };
     const formattedDate = collectionDate.toLocaleString("ru-RU", options);
     const [weekday, date, time] = formattedDate.split(", ");
     formattedList += `🕒 <b>${weekday.charAt(0).toUpperCase() + weekday.slice(1)}, ${date.replace(" г.", "")}, ${time}</b>\n\n`;
+  } else {
+    formattedList += `🕒 <b>Дата и время сбора не указаны!</b>\n\n`;
   }
 
   formattedList += `📍 <b>Локация:</b> ${location}\n\n`;
@@ -32,7 +43,7 @@ module.exports = async (ctx, players, queue, MAX_PLAYERS, collectionDate, locati
     formattedList += `\n\n------------------------------\n`;
   }
 
-  formattedList += `\n📋 <b>Список игроков:</b> ${players.length} / ${MAX_PLAYERS}`;
+  formattedList += `\n📋 <b>Список игроков:</b> ${players.length} / ${GlobalState.getMaxPlayers()}`;
 
   const inlineKeyboard = Markup.inlineKeyboard([
     Markup.button.callback("⚽ Записаться на матч", "join_match"),
@@ -53,7 +64,7 @@ module.exports = async (ctx, players, queue, MAX_PLAYERS, collectionDate, locati
         parse_mode: "HTML",
         reply_markup: inlineKeyboard.reply_markup,
       });
-      listMessageId = sentMessage.message_id;
+      GlobalState.setListMessageId(sentMessage.message_id);
     }
   } catch (error) {
     if (error.description.includes('message to edit not found')) {
@@ -63,9 +74,11 @@ module.exports = async (ctx, players, queue, MAX_PLAYERS, collectionDate, locati
         parse_mode: "HTML",
         reply_markup: inlineKeyboard.reply_markup,
       });
-      listMessageId = sentMessage.message_id;
+      GlobalState.setListMessageId(sentMessage.message_id);
     } else {
       console.error("Ошибка при отправке списка:", error);
     }
   }
 };
+
+module.exports = { sendPlayerList };

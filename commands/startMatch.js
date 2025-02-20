@@ -1,5 +1,6 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-module.exports = (bot, GlobalState, sendPlayerList) => {
+const { sendPlayerList } = require("../utils/sendPlayerList");
+module.exports = (bot, GlobalState) => {
 	bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
 		const ADMIN_ID = GlobalState.getAdminId();
 		let collectionDate = GlobalState.getCollectionDate();
