@@ -1,10 +1,12 @@
 
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-module.exports = (bot, sendPlayerList, isMatchActive, GlobalState) => {
+const { sendPlayerList } = require("../utils/sendPlayerList");
+module.exports = (bot, GlobalState) => {
 	bot.on("text", async (ctx) => {
 		const players = GlobalState.getPlayers()
 		const queue = GlobalState.getQueue()
 		const GROUP_ID = GlobalState.getGroupId();
+		let isMatchStarted = GlobalState.getStart();
 		// Если сообщение не из нужной группы, игнорируем его
 		if (ctx.chat.id !== GROUP_ID) return;
 		// Создаем объект пользователя с id, именем и username
@@ -16,7 +18,7 @@ module.exports = (bot, sendPlayerList, isMatchActive, GlobalState) => {
 		// Если пользователь отправил "+"
 		if (ctx.message.text === "+") {
 			await ctx.deleteMessage(); // Удаляем сообщение, чтобы не засорять чат
-			if (!isMatchActive) {
+			if (!isMatchStarted) {
 				const message = await ctx.reply("⚠️ Матч не начат!");
 				return deleteMessageAfterDelay(ctx, message.message_id);
 			}

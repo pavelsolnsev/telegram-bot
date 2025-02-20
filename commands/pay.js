@@ -1,10 +1,12 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-module.exports = (bot, GlobalState, sendPlayerList, isMatchActive) => {
+const { sendPlayerList } = require("../utils/sendPlayerList");
+module.exports = (bot, GlobalState) => {
   bot.hears(/^p \d+$/i, async (ctx) => {
     const players = GlobalState.getPlayers()
     const ADMIN_ID = GlobalState.getAdminId();
+    let isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
-    if (!isMatchActive(ctx)) return;
+    if (!isMatchStarted) return;
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
@@ -25,12 +27,13 @@ module.exports = (bot, GlobalState, sendPlayerList, isMatchActive) => {
   bot.hears(/^u \d+$/i, async (ctx) => {
     const players = GlobalState.getPlayers()
     const ADMIN_ID = GlobalState.getAdminId();
+    let isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
-    if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
+    if (!isMatchStarted) return;
     const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
     if (playerNumber <= 0 || playerNumber > players.length) {
       const message = await ctx.reply("⚠️ Неверный номер игрока!");

@@ -1,10 +1,12 @@
 
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-module.exports = (bot, sendPlayerList, isMatchActive, GlobalState) => {
+const { sendPlayerList } = require("../utils/sendPlayerList");
+module.exports = (bot, GlobalState) => {
 	bot.hears(/^l \d+$/i, async (ctx) => {
 		const ADMIN_ID = GlobalState.getAdminId();
+		let isMatchStarted = GlobalState.getStart();
 		await ctx.deleteMessage().catch(() => {});
-		if (!isMatchActive(ctx)) return;
+		if (!isMatchStarted) return;
 		if (ctx.from.id !== ADMIN_ID) {
 			const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
 			return deleteMessageAfterDelay(ctx, message.message_id);
