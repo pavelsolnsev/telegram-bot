@@ -2,61 +2,6 @@
 // Команда u (unpay) для снятия отметки оплаты у игрока
 
 
-// Команда r (rm) для удаления игрока по номеру
-bot.hears(/^r \d+$/i, async (ctx) => {
-  await ctx.deleteMessage().catch(() => {});
-  if (!isAdmin(ctx)) {
-    const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
-  const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
-  if (playerNumber <= 0 || playerNumber > players.length) {
-    const message = await ctx.reply("⚠️ Неверный номер игрока!");
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  const playerIndex = playerNumber - 1;
-  const playerName = players[playerIndex];
-  players.splice(playerIndex, 1);
-  if (queue.length > 0) {
-    players.push(queue.shift());
-  }
-  const message = await ctx.reply(`✅ Игрок ${playerName.name} удалён из списка!`);
-  deleteMessageAfterDelay(ctx, message.message_id);
-  await sendPlayerList(ctx);
-});
-
-// Команда l (limit) для изменения лимита игроков
-bot.hears(/^l \d+$/i, async (ctx) => {
-  await ctx.deleteMessage().catch(() => {});
-  if (!isAdmin(ctx)) {
-    const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
-  const newLimit = Number(ctx.message.text.trim().slice(2).trim());
-  if (newLimit <= 0) {
-    const message = await ctx.reply(
-      "⚠️ Лимит должен быть положительным числом!"
-    );
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  if (newLimit < MAX_PLAYERS) {
-    const playersToMove = players.slice(newLimit);
-    queue.unshift(...playersToMove);
-    players = players.slice(0, newLimit);
-  } else if (newLimit > MAX_PLAYERS) {
-    const availableSlots = newLimit - players.length;
-    const playersToAdd = queue.splice(0, availableSlots);
-    players.push(...playersToAdd);
-  }
-  MAX_PLAYERS = newLimit;
-  const message = await ctx.reply(
-    `✅ Лимит игроков установлен на ${MAX_PLAYERS}.`
-  );
-  deleteMessageAfterDelay(ctx, message.message_id);
-  await sendPlayerList(ctx);
-});
 
 // Команда для изменения времени тренировки (t ДД.ММ.ГГГГ ЧЧ:ММ)
 bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
@@ -144,38 +89,6 @@ bot.hears(/^e!$/i, async (ctx) => {
   );
   deleteMessageAfterDelay(ctx, message.message_id);
   notificationSent = false;
-});
-
-// Команда l (limit) для изменения лимита игроков
-bot.hears(/^l \d+$/i, async (ctx) => {
-  await ctx.deleteMessage().catch(() => {});
-  if (!isAdmin(ctx)) {
-    const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  if (!isMatchActive(ctx)) return; // Проверяем, запущен ли матч
-  const newLimit = Number(ctx.message.text.trim().slice(2).trim());
-  if (newLimit <= 0) {
-    const message = await ctx.reply(
-      "⚠️ Лимит должен быть положительным числом!"
-    );
-    return deleteMessageAfterDelay(ctx, message.message_id);
-  }
-  if (newLimit < MAX_PLAYERS) {
-    const playersToMove = players.slice(newLimit);
-    queue.unshift(...playersToMove);
-    players = players.slice(0, newLimit);
-  } else if (newLimit > MAX_PLAYERS) {
-    const availableSlots = newLimit - players.length;
-    const playersToAdd = queue.splice(0, availableSlots);
-    players.push(...playersToAdd);
-  }
-  MAX_PLAYERS = newLimit;
-  const message = await ctx.reply(
-    `✅ Лимит игроков установлен на ${MAX_PLAYERS}.`
-  );
-  deleteMessageAfterDelay(ctx, message.message_id);
-  await sendPlayerList(ctx);
 });
 
 
