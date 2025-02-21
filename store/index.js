@@ -10,14 +10,14 @@ const GlobalState = (() => {
   let MAX_PLAYERS = 14;  // Максимальное количество игроков
   let players = [];       // Массив игроков (объекты с id, именем и username)
   let queue = [];         // Очередь игроков
+  let teams = [];
   let collectionDate = null;  // Дата и время сбора игроков
   let notificationSent = false;  // Флаг отправки уведомлений о матче
   let listMessageId = null;  // ID сообщения со списком игроков
   let location = 'Локации нету'; // Локация
 
   // Новая переменная для хранения последнего количества команд
-  let lastTeamCount = null;
-
+  let lastTeamCount = null; // число команд
   const Store = {
     // Геттеры и сеттеры для всех переменных состояния
     getAdminId: () => ADMIN_ID,
@@ -40,7 +40,8 @@ const GlobalState = (() => {
     setListMessageId: (id) => listMessageId = id,
     getIMAGE_URL: () => IMAGE_URL,
     setIMAGE_URL: (url) => IMAGE_URL = url,
-    // Методы для работы с количеством команд
+    getTeams: () => teams,
+    setTeams: (newTeams) => teams = newTeams,
     getLastTeamCount: () => lastTeamCount,
     setLastTeamCount: (num) => lastTeamCount = num,
   };
