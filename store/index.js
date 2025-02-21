@@ -15,6 +15,9 @@ const GlobalState = (() => {
   let listMessageId = null;  // ID сообщения со списком игроков
   let location = 'Локации нету'; // Локация
 
+  // Новая переменная для хранения последнего количества команд
+  let lastTeamCount = null;
+
   const Store = {
     // Геттеры и сеттеры для всех переменных состояния
     getAdminId: () => ADMIN_ID,
@@ -37,6 +40,9 @@ const GlobalState = (() => {
     setListMessageId: (id) => listMessageId = id,
     getIMAGE_URL: () => IMAGE_URL,
     setIMAGE_URL: (url) => IMAGE_URL = url,
+    // Методы для работы с количеством команд
+    getLastTeamCount: () => lastTeamCount,
+    setLastTeamCount: (num) => lastTeamCount = num,
   };
 
   return Object.freeze(Store); // Защищаем объект от изменений

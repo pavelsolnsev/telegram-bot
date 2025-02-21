@@ -1,7 +1,9 @@
-module.exports = (bot, sendPlayerList, GlobalState) => {
+const { sendPlayerList } = require("../utils/sendPlayerList"); // Импорт функции для отправки списка игроков
+
+module.exports = (bot, GlobalState) => {
 	bot.action("join_match", async (ctx) => { // Обработчик нажатия кнопки "join_match"
-		const players = GlobalState.getPlayers(); // Получаем текущий список игроков
-		const queue = GlobalState.getQueue(); // Получаем очередь игроков
+		let players = GlobalState.getPlayers(); // Получаем текущий список игроков
+		let queue = GlobalState.getQueue(); // Получаем очередь игроков
 		let MAX_PLAYERS = GlobalState.getMaxPlayers(); // Получаем максимальное количество игроков в матче
 		
 		// Создаем объект пользователя с его данными
@@ -27,6 +29,6 @@ module.exports = (bot, sendPlayerList, GlobalState) => {
 	
 		// Отправляем пользователю уведомление о его статусе (в списке или в очереди)
 		await ctx.answerCbQuery(`✅ Вы добавлены в ${players.length < MAX_PLAYERS ? "список" : "очередь"}!`);
-		await sendPlayerList(ctx); // Обновляем список игроков
+		await sendPlayerList(ctx);// Обновляем список игроков
 	});
 };
