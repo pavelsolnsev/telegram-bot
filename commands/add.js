@@ -16,7 +16,8 @@ module.exports = (bot, GlobalState) => {
 		const user = {
 			id: ctx.from.id, // ID пользователя
 			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "), // Полное имя (если есть фамилия, добавляем ее)
-			username: ctx.from.username ? `@${ctx.from.username}` : null // Username, если он есть
+			username: ctx.from.username ? `@${ctx.from.username}` : null,
+			goals: 0
 		};
 		// Если пользователь отправил "+"
 		if (ctx.message.text === "+") {

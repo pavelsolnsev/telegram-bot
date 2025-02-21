@@ -10,7 +10,8 @@ module.exports = (bot, GlobalState) => {
 		const user = {
 			id: ctx.from.id, // ID пользователя
 			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "), // Формируем имя (учитываем отсутствие фамилии)
-			username: ctx.from.username ? `@${ctx.from.username}` : null // Добавляем username, если он есть
+			username: ctx.from.username ? `@${ctx.from.username}` : null, // Добавляем username, если он есть
+			goals: 0
 		};
 		
 		// Проверяем, есть ли игрок уже в списке или очереди
