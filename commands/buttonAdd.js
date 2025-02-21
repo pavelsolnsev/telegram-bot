@@ -1,27 +1,32 @@
 module.exports = (bot, sendPlayerList, GlobalState) => {
-	bot.action("join_match", async (ctx) => {
-		const players = GlobalState.getPlayers()
-		const queue = GlobalState.getPlayers()
+	bot.action("join_match", async (ctx) => { // Обработчик нажатия кнопки "join_match"
+		const players = GlobalState.getPlayers(); // Получаем текущий список игроков
+		const queue = GlobalState.getQueue(); // Получаем очередь игроков
+		let MAX_PLAYERS = GlobalState.getMaxPlayers(); // Получаем максимальное количество игроков в матче
+		
+		// Создаем объект пользователя с его данными
 		const user = {
-			id: ctx.from.id,
-			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
-			username: ctx.from.username ? `@${ctx.from.username}` : null
+			id: ctx.from.id, // ID пользователя
+			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "), // Формируем имя (учитываем отсутствие фамилии)
+			username: ctx.from.username ? `@${ctx.from.username}` : null // Добавляем username, если он есть
 		};
 		
+		// Проверяем, есть ли игрок уже в списке или очереди
 		const isInList = players.some(p => p.id === user.id) || queue.some(p => p.id === user.id);
 		
-		if (isInList) {
+		if (isInList) { // Если игрок уже записан, отправляем уведомление и прекращаем выполнение
 			await ctx.answerCbQuery("⚠️ Вы уже записаны!");
 			return;
 		}
 	
-		if (players.length < GlobalState.getMaxPlayers()) {
+		if (players.length < MAX_PLAYERS) { // Если есть свободные места в списке игроков, добавляем туда
 			players.push(user);
-		} else {
+		} else { // Если мест нет, отправляем игрока в очередь
 			queue.push(user);
 		}
 	
-		await ctx.answerCbQuery(`✅ Вы добавлены в ${players.length <= GlobalState.getMaxPlayers() ? "список" : "очередь"}!`);
-		await sendPlayerList(ctx);
+		// Отправляем пользователю уведомление о его статусе (в списке или в очереди)
+		await ctx.answerCbQuery(`✅ Вы добавлены в ${players.length < MAX_PLAYERS ? "список" : "очередь"}!`);
+		await sendPlayerList(ctx); // Обновляем список игроков
 	});
 };

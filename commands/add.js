@@ -1,12 +1,15 @@
 
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList");
+const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 module.exports = (bot, GlobalState) => {
 	bot.on("text", async (ctx) => {
-		const players = GlobalState.getPlayers()
-		const queue = GlobalState.getQueue()
+		
+		const players = GlobalState.getPlayers();
+		const queue = GlobalState.getQueue();
 		const GROUP_ID = GlobalState.getGroupId();
 		let isMatchStarted = GlobalState.getStart();
+		let MAX_PLAYERS = GlobalState.getMaxPlayers();
 		// Если сообщение не из нужной группы, игнорируем его
 		if (ctx.chat.id !== GROUP_ID) return;
 		// Создаем объект пользователя с id, именем и username
@@ -31,7 +34,7 @@ module.exports = (bot, GlobalState) => {
 			}
 	
 			// Если есть свободные места, добавляем пользователя в список игроков
-			if (players.length < GlobalState.getMaxPlayers()) {
+			if (players.length < MAX_PLAYERS) {
 				players.push(user);
 			} else {
 				queue.push(user); // Иначе добавляем в очередь
@@ -58,7 +61,7 @@ module.exports = (bot, GlobalState) => {
 				if (queue.length > 0) {
 					const movedPlayer = queue.shift(); // Убираем первого из очереди
 					players.push(movedPlayer); // Добавляем его в основной список
-					sendPrivateMessage(ctx, movedPlayer.id, "🎉 Вы в основном составе!"); // Отправляем ему личное сообщение
+					sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");// Отправляем ему личное сообщение
 				}
 	
 				await sendPlayerList(ctx); // Обновляем список игроков
