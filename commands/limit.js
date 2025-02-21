@@ -5,7 +5,7 @@ const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 module.exports = (bot, GlobalState) => {
 	bot.hears(/^l \d+$/i, async (ctx) => { // Обработчик команд, соответствующих шаблону "l <число>"
 		const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-		let isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+		const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
 		let players = GlobalState.getPlayers(); // Получаем список текущих игроков
 		let queue = GlobalState.getQueue(); // Получаем очередь игроков
 		let MAX_PLAYERS = GlobalState.getMaxPlayers();

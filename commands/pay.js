@@ -30,6 +30,9 @@ module.exports = (bot, GlobalState) => {
     if (!player.paid) { // Если игрок еще не оплатил
       player.paid = true; // Помечаем его как оплатившего
       await sendPlayerList(ctx); // Обновляем список игроков
+
+      const message = await ctx.reply(`✅ ${player.name} оплатил участие.`); // Сообщение об оплате
+      deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
     }
   });
 
@@ -61,6 +64,9 @@ module.exports = (bot, GlobalState) => {
     if (player.paid) { // Если игрок был отмечен как оплативший
       player.paid = false; // Снимаем отметку об оплате
       await sendPlayerList(ctx); // Обновляем список игроков
+
+      const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`); // Сообщение о снятии отметки
+      deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
     }
   });
 };
