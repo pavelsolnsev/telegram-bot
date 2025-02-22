@@ -1,4 +1,3 @@
-// Глобальное состояние для хранения всех данных о матчах
 const GlobalState = (() => {
   // Получаем ID группы и ID администратора из переменных окружения
   const ADMIN_ID = Number(process.env.ADMIN_ID);
@@ -18,6 +17,10 @@ const GlobalState = (() => {
 
   // Новая переменная для хранения последнего количества команд
   let lastTeamCount = null; // число команд
+
+  // Новая переменная для хранения ID последнего сообщения с командами
+  let lastTeamsMessage = null; // объект с chatId и messageId
+
   const Store = {
     // Геттеры и сеттеры для всех переменных состояния
     getAdminId: () => ADMIN_ID,
@@ -44,6 +47,12 @@ const GlobalState = (() => {
     setTeams: (newTeams) => teams = newTeams,
     getLastTeamCount: () => lastTeamCount,
     setLastTeamCount: (num) => lastTeamCount = num,
+
+    // Методы для работы с последним сообщением с составами команд
+    setLastTeamsMessageId: (chatId, messageId) => {
+      lastTeamsMessage = { chatId, messageId };
+    },
+    getLastTeamsMessageId: () => lastTeamsMessage,
   };
 
   return Object.freeze(Store); // Защищаем объект от изменений
