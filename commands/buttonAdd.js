@@ -8,10 +8,14 @@ module.exports = (bot, GlobalState) => {
 		
 		// Создаем объект пользователя с его данными
 		const user = {
-			id: ctx.from.id, // ID пользователя
-			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "), // Формируем имя (учитываем отсутствие фамилии)
-			username: ctx.from.username ? `@${ctx.from.username}` : null, // Добавляем username, если он есть
-			goals: 0
+			id: ctx.from.id,
+			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
+			username: ctx.from.username ? `@${ctx.from.username}` : null,
+			goals: 0,
+			gamesPlayed: 0, // Новое поле
+			wins: 0,        // Новое поле
+			draws: 0,       // Новое поле
+			losses: 0       // Новое поле
 		};
 		
 		// Проверяем, есть ли игрок уже в списке или очереди

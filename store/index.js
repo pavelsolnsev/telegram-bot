@@ -21,6 +21,10 @@ const GlobalState = (() => {
   // Новая переменная для хранения ID последнего сообщения с командами
   let lastTeamsMessage = null; // объект с chatId и messageId
 
+  // Переменные для хранения информации о текущих играющих командах
+  let playingTeams = null; // объект с team1, team2, teamIndex1, teamIndex2
+  let playingTeamsMessageId = null; // объект с chatId и messageId
+
   const Store = {
     // Геттеры и сеттеры для всех переменных состояния
     getAdminId: () => ADMIN_ID,
@@ -53,6 +57,18 @@ const GlobalState = (() => {
       lastTeamsMessage = { chatId, messageId };
     },
     getLastTeamsMessageId: () => lastTeamsMessage,
+
+    // Методы для работы с текущими играющими командами
+    setPlayingTeams: (newPlayingTeams) => {
+      playingTeams = newPlayingTeams;
+    },
+    getPlayingTeams: () => playingTeams,
+
+    // Методы для работы с ID сообщения с играющими командами
+    setPlayingTeamsMessageId: (chatId, messageId) => {
+      playingTeamsMessageId = { chatId, messageId };
+    },
+    getPlayingTeamsMessageId: () => playingTeamsMessageId,
   };
 
   return Object.freeze(Store); // Защищаем объект от изменений
