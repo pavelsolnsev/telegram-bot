@@ -21,7 +21,8 @@ module.exports = (bot, GlobalState) => {
 			gamesPlayed: 0, // Новое поле
 			wins: 0,        // Новое поле
 			draws: 0,       // Новое поле
-			losses: 0       // Новое поле
+			losses: 0,
+			rating: 0       // Новое поле
 		};
 		// Если пользователь отправил "+"
 		if (ctx.message.text === "+") {

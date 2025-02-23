@@ -1,32 +1,26 @@
 const GlobalState = (() => {
-  // Получаем ID группы и ID администратора из переменных окружения
   const ADMIN_ID = Number(process.env.ADMIN_ID);
   const GROUP_ID = Number(process.env.ID);
   const IMAGE_URL = process.env.IMAGE_URL;
 
-  // Флаги и данные для матча
   let isMatchStarted = false;
-  let MAX_PLAYERS = 14;  // Максимальное количество игроков
-  let players = [];       // Массив игроков (объекты с id, именем и username)
-  let queue = [];         // Очередь игроков
+  let MAX_PLAYERS = 14;
+  let players = [];
+  let queue = [];
   let teams = [];
-  let collectionDate = null;  // Дата и время сбора игроков
-  let notificationSent = false;  // Флаг отправки уведомлений о матче
-  let listMessageId = null;  // ID сообщения со списком игроков
-  let location = 'Локации нету'; // Локация
+  let collectionDate = null;
+  let notificationSent = false;
+  let listMessageId = null;
+  let location = 'Локации нету';
+  let lastTeamCount = null;
+  let lastTeamsMessage = null;
+  let playingTeams = null;
+  let playingTeamsMessageId = null;
 
-  // Новая переменная для хранения последнего количества команд
-  let lastTeamCount = null; // число команд
-
-  // Новая переменная для хранения ID последнего сообщения с командами
-  let lastTeamsMessage = null; // объект с chatId и messageId
-
-  // Переменные для хранения информации о текущих играющих командах
-  let playingTeams = null; // объект с team1, team2, teamIndex1, teamIndex2
-  let playingTeamsMessageId = null; // объект с chatId и messageId
+  // Новая глобальная переменная для статистики команд
+  let teamStats = {};
 
   const Store = {
-    // Геттеры и сеттеры для всех переменных состояния
     getAdminId: () => ADMIN_ID,
     getGroupId: () => GROUP_ID,
     getStart: () => isMatchStarted,
@@ -52,26 +46,27 @@ const GlobalState = (() => {
     getLastTeamCount: () => lastTeamCount,
     setLastTeamCount: (num) => lastTeamCount = num,
 
-    // Методы для работы с последним сообщением с составами команд
     setLastTeamsMessageId: (chatId, messageId) => {
       lastTeamsMessage = { chatId, messageId };
     },
     getLastTeamsMessageId: () => lastTeamsMessage,
 
-    // Методы для работы с текущими играющими командами
     setPlayingTeams: (newPlayingTeams) => {
       playingTeams = newPlayingTeams;
     },
     getPlayingTeams: () => playingTeams,
 
-    // Методы для работы с ID сообщения с играющими командами
     setPlayingTeamsMessageId: (chatId, messageId) => {
       playingTeamsMessageId = { chatId, messageId };
     },
     getPlayingTeamsMessageId: () => playingTeamsMessageId,
+
+    // Геттер и сеттер для статистики команд
+    getTeamStats: () => teamStats,
+    setTeamStats: (stats) => teamStats = stats,
   };
 
-  return Object.freeze(Store); // Защищаем объект от изменений
+  return Object.freeze(Store);
 })();
 
 module.exports = { GlobalState };
