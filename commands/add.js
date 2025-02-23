@@ -14,10 +14,14 @@ module.exports = (bot, GlobalState) => {
 		if (ctx.chat.id !== GROUP_ID) return;
 		// Создаем объект пользователя с id, именем и username
 		const user = {
-			id: ctx.from.id, // ID пользователя
-			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "), // Полное имя (если есть фамилия, добавляем ее)
+			id: ctx.from.id,
+			name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
 			username: ctx.from.username ? `@${ctx.from.username}` : null,
-			goals: 0
+			goals: 0,
+			gamesPlayed: 0, // Новое поле
+			wins: 0,        // Новое поле
+			draws: 0,       // Новое поле
+			losses: 0       // Новое поле
 		};
 		// Если пользователь отправил "+"
 		if (ctx.message.text === "+") {
