@@ -15,16 +15,22 @@ const divideIntoTeams = (players, numTeams) => {
 };
 
 // Функция создания сообщения с командами
-const buildTeamsMessage = (teams, title = "Составы команд") => {
+const buildTeamsMessage = (teams, teamStats, title = "Составы команд") => {
   let message = `🏆 <b>${title}:</b>\n\n`;
+  
   teams.forEach((team, index) => {
-    message += `⚽ <b>Команда ${index + 1}:</b>\n`;
+    const teamKey = `team${index + 1}`;
+    const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0 };
+    
+    message += `⚽ <b>Команда ${index + 1}:</b> (W: ${stats.wins}, D: ${stats.draws}, L: ${stats.losses}, Games: ${stats.games})\n`;
+    
     team.forEach((player, i) => {
       const goalsText = player.goals && player.goals > 0 ? ` - Голы: ${player.goals}` : "";
       message += `${i + 1}. ${player.name} ${player.username ? `(${player.username})` : ""}${goalsText}\n`;
     });
     message += "\n";
   });
+  
   return message;
 };
 
@@ -236,6 +242,7 @@ module.exports = (bot, GlobalState) => {
     }
   
     const stats = {};
+    const teamStats = GlobalState.getTeamStats();
   
     const updateStats = (player, result) => {
       if (!stats[player.name]) {
@@ -245,23 +252,16 @@ module.exports = (bot, GlobalState) => {
           draws: 0,
           losses: 0,
           goals: 0,
-          rating: 0, // Добавляем поле для рейтинга
+          rating: 0,
         };
       }
       stats[player.name].games += 1;
       stats[player.name].goals += player.goals || 0;
       stats[player.name][result] += 1;
   
-      // Вычисляем рейтинг
-      const { wins, draws, goals, losses, games } = stats[player.name];
-      let rating = wins * 3 + draws * 1 + goals * 0.5 - losses * 1.5; // Формула для рейтинга
-  
-      // Устанавливаем минимальный рейтинг 0
-      if (rating < 0) {
-        rating = 0;
-      }
-  
-      stats[player.name].rating = rating; // Применяем рейтинг
+      const { wins, draws, goals, losses } = stats[player.name];
+      let rating = wins * 3 + draws * 1 + goals * 0.5 - losses * 1.5;
+      stats[player.name].rating = Math.max(rating, 0);
     };
   
     const team1Goals = playingTeams.team1.reduce((sum, p) => sum + (p.goals || 0), 0);
@@ -281,13 +281,21 @@ module.exports = (bot, GlobalState) => {
     playingTeams.team1.forEach((player) => updateStats(player, result1));
     playingTeams.team2.forEach((player) => updateStats(player, result2));
   
-    console.log("📊 Статистика игроков:");
-    Object.entries(stats).forEach(([name, data]) => {
-      console.log(
-        `${name}: Игры: ${data.games}, Победы: ${data.wins}, Ничьи: ${data.draws}, Поражения: ${data.losses}, Голы: ${data.goals}, Рейтинг: ${data.rating.toFixed(2)}`
-      );
-    });
+    const updateTeamStats = (teamKey, result) => {
+      if (!teamStats[teamKey]) {
+        teamStats[teamKey] = { wins: 0, losses: 0, draws: 0, games: 0 };
+      }
+      teamStats[teamKey].games += 1;
+      teamStats[teamKey][result] += 1;
+    };
   
+    updateTeamStats("team1", result1);
+    updateTeamStats("team2", result2);
+    GlobalState.setTeamStats(teamStats);
+  
+    const updatedMessage = buildTeamsMessage([playingTeams.team1, playingTeams.team2], teamStats);
+  
+    ctx.reply(updatedMessage, { parse_mode: "HTML" });
     return ctx.reply("✅ Матч завершен, статистика обновлена!");
   });
   
