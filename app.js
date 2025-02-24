@@ -22,12 +22,17 @@ require("./commands/startMatch")(bot, GlobalState); // Команда s для �
 require("./commands/remove")(bot, GlobalState); // Команда r для удаления игроков из списка игроков
 require("./commands/pay")(bot, GlobalState); // Команда p для оплаты
 require("./commands/team")(bot, GlobalState); // деление команд
+require("./commands/play")(bot, GlobalState); // начать матч
+require("./commands/goal")(bot, GlobalState); // отметить гол
+require("./commands/finish")(bot, GlobalState); // закончить матч
 require("./commands/list")(bot, GlobalState); // Команда list для проверки списка
 require("./commands/time")(bot, GlobalState); // Команда t для смены даты
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
 require("./commands/add")(bot, GlobalState); // Добавление и удаление игроков
-require("./commands/buttonAdd")(bot, GlobalState); // Обработка inline-кнопки "Записаться на матч"
+require("./buttons/buttonAdd")(bot, GlobalState); // Обработка inline-кнопки "Записаться на матч"
+require("./buttons/buttonGoal")(bot, GlobalState); // Обработка inline-кнопки "Добавить гол"
+require("./buttons/reshuffle_callback")(bot, GlobalState); // Обработка inline-кнопки "Перемешать составы"
 // Запуск бота
 bot.launch();
 
