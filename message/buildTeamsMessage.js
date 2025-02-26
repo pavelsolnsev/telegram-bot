@@ -6,7 +6,8 @@ const buildTeamsMessage = (teams, title = "Составы команд", teamSta
     message += `⚽ <b>Команда ${index + 1}:</b> (W: ${stats.wins}, D: ${stats.draws}, L: ${stats.losses}, Games: ${stats.games})\n`;
     team.forEach((player, i) => {
       const goalsText = player.goals && player.goals > 0 ? ` - Голы: ${player.goals}` : "";
-      message += `${i + 1}. ${player.name} ${player.username ? `(@${player.username})` : ""}${goalsText}\n`;
+      const ratingText = ` - ⭐${player.rating || 0}`; // Добавляем рейтинг
+      message += `${i + 1}. ${player.name} ${player.username ? `(${player.username})` : ""}${goalsText}${ratingText}\n`;
     });
     message += "\n";
   });
