@@ -3,8 +3,8 @@ const { updatePlayingTeamsMessage } = require("../message/updatePlayingTeamsMess
 
 // Подключаем функцию, которая может удалить сообщение через какое-то время
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+const db = require("../database/database");
 
-// Делаем так, чтобы этот код можно было использовать в других файлах, передаем ему бота и "коробку" с данными игры
 module.exports = (bot, GlobalState) => {
   // Учим бота реагировать на команды вроде "goal_1_2" (где числа — это команда и игрок)
   bot.action(/goal_(\d+)_(\d+)/, async (ctx) => {

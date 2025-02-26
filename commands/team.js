@@ -3,9 +3,9 @@ const { reshuffleArray } = require("../utils/reshuffleArray");
 const { divideIntoTeams } = require("../utils/divideIntoTeams");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { sendTeamsMessage } = require("../message/sendTeamsMessage");
+const getPlayerStats = require("../database/getPlayerStats");
 
-module.exports = (bot, GlobalState) => {  
-  // Обработка команд для создания команд
+module.exports = (bot, GlobalState) => {
   bot.hears(/^team (2|3|4)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     await ctx.deleteMessage().catch(() => {});
@@ -22,6 +22,7 @@ module.exports = (bot, GlobalState) => {
       return ctx.reply("⚠️ Недостаточно игроков для создания команд!");
     }
 
+    players = await getPlayerStats(players); // Получаем статистику игроков
     players = reshuffleArray(players);
     const teams = divideIntoTeams(players, numTeams);
     const teamsMessage = buildTeamsMessage(teams, "Составы команд");
@@ -30,5 +31,4 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setLastTeamCount(numTeams);
     await sendTeamsMessage(ctx, teamsMessage);
   });
-
 };
