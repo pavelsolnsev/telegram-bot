@@ -1,43 +1,52 @@
-
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay"); // Импорт функции для удаления сообщений с задержкой
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+const savePlayersToDatabase = require("../database/savePlayers");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^e!$/i, async (ctx) => {
-    // Удаляем сообщение с командой
-		const listMessageId = GlobalState.getListMessageId();
-		const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
-		const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
+    const listMessageId = GlobalState.getListMessageId();
+    const isMatchStarted = GlobalState.getStart();
+    const ADMIN_ID = GlobalState.getAdminId();
 
     await ctx.deleteMessage().catch(() => {});
 
-   if (!isMatchStarted) return; // Если матч не начался, выходим из функции
-		
-		if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
-			const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-			return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
-		}
+    if (!isMatchStarted) return;
+    
+    if (ctx.from.id !== ADMIN_ID) {
+      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
-    // Удаляем сообщение со списком игроков, если оно существует
     if (listMessageId) {
-      await ctx.telegram
-        .deleteMessage(ctx.chat.id, listMessageId)
-        .catch(() => {});
+      await ctx.telegram.deleteMessage(ctx.chat.id, listMessageId).catch(() => {});
       GlobalState.setListMessageId(null);
     }
 
-    // Сбрасываем все игровые данные
-    GlobalState.setPlayers([]); // Очистка списка игроков
-    GlobalState.setQueue([]); // Очистка очереди
-    GlobalState.setCollectionDate(null); // Удаление даты сбора
-    GlobalState.setLocation("Локация пока не определена"); // Сброс локации
-    GlobalState.setMaxPlayers(14); // Возвращаем стандартное значение максимальных игроков
-    GlobalState.setStart(false); // Завершаем матч
-    GlobalState.setNotificationSent(false); // Сбрасываем флаг отправки уведомлений
+    const allTeams = GlobalState.getTeams();
+    const allPlayers = allTeams.flat();
 
-    // Отправляем подтверждающее сообщение
-    const message = await ctx.reply(
-      "✅ Сбор успешно завершён!"
-    );
+    // Логируем для отладки
+    console.log('allPlayers:', JSON.stringify(allPlayers, null, 2));
+
+    await savePlayersToDatabase(allPlayers);
+    GlobalState.appendToPlayersHistory(allPlayers);
+
+    console.log('Updated players history:', GlobalState.getAllPlayersHistory());
+
+    GlobalState.setPlayers([]);
+    GlobalState.setQueue([]);
+    GlobalState.setCollectionDate(null);
+    GlobalState.setLocation("Локация пока не определена");
+    GlobalState.setMaxPlayers(14);
+    GlobalState.setStart(false);
+    GlobalState.setNotificationSent(false);
+    GlobalState.setTeams([]);
+    GlobalState.setTeamStats({});
+    GlobalState.setPlayingTeams(null);
+    GlobalState.setPlayingTeamsMessageId(null);
+    GlobalState.setLastTeamCount(null);
+    GlobalState.setLastTeamsMessageId(null);
+
+    const message = await ctx.reply("✅ Сбор успешно завершён!");
     deleteMessageAfterDelay(ctx, message.message_id);
   });
 };

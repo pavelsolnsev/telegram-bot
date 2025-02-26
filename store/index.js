@@ -16,9 +16,8 @@ const GlobalState = (() => {
   let lastTeamsMessage = null;
   let playingTeams = null;
   let playingTeamsMessageId = null;
-
-  // Новая глобальная переменная для статистики команд
   let teamStats = {};
+  let allPlayersHistory = []; // Глобальная переменная для истории всех игроков
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -61,9 +60,31 @@ const GlobalState = (() => {
     },
     getPlayingTeamsMessageId: () => playingTeamsMessageId,
 
-    // Геттер и сеттер для статистики команд
     getTeamStats: () => teamStats,
     setTeamStats: (stats) => teamStats = stats,
+
+    // Методы для работы с историей игроков
+    getAllPlayersHistory: () => allPlayersHistory,
+    setAllPlayersHistory: (players) => allPlayersHistory = players,
+    appendToPlayersHistory: (newPlayers) => {
+      // Проходим по каждому новому игроку
+      newPlayers.forEach(newPlayer => {
+        const existingPlayer = allPlayersHistory.find(p => p.id === newPlayer.id);
+        
+        if (existingPlayer) {
+          // Если игрок существует, обновляем его статистику
+          existingPlayer.goals += newPlayer.goals;
+          existingPlayer.gamesPlayed += newPlayer.gamesPlayed;
+          existingPlayer.wins += newPlayer.wins;
+          existingPlayer.draws += newPlayer.draws;
+          existingPlayer.losses += newPlayer.losses;
+          existingPlayer.rating += newPlayer.rating;
+        } else {
+          // Если игрока нет, добавляем копию нового игрока
+          allPlayersHistory.push({ ...newPlayer });
+        }
+      });
+    }
   };
 
   return Object.freeze(Store);

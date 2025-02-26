@@ -12,12 +12,19 @@ module.exports = (bot, GlobalState) => {
     const teams = GlobalState.getTeams();
   
     if (!teams[teamIndex1] || !teams[teamIndex2]) {
-      const message = await ctx.reply("⛔Команды не найдены!");
-			return deleteMessageAfterDelay(ctx, message.message_id);
+      const message = await ctx.reply("⛔ Команды не найдены!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
   
-    const team1 = teams[teamIndex1].map(player => ({ ...player, goals: 0 }));
-    const team2 = teams[teamIndex2].map(player => ({ ...player, goals: 0 }));
+    // Очищаем голы перед каждым новым матчем
+    const resetGoals = (team) => team.map(player => ({
+      ...player,
+      goals: 0, // Сбрасываем голы
+    }));
+  
+    const team1 = resetGoals(teams[teamIndex1]);
+    const team2 = resetGoals(teams[teamIndex2]);
+  
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2);
   
     const sentMessage = await ctx.reply(teamsMessage, {
@@ -39,4 +46,5 @@ module.exports = (bot, GlobalState) => {
       teamIndex2,
     });
   });
+  
 };
