@@ -30,7 +30,8 @@ async function savePlayersToDatabase(players) {
       const wins = rawWins ?? 0;
       const draws = rawDraws ?? 0;
       const losses = rawLosses ?? 0;
-      const rating = rawRating ?? 0.00;
+      // Убеждаемся, что рейтинг не меньше 0 перед сохранением
+      const rating = Math.max(rawRating ?? 0.00, 0);
 
       const query = `
         INSERT INTO players (id, name, username, goals, gamesPlayed, wins, draws, losses, rating)

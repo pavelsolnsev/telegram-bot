@@ -21,7 +21,7 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    // Перемешиваем игроков
+    // Перемешиваем игроков 
     players = reshuffleArray(players);
     const newTeams = divideIntoTeams(players, numTeams);
 

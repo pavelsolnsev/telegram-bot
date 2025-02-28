@@ -4,11 +4,17 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^list$/i, async (ctx) => {
     const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
     let listMessageId = GlobalState.getListMessageId();
+    const isTeamsDivided = GlobalState.getDivided();
     await ctx.deleteMessage().catch(() => {});
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
       return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+    }
+
+    if (isTeamsDivided) {
+      const message = await ctx.reply("Сейчас идет игра!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     try {

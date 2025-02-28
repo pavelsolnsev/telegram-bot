@@ -30,8 +30,6 @@ require("./commands/time")(bot, GlobalState); // Команда t для сме�
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
 require("./commands/add")(bot, GlobalState); // Добавление и удаление игроков
-require("./buttons/buttonAdd")(bot, GlobalState); // Обработка inline-кнопки "Записаться на матч"
-require("./buttons/buttonGoal")(bot, GlobalState); // Обработка inline-кнопки "Добавить гол"
 require("./buttons/reshuffle_callback")(bot, GlobalState); // Обработка inline-кнопки "Перемешать составы"
 // Запуск бота
 bot.launch();

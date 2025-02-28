@@ -36,7 +36,7 @@ const sendPlayerList = async (ctx) => {
   if (players.length > 0) {
     formattedList += `\n⚽ <b>В игре:</b>\n`;
     players.forEach((player, index) => {
-      formattedList += `\n${index + 1}. ${player.name} ${player.username ? `(${player.username})` : ""} ${player.paid ? " ✅" : ""} ⭐${player.rating || 0}`;
+      formattedList += `\n${index + 1}. ${player.name} ${player.username ? `(${player.username})` : ""} ${player.paid ? " ✅" : ""} - ⭐${player.rating || 0}`;
     });
     formattedList += `\n\n------------------------------\n`;
   }
