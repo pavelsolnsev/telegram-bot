@@ -25,13 +25,22 @@ async function savePlayersToDatabase(players) {
       const id = rawId;
       const name = rawName ?? 'Unknown';
       const username = rawUsername ?? '@unknown';
-      const goals = rawGoals ?? 0;
-      const gamesPlayed = rawGamesPlayed ?? 0;
-      const wins = rawWins ?? 0;
-      const draws = rawDraws ?? 0;
-      const losses = rawLosses ?? 0;
-      // Убеждаемся, что рейтинг не меньше 0 перед сохранением
-      const rating = Math.max(rawRating ?? 0.00, 0);
+      const goals = Number(rawGoals) || 0;
+      const gamesPlayed = Number(rawGamesPlayed) || 0;
+      const wins = Number(rawWins) || 0;
+      const draws = Number(rawDraws) || 0;
+      const losses = Number(rawLosses) || 0;
+      let ratingChange = Number(rawRating) || 0; // Проверяем, что ratingChange — число
+
+      // Получаем текущий рейтинг из БД
+      const [current] = await connection.query(
+        "SELECT rating FROM players WHERE id = ?",
+        [id]
+      );
+      const currentRating = current.length ? Number(current[0].rating) || 0 : 0;
+
+      // Проверяем, чтобы новый рейтинг был неотрицательным
+      const newRating = Math.max(currentRating + ratingChange, 0);
 
       const query = `
         INSERT INTO players (id, name, username, goals, gamesPlayed, wins, draws, losses, rating)
@@ -44,11 +53,11 @@ async function savePlayersToDatabase(players) {
           wins = wins + VALUES(wins),
           draws = draws + VALUES(draws),
           losses = losses + VALUES(losses),
-          rating = GREATEST(rating + VALUES(rating), 0);
+          rating = ?;
       `;
       
       await connection.query(query, [
-        id, name, username, goals, gamesPlayed, wins, draws, losses, rating
+        id, name, username, goals, gamesPlayed, wins, draws, losses, newRating, newRating
       ]);
     }
 

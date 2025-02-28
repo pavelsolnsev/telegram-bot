@@ -2,7 +2,6 @@ const { Markup } = require("telegraf");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { reshuffleArray } = require("../utils/reshuffleArray");
-const { divideIntoTeams } = require("../utils/divideIntoTeams");
 
 module.exports = (bot, GlobalState) => {
   bot.action("reshuffle_callback", async (ctx) => {
@@ -14,23 +13,28 @@ module.exports = (bot, GlobalState) => {
     }
 
     const numTeams = GlobalState.getLastTeamCount();
-    let players = [...GlobalState.getPlayers()]; // Свежая копия игроков
+    let players = [...GlobalState.getPlayers()];
 
     if (players.length < numTeams) {
       const message = await ctx.reply("⛔ Недостаточно игроков для создания команд!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    // Перемешиваем игроков 
+    // Перемешиваем игроков случайным образом
     players = reshuffleArray(players);
-    const newTeams = divideIntoTeams(players, numTeams);
 
-    // Массив случайных символов (эмодзи)
+    // Распределяем игроков по командам случайным образом
+    const teams = Array.from({ length: numTeams }, () => []);
+    players.forEach((player, index) => {
+      teams[index % numTeams].push(player);
+    });
+
+    GlobalState.setTeams(teams);
+
     const randomSymbols = ["⚽", "🏀", "🏈", "🎾", "🏐", "🥅", "🎯"];
     const randomSymbol = randomSymbols[Math.floor(Math.random() * randomSymbols.length)];
 
-    // Добавляем случайный символ в заголовок
-    const teamsMessage = buildTeamsMessage(newTeams, `Составы команд (перемешаны) ${randomSymbol}`);
+    const teamsMessage = buildTeamsMessage(teams, `Составы команд (перемешаны) ${randomSymbol}`);
 
     try {
       await ctx.editMessageText(teamsMessage, {

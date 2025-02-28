@@ -1,46 +1,69 @@
-
 const { Markup } = require("telegraf");
-
 const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessage");
 const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+
 module.exports = (bot, GlobalState) => {
-  // Обработка команды для начала игры
   bot.hears(/^play (\d+) (\d+)$/i, async (ctx) => {
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const isStatsInitialized = GlobalState.getIsStatsInitialized();
     const teamIndex1 = parseInt(ctx.match[1], 10) - 1;
     const teamIndex2 = parseInt(ctx.match[2], 10) - 1;
     const teams = GlobalState.getTeams();
 
     await ctx.deleteMessage().catch(() => {});
 
-    if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
-			const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-			return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
-		}
+    if (ctx.from.id !== ADMIN_ID) {
+      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
     if (!isMatchStarted) {
-			const message = await ctx.reply("⚠️ Матч не начат!");
-			return deleteMessageAfterDelay(ctx, message.message_id);
-		} // Если матч не начался, выходим из функции
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
     if (!teams[teamIndex1] || !teams[teamIndex2]) {
       const message = await ctx.reply("⛔ Команды не найдены!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
-  
-    // Очищаем голы перед каждым новым матчем
+
     const resetGoals = (team) => team.map(player => ({
       ...player,
-      goals: 0, // Сбрасываем голы
+      goals: 0,
     }));
-  
-    const team1 = resetGoals(teams[teamIndex1]);
-    const team2 = resetGoals(teams[teamIndex2]);
-  
+
+    let team1 = teams[teamIndex1];
+    let team2 = teams[teamIndex2];
+
+    if (!isStatsInitialized) {
+
+      const clearPlayerStats = (team) => team.map(player => ({
+        ...player,
+        gamesPlayed: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goals: 0,
+        rating: 0,
+      }));
+      const allTeams = [...GlobalState.getTeams()].map(clearPlayerStats);
+      const allTeamsBase = [...GlobalState.getTeams()];
+
+      // Сохраняем исходные команды с рейтингом из базы
+      GlobalState.setTeamsBase([...allTeamsBase]); // Сохраняем копию всех команд
+      GlobalState.setTeams(allTeams);
+      GlobalState.setIsStatsInitialized(true);
+    }
+
+    console.log('teams - play', teams)
+
+    team1 = resetGoals(team1);
+    team2 = resetGoals(team2);
+
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2);
-  
+
     const sentMessage = await ctx.reply(teamsMessage, {
       parse_mode: "HTML",
       reply_markup: Markup.inlineKeyboard([
@@ -48,11 +71,8 @@ module.exports = (bot, GlobalState) => {
         ...createTeamButtons(team2, teamIndex2),
       ]).reply_markup,
     });
-  
-    // Сохраняем ID сообщения с играющими командами
+
     GlobalState.setPlayingTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
-  
-    // Сохраняем текущие играющие команды
     GlobalState.setPlayingTeams({
       team1,
       team2,
@@ -60,5 +80,4 @@ module.exports = (bot, GlobalState) => {
       teamIndex2,
     });
   });
-  
 };
