@@ -7,15 +7,17 @@ module.exports = (bot, GlobalState) => {
     const players = GlobalState.getPlayers(); // Получаем список игроков
     const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
     const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
-
     await ctx.deleteMessage().catch(() => {}); // Удаляем сообщение пользователя (если возможно)
-
-    if (!isMatchStarted) return; // Если матч не начался, ничего не делаем
 
     if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
       const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
       return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
     }
+
+    if (!isMatchStarted) {
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    } // Если матч не начался, ничего не делаем
 
     const playerNumber = Number(ctx.message.text.trim().slice(2).trim()); // Получаем номер игрока из команды
 
@@ -31,8 +33,8 @@ module.exports = (bot, GlobalState) => {
       player.paid = true; // Помечаем его как оплатившего
       await sendPlayerList(ctx); // Обновляем список игроков
 
-      const message = await ctx.reply(`✅ ${player.name} оплатил участие.`); // Сообщение об оплате
-      deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      // const message = await ctx.reply(`✅ ${player.name} оплатил участие.`);
+      // deleteMessageAfterDelay(ctx, message.message_id);
     }
   });
 
@@ -65,8 +67,8 @@ module.exports = (bot, GlobalState) => {
       player.paid = false; // Снимаем отметку об оплате
       await sendPlayerList(ctx); // Обновляем список игроков
 
-      const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`); // Сообщение о снятии отметки
-      deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      // const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`);
+      // deleteMessageAfterDelay(ctx, message.message_id);
     }
   });
 };

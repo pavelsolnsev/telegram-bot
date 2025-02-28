@@ -3,7 +3,6 @@ const { reshuffleArray } = require("../utils/reshuffleArray");
 const { divideIntoTeams } = require("../utils/divideIntoTeams");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { sendTeamsMessage } = require("../message/sendTeamsMessage");
-const getPlayerStats = require("../database/getPlayerStats");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^team (2|3|4)$/i, async (ctx) => {
@@ -22,7 +21,19 @@ module.exports = (bot, GlobalState) => {
       return ctx.reply("⚠️ Недостаточно игроков для создания команд!");
     }
 
-    players = await getPlayerStats(players); // Получаем статистику игроков
+    // Очищаем статистику каждого игрока и сохраняем только основные поля
+    players = players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      username: player.username,
+      goals: 0,
+      gamesPlayed: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      rating: 0,
+    }));
+
     players = reshuffleArray(players);
     const teams = divideIntoTeams(players, numTeams);
     const teamsMessage = buildTeamsMessage(teams, "Составы команд");

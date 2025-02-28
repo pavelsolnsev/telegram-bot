@@ -6,13 +6,20 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
-    
     await ctx.deleteMessage().catch(() => {});
-
-    if (!isMatchStarted) return;
-
+    const isTeamsDivided = GlobalState.getDivided();
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ Нет прав!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    if (!isMatchStarted) {
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+    
+    if (isTeamsDivided) {
+      const message = await ctx.reply("Игра уже идет!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
@@ -35,6 +42,7 @@ module.exports = (bot, GlobalState) => {
 
     // Сбрасываем флаг отправки уведомления
     GlobalState.setNotificationSent(false);
+    // GlobalState.setStart(true);
 
     const message = await ctx.reply(`✅ Время тренировки изменено на: ${userInput}`);
     deleteMessageAfterDelay(ctx, message.message_id, 2000);

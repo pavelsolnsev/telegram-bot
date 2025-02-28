@@ -9,12 +9,15 @@ module.exports = (bot, GlobalState) => {
 
     await ctx.deleteMessage().catch(() => {});
 
-    if (!isMatchStarted) return;
-    
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
+
+    if (!isMatchStarted) {
+			const message = await ctx.reply("⚠️ Матч не начат!");
+			return deleteMessageAfterDelay(ctx, message.message_id);
+		} // Если матч не начался, выходим из функции
 
     if (listMessageId) {
       await ctx.telegram.deleteMessage(ctx.chat.id, listMessageId).catch(() => {});
@@ -24,13 +27,10 @@ module.exports = (bot, GlobalState) => {
     const allTeams = GlobalState.getTeams();
     const allPlayers = allTeams.flat();
 
-    // Логируем для отладки
-    console.log('allPlayers:', JSON.stringify(allPlayers, null, 2));
+
 
     await savePlayersToDatabase(allPlayers);
     GlobalState.appendToPlayersHistory(allPlayers);
-
-    console.log('Updated players history:', GlobalState.getAllPlayersHistory());
 
     GlobalState.setPlayers([]);
     GlobalState.setQueue([]);
@@ -45,6 +45,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeamsMessageId(null);
     GlobalState.setLastTeamCount(null);
     GlobalState.setLastTeamsMessageId(null);
+    GlobalState.setDivided(false);
 
     const message = await ctx.reply("✅ Сбор успешно завершён!");
     deleteMessageAfterDelay(ctx, message.message_id);

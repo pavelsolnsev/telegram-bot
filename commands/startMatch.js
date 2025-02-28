@@ -1,15 +1,21 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay"); // Импорт функции для удаления сообщений с задержкой
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList"); // Импорт функции для отправки списка игроков
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => { // Обработчик команды "s ДД.ММ.ГГГГ ЧЧ:ММ"
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isTeamsDivided = GlobalState.getDivided();
 
     await ctx.deleteMessage().catch(() => {}); // Удаляем сообщение пользователя (если возможно)
 
     if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
       const message = await ctx.reply("⛔ Нет прав!"); // Отправляем сообщение о запрете
       return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+    }
+
+    if (isTeamsDivided) {
+      const message = await ctx.reply("Игра уже идет!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     // Извлекаем дату и время из текста команды

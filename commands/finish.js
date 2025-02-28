@@ -1,7 +1,20 @@
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears("fin", async (ctx) => {
+  bot.hears(/^fin$/i, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
+		const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+    await ctx.deleteMessage().catch(() => {});
+    if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
+			const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
+			return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+		}
+
+		if (!isMatchStarted) {
+			const message = await ctx.reply("⚠️ Матч не начат!");
+			return deleteMessageAfterDelay(ctx, message.message_id);
+		} // Если матч не начался, выходим из функции
+
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
@@ -76,6 +89,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setTeamStats(teamStats);
     GlobalState.setPlayingTeams(null); // Очистка текущей игры
 
+    console.log('allTeams', allTeams);
     // Формируем новое сообщение с обновленной статистикой
     const updatedMessage = buildTeamsMessage(allTeams, "Составы команд после матча", teamStats);
 

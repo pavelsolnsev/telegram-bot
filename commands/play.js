@@ -3,14 +3,28 @@ const { Markup } = require("telegraf");
 
 const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessage");
 const { createTeamButtons } = require("../buttons/createTeamButtons");
-
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 module.exports = (bot, GlobalState) => {
   // Обработка команды для начала игры
-  bot.hears(/^play (\d+) (\d+)$/, async (ctx) => {
+  bot.hears(/^play (\d+) (\d+)$/i, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
+    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
     const teamIndex1 = parseInt(ctx.match[1], 10) - 1;
     const teamIndex2 = parseInt(ctx.match[2], 10) - 1;
     const teams = GlobalState.getTeams();
-  
+
+    await ctx.deleteMessage().catch(() => {});
+
+    if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
+			const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
+			return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+		}
+
+    if (!isMatchStarted) {
+			const message = await ctx.reply("⚠️ Матч не начат!");
+			return deleteMessageAfterDelay(ctx, message.message_id);
+		} // Если матч не начался, выходим из функции
+
     if (!teams[teamIndex1] || !teams[teamIndex2]) {
       const message = await ctx.reply("⛔ Команды не найдены!");
       return deleteMessageAfterDelay(ctx, message.message_id);

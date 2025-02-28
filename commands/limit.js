@@ -9,13 +9,23 @@ module.exports = (bot, GlobalState) => {
 		let players = GlobalState.getPlayers(); // Получаем список текущих игроков
 		let queue = GlobalState.getQueue(); // Получаем очередь игроков
 		let MAX_PLAYERS = GlobalState.getMaxPlayers();
+		const isTeamsDivided = GlobalState.getDivided();
 		await ctx.deleteMessage().catch(() => {}); // Удаляем сообщение пользователя (если возможно)
-		if (!isMatchStarted) return; // Если матч не начался, выходим из функции
-		
-		if (ctx.from.id !== ADMIN_ID) { // Проверяем, является ли отправитель администратором
-			const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-			return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+
+		if (ctx.from.id !== ADMIN_ID) {
+			const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+			return deleteMessageAfterDelay(ctx, message.message_id);
 		}
+
+		if (!isMatchStarted) {
+			const message = await ctx.reply("⚠️ Матч не начат!");
+			return deleteMessageAfterDelay(ctx, message.message_id);
+		}
+
+		if (isTeamsDivided) {
+      const message = await ctx.reply("Лимит закрыт");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
 		const newLimit = Number(ctx.message.text.trim().slice(2).trim()); // Получаем новое значение лимита из сообщения
 		if (newLimit <= 0) { // Проверяем, что лимит положительный

@@ -2,16 +2,13 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList"); // Функция отправки списка игроков
 
 module.exports = (bot, GlobalState) => {
-	bot.hears(/^r \d+$/i, async (ctx) => { 
-		const isMatchStarted = GlobalState.getStart(); // Проверяем, начался ли матч
+  bot.hears(/^r \d+$/i, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
+    const isMatchStarted = GlobalState.getStart(); // Проверяем, начался ли матч
     const players = GlobalState.getPlayers(); // Получаем список игроков
     const queue = GlobalState.getQueue(); // Получаем очередь игроков
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    
-		await ctx.deleteMessage().catch(() => {}); // Удаляем исходное сообщение
-
-    // Если матч не начался, ничего не делаем
-    if (!isMatchStarted) return;
+    const isTeamsDivided = GlobalState.getDivided();
+    await ctx.deleteMessage().catch(() => {}); // Удаляем исходное сообщение
 
     // Проверяем, является ли отправитель администратором
     if (ctx.from.id !== ADMIN_ID) {
@@ -19,9 +16,20 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
     }
 
+    if (!isMatchStarted) {
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    } // Если матч не начался, выходим из функции
+
+
+    if (isTeamsDivided) {
+      const message = await ctx.reply("Игра уже идет!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
     // Получаем номер игрока из текста команды
     const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
-    
+
     // Проверяем, что номер игрока корректен
     if (playerNumber <= 0 || playerNumber > players.length) {
       const message = await ctx.reply("⚠️ Неверный номер игрока!");
