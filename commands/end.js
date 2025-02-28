@@ -46,6 +46,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setLastTeamCount(null);
     GlobalState.setLastTeamsMessageId(null);
     GlobalState.setDivided(false);
+    GlobalState.setIsStatsInitialized(false);
 
     const message = await ctx.reply("✅ Сбор успешно завершён!");
     deleteMessageAfterDelay(ctx, message.message_id);

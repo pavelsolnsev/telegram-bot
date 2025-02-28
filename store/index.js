@@ -5,8 +5,10 @@ const GlobalState = (() => {
 
   let isMatchStarted = false;
   let isTeamsDivided = false;
+  let isStatsInitialized = false;
   let MAX_PLAYERS = 14;
   let players = [];
+  let teamsBase = [];
   let queue = [];
   let teams = [];
   let collectionDate = null;
@@ -27,6 +29,10 @@ const GlobalState = (() => {
     setStart: (status) => isMatchStarted = status,
     getDivided: () => isTeamsDivided,
     setDivided: (status) => isTeamsDivided = status,
+    getIsStatsInitialized: () => isStatsInitialized,
+    setIsStatsInitialized: (status) => isStatsInitialized = status,
+    getTeamsBase: () => teamsBase,
+    setTeamsBase: (teams) => teamsBase = teams,
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => MAX_PLAYERS = number,
     getPlayers: () => players,

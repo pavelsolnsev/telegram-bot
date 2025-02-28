@@ -1,5 +1,4 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { reshuffleArray } = require("../utils/reshuffleArray");
 const { divideIntoTeams } = require("../utils/divideIntoTeams");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { sendTeamsMessage } = require("../message/sendTeamsMessage");
@@ -17,29 +16,21 @@ module.exports = (bot, GlobalState) => {
     const numTeams = parseInt(ctx.match[1], 10);
     let players = [...GlobalState.getPlayers()];
 
-    if (players.length < numTeams) {
-      return ctx.reply("⚠️ Недостаточно игроков для создания команд!");
+    if (!players || players.length === 0) {
+      return ctx.reply("⚠️ Нет игроков для создания команд!");
     }
 
-    // Очищаем статистику каждого игрока и сохраняем только основные поля
-    players = players.map((player) => ({
-      id: player.id,
-      name: player.name,
-      username: player.username,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    }));
+    if (players.length < numTeams) {
+      return ctx.reply(`⚠️ Недостаточно игроков для ${numTeams} команд! Требуется минимум ${numTeams} игрока, а сейчас: ${players.length}.`);
+    }
 
-    players = reshuffleArray(players);
+    // Распределяем игроков по рейтингу
     const teams = divideIntoTeams(players, numTeams);
-    const teamsMessage = buildTeamsMessage(teams, "Составы команд");
+    const teamsMessage = buildTeamsMessage(teams, "Составы команд (по рейтингу)");
 
     GlobalState.setTeams(teams);
     GlobalState.setLastTeamCount(numTeams);
+    GlobalState.setDivided(true);
     await sendTeamsMessage(ctx, teamsMessage);
   });
 };
