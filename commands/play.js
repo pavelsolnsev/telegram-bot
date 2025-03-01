@@ -3,6 +3,7 @@ const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessag
 const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
+
 module.exports = (bot, GlobalState) => {
   bot.hears(/^play (\d+) (\d+)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
@@ -34,11 +35,10 @@ module.exports = (bot, GlobalState) => {
       goals: 0,
     }));
 
-    let team1 = teams[teamIndex1];
-    let team2 = teams[teamIndex2];
+    let team1 = resetGoals(teams[teamIndex1]);
+    let team2 = resetGoals(teams[teamIndex2]);
 
     if (!isStatsInitialized) {
-
       const clearPlayerStats = (team) => team.map(player => ({
         ...player,
         gamesPlayed: 0,
@@ -51,18 +51,12 @@ module.exports = (bot, GlobalState) => {
       const allTeams = [...GlobalState.getTeams()].map(clearPlayerStats);
       const allTeamsBase = [...GlobalState.getTeams()];
 
-      // Сохраняем исходные команды с рейтингом из базы
-      GlobalState.setTeamsBase([...allTeamsBase]); // Сохраняем копию всех команд
+      GlobalState.setTeamsBase([...allTeamsBase]);
       GlobalState.setTeams(allTeams);
       GlobalState.setIsStatsInitialized(true);
     }
 
-    console.log('teams - play', teams)
-
-    team1 = resetGoals(team1);
-    team2 = resetGoals(team2);
-
-    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2);
+    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing');
 
     const sentMessage = await ctx.reply(teamsMessage, {
       parse_mode: "HTML",

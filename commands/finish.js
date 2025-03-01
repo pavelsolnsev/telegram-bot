@@ -108,8 +108,23 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setTeamStats(teamStats);
     GlobalState.setPlayingTeams(null);
 
+    // Обновляем сообщение о текущем матче с финальным статусом и счетом
+    const finishedMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'finished');
+    const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
+    if (playingTeamsMessage) {
+      await ctx.telegram.editMessageText(
+        playingTeamsMessage.chatId,
+        playingTeamsMessage.messageId,
+        null,
+        finishedMessage,
+        { parse_mode: "HTML" }
+      );
+    }
+
     await updateTeamsMessage(ctx, GlobalState, GlobalState.getTeamsBase(), teamStats);
-    await ctx.reply("✅ Матч завершен, статистика обновлена!");
+
+    const notificationMessage = await ctx.reply("✅ Матч завершен, статистика обновлена!");
+    deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
 
   bot.hears(/^next$/i, async (ctx) => {
@@ -125,6 +140,7 @@ module.exports = (bot, GlobalState) => {
     const teamStats = GlobalState.getTeamStats();
     const result = getMatchResult(team1, team2);
 
+    // Обновляем статистику предыдущего матча
     updateTeamStats(teamStats, `team${teamIndex1 + 1}`, result === "team1", result === "draw");
     updateTeamStats(teamStats, `team${teamIndex2 + 1}`, result === "team2", result === "draw");
 
@@ -133,6 +149,19 @@ module.exports = (bot, GlobalState) => {
 
     GlobalState.setTeams(allTeams);
     GlobalState.setTeamStats(teamStats);
+
+    // Обновляем сообщение предыдущего матча с финальным статусом
+    const finishedMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'finished');
+    const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
+    if (playingTeamsMessage) {
+      await ctx.telegram.editMessageText(
+        playingTeamsMessage.chatId,
+        playingTeamsMessage.messageId,
+        null,
+        finishedMessage,
+        { parse_mode: "HTML" }
+      );
+    }
 
     await updateTeamsMessage(ctx, GlobalState, GlobalState.getTeamsBase(), teamStats);
 
@@ -145,6 +174,7 @@ module.exports = (bot, GlobalState) => {
     const resetGoals = (team) => team.map(player => ({ ...player, goals: 0 }));
     let nextTeamIndex1, nextTeamIndex2;
 
+    // Логика выбора следующих команд (оставляем как было)
     if (totalTeams === 3) {
       if (result === "team1") {
         nextTeamIndex1 = teamStats[`team${teamIndex1 + 1}`].consecutiveWins >= 3 ? teamIndex2 : teamIndex1;
@@ -180,7 +210,8 @@ module.exports = (bot, GlobalState) => {
     const team1Next = resetGoals(allTeams[nextTeamIndex1]);
     const team2Next = resetGoals(allTeams[nextTeamIndex2]);
 
-    const teamsMessage = buildPlayingTeamsMessage(team1Next, team2Next, nextTeamIndex1, nextTeamIndex2);
+    // Создаем новое сообщение для нового матча
+    const teamsMessage = buildPlayingTeamsMessage(team1Next, team2Next, nextTeamIndex1, nextTeamIndex2, 'playing');
     const sentMessage = await ctx.reply(teamsMessage, {
       parse_mode: "HTML",
       reply_markup: Markup.inlineKeyboard([
@@ -190,8 +221,14 @@ module.exports = (bot, GlobalState) => {
     });
 
     GlobalState.setPlayingTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
-    GlobalState.setPlayingTeams({ team1: team1Next, team2: team2Next, teamIndex1: nextTeamIndex1, teamIndex2: nextTeamIndex2 });
+    GlobalState.setPlayingTeams({ 
+      team1: team1Next, 
+      team2: team2Next, 
+      teamIndex1: nextTeamIndex1, 
+      teamIndex2: nextTeamIndex2 
+    });
 
-    await ctx.reply(`🏀 Автоматически начат новый матч: Команда ${nextTeamIndex1 + 1} vs Команда ${nextTeamIndex2 + 1}`);
+    const notificationMessage = await ctx.reply(`🏀 Автоматически начат новый матч: Команда ${nextTeamIndex1 + 1} vs Команда ${nextTeamIndex2 + 1}`);
+    deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
 };
