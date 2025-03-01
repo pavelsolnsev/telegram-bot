@@ -8,7 +8,6 @@ const divideIntoTeams = (players, numTeams) => {
   const sortedPlayers = [...players].sort((a, b) => parseFloat(b.rating || 0) - parseFloat(a.rating || 0));
   const teams = Array.from({ length: numTeams }, () => []);
 
-  console.log("Отсортированные игроки:", sortedPlayers);
 
   // Сначала распределяем самых сильных игроков по командам
   for (let i = 0; i < Math.min(numTeams, sortedPlayers.length); i++) {
@@ -31,8 +30,6 @@ const divideIntoTeams = (players, numTeams) => {
       teams[0].push(sortedPlayers[i]); // Защита
     }
   }
-
-  console.log("Итоговые команды:", teams);
   return teams;
 };
 
