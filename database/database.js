@@ -2,12 +2,15 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,       // Например, "localhost"
-  user: process.env.DB_USER,       // Ваш пользователь MySQL
-  password: process.env.DB_PASSWORD, // Пароль от базы данных
-  database: process.env.DB_NAME,   // Название вашей базы данных
-  charset: "utf8mb4",              // Указываем кодировку
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  charset: "utf8mb4",
+  connectionLimit: 20,
+  waitForConnections: true,
+  queueLimit: 0,
+  connectTimeout: 10000, // Оставляем только этот тайм-аут
 });
 
 module.exports = pool;
-
