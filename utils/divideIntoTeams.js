@@ -19,7 +19,6 @@ const divideIntoTeams = (players, numTeams) => {
     const teamSums = teams.map(team => 
       team.reduce((sum, p) => sum + parseFloat(p.rating || 0), 0)
     );
-    console.log("Текущие суммы команд:", teamSums);
     const minSum = Math.min(...teamSums);
     const minSumTeamIndex = teamSums.indexOf(minSum);
 
