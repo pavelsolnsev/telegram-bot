@@ -91,7 +91,10 @@ module.exports = (bot, GlobalState) => {
     if (!await checkMatchStarted(ctx, GlobalState.getStart())) return;
 
     const playingTeams = GlobalState.getPlayingTeams();
-    if (!playingTeams) return ctx.reply("⛔ Нет активного матча!");
+    if (!playingTeams) {
+      const message = await ctx.reply("⛔ Нет активного матча!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
     let allTeams = GlobalState.getTeams();
@@ -132,7 +135,11 @@ module.exports = (bot, GlobalState) => {
     if (!await checkMatchStarted(ctx, GlobalState.getStart())) return;
 
     const playingTeams = GlobalState.getPlayingTeams();
-    if (!playingTeams) return ctx.reply("⛔ Нет активного матча для продолжения!");
+
+    if (!playingTeams) {
+      const message = await ctx.reply("⛔ Нет активного матча для продолжения!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
     let allTeams = GlobalState.getTeams();

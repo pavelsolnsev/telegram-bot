@@ -1,26 +1,40 @@
 const buildTeamsMessage = (teams, title = "Составы команд", teamStats = {}) => {
-  // Определяем цвета для команд (до 4 команд)
-  const teamColors = [
-    "🔴", // Красный
-    "🔵", // Синий
-    "🟢", // Зелёный
-    "🟡"  // Жёлтый
-  ];
+  const teamColors = ["🔴", "🔵", "🟢", "🟡"];
+  let message = `🏆 <b>${title}:</b>\n\n<pre>`;
 
-  let message = `🏆 <b>${title}:</b>\n\n`;
+  // Заголовок таблицы
+  message += "Команда        | W  | D  | L  | G  | Игроки\n";
+  message += "--------------+----+----+----+----+-------\n";
+
+  // Заполнение таблицы
   teams.forEach((team, index) => {
     const teamKey = `team${index + 1}`;
     const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0 };
-    // Используем цветной эмодзи для каждой команды или дефолтный ⚽, если команд больше 4
     const teamColor = teamColors[index] || "⚽";
-    message += `${teamColor} <b>Команда ${index + 1}:</b> (W: ${stats.wins}, D: ${stats.draws}, L: ${stats.losses}, G: ${stats.games})\n`;
-    team.forEach((player, i) => {
-      const goalsText = player.goals && player.goals > 0 ? ` - Голы: ${player.goals}` : "";
-      const ratingText = ` - ⭐${player.rating || 0}`; // Добавляем рейтинг
-      message += `${i + 1}. ${player.name} ${player.username ? `(${player.username})` : ""}${goalsText}${ratingText}\n`;
-    });
-    message += "\n";
+    const teamName = `${teamColor} Команда ${index + 1}`.padEnd(14, " ");
+
+    const wins = stats.wins.toString().padStart(2, " ");
+    const draws = stats.draws.toString().padStart(2, " ");
+    const losses = stats.losses.toString().padStart(2, " ");
+    const games = stats.games.toString().padStart(2, " ");
+    const playerCount = team.length.toString().padStart(5, " ");
+
+    message += `${teamName}| ${wins} | ${draws} | ${losses} | ${games} | ${playerCount}\n`;
   });
+
+  message += "</pre>\n";
+
+  // Добавляем составы команд после таблицы
+  message += "<b>Составы:</b>\n";
+  teams.forEach((team, index) => {
+    const teamColor = teamColors[index] || "⚽";
+    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
+    team.forEach((player, i) => {
+      const goalsText = player.goals && player.goals > 0 ? `, G:${player.goals}` : "";
+      message += `${i + 1}. ${player.name} (⭐${player.rating || 0}${goalsText})\n`;
+    });
+  });
+
   return message;
 };
 

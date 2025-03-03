@@ -28,7 +28,8 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      return ctx.reply("⛔ Нет активного матча!");
+      const message = await ctx.reply("⛔ Нет активного матча!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     let team;
@@ -78,7 +79,8 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      return ctx.reply("⛔ Нет активного матча!");
+      const message = await ctx.reply("⛔ Нет активного матча!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     let team;
@@ -131,7 +133,8 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      return ctx.answerCbQuery("⛔ Нет активного матча!");
+      const message = await ctx.reply("⛔ Нет активного матча!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     let team;
