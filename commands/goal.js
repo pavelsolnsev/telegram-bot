@@ -1,48 +1,58 @@
-const {
-  updatePlayingTeamsMessage,
-} = require("../message/updatePlayingTeamsMessage");
+const { updatePlayingTeamsMessage } = require("../message/updatePlayingTeamsMessage");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const db = require("../database/database");
+const { safeTelegramCall } = require("../utils/telegramUtils");
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
-  bot.hears(/^g (\d+) (\d+)$/, async (ctx) => {
+  bot.hears(/^g (\d+) (\d+)$/i, async (ctx) => {
     const args = ctx.message.text.split(" ");
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
+
     if (ctx.from.id !== ADMIN_ID) {
-      // Проверяем, является ли отправитель администратором
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-      return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ У вас нет прав для этой команды.",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
-    } // Если матч не начался, выходим из функции
+    }
 
-    const teamIndex = parseInt(args[1], 10) - 1; // Уменьшаем на 1, так как команды начинаются с 1
-    const playerIndex = parseInt(args[2], 10) - 1; // Уменьшаем на 1, так как индексы с 0
-
+    const teamIndex = parseInt(args[1], 10) - 1;
+    const playerIndex = parseInt(args[2], 10) - 1;
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await ctx.reply("⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    let team;
-    if (teamIndex === playingTeams.teamIndex1) {
-      team = playingTeams.team1;
-    } else if (teamIndex === playingTeams.teamIndex2) {
-      team = playingTeams.team2;
-    } else {
-      return ctx.reply("⛔ Команда не найдена!");
+    let team =
+      teamIndex === playingTeams.teamIndex1
+        ? playingTeams.team1
+        : teamIndex === playingTeams.teamIndex2
+        ? playingTeams.team2
+        : null;
+
+    if (!team) {
+      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Команда не найдена!"]);
+      return;
     }
 
     if (!team[playerIndex]) {
-      return ctx.reply("⛔ Игрок не найден!");
+      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Игрок не найден!"]);
+      return;
     }
 
     team[playerIndex].goals = (team[playerIndex].goals || 0) + 1;
@@ -50,99 +60,125 @@ module.exports = (bot, GlobalState) => {
 
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await ctx.reply(
-      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`
-    );
+    const message = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`,
+    ]);
     return deleteMessageAfterDelay(ctx, message.message_id);
   });
 
   // Обработчик команды "ug <team> <player>" для удаления гола
-  bot.hears(/^ug (\d+) (\d+)$/, async (ctx) => {
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+  bot.hears(/^ug (\d+) (\d+)$/i, async (ctx) => {
+    const args = ctx.message.text.split(" ");
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
 
     if (ctx.from.id !== ADMIN_ID) {
-      // Проверяем, является ли отправитель администратором
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-      return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ У вас нет прав для этой команды.",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
-    } // Если матч не начался, выходим из функции
+    }
 
-    const args = ctx.message.text.split(" ");
     const teamIndex = parseInt(args[1], 10) - 1;
     const playerIndex = parseInt(args[2], 10) - 1;
-
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await ctx.reply("⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    let team;
-    if (teamIndex === playingTeams.teamIndex1) {
-      team = playingTeams.team1;
-    } else if (teamIndex === playingTeams.teamIndex2) {
-      team = playingTeams.team2;
-    } else {
-      return ctx.reply("⛔ Команда не найдена!");
+    let team =
+      teamIndex === playingTeams.teamIndex1
+        ? playingTeams.team1
+        : teamIndex === playingTeams.teamIndex2
+        ? playingTeams.team2
+        : null;
+
+    if (!team) {
+      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Команда не найдена!"]);
+      return;
     }
 
     if (!team[playerIndex]) {
-      return ctx.reply("⛔ Игрок не найден!");
+      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Игрок не найден!"]);
+      return;
     }
 
     if (team[playerIndex].goals && team[playerIndex].goals > 0) {
       team[playerIndex].goals -= 1;
     } else {
-      return ctx.reply(`⚠️ У ${team[playerIndex].name} уже 0 голов.`);
+      await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        `⚠️ У ${team[playerIndex].name} уже 0 голов.`,
+      ]);
+      return;
     }
 
     GlobalState.setPlayingTeams(playingTeams);
-
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await ctx.reply(
-      `⚽ Гол удалён у ${team[playerIndex].name}. Теперь у него ${team[playerIndex].goals} гол(ов).`
-    );
+    const message = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      `⚽ Гол удалён у ${team[playerIndex].name}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
+    ]);
     return deleteMessageAfterDelay(ctx, message.message_id);
   });
 
   // Обработчик нажатия кнопки "goal_<team>_<player>" для добавления гола
   bot.action(/goal_(\d+)_(\d+)/, async (ctx) => {
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
 
     if (ctx.from.id !== ADMIN_ID) {
-      // Проверяем, является ли отправитель администратором
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-      return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ У вас нет прав для этой команды.",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
-    } // Если матч не начался, выходим из функции
+    }
 
     const teamIndex = parseInt(ctx.match[1], 10);
     const playerIndex = parseInt(ctx.match[2], 10);
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await ctx.reply("⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    let team;
-    if (teamIndex === playingTeams.teamIndex1) {
-      team = playingTeams.team1;
-    } else if (teamIndex === playingTeams.teamIndex2) {
-      team = playingTeams.team2;
-    } else {
+    let team =
+      teamIndex === playingTeams.teamIndex1
+        ? playingTeams.team1
+        : teamIndex === playingTeams.teamIndex2
+        ? playingTeams.team2
+        : null;
+
+    if (!team) {
       return ctx.answerCbQuery("⛔ Команда не найдена!");
     }
 
@@ -150,14 +186,15 @@ module.exports = (bot, GlobalState) => {
       return ctx.answerCbQuery("⛔ Игрок не найден!");
     }
 
-    team[playerIndex].goals = (team[playerIndex].goals || 0) + 1; // Увеличиваем голы
+    team[playerIndex].goals = (team[playerIndex].goals || 0) + 1;
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await ctx.reply(
-      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`
-    );
+    const message = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`,
+    ]);
     return deleteMessageAfterDelay(ctx, message.message_id);
   });
 };

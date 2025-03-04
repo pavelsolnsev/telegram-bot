@@ -1,6 +1,7 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList");
 const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { safeTelegramCall } = require("../utils/telegramUtils");
 const getPlayerStats = require("../database/getPlayerStats");
 
 module.exports = (bot, GlobalState) => {
@@ -30,21 +31,28 @@ module.exports = (bot, GlobalState) => {
     const [updatedUser] = await getPlayerStats([user]);
 
     if (ctx.message.text === "+") {
-      await ctx.deleteMessage();
+      await ctx.deleteMessage().catch(() => {});
       if (!isMatchStarted) {
-        const message = await ctx.reply("⚠️ Матч не начат!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Матч не начат!",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       if (isTeamsDivided) {
-        const message = await ctx.reply(
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
           "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-          { parse_mode: "HTML" }
-        );
+          { parse_mode: "HTML" },
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
       if (isInList) {
-        const message = await ctx.reply("⚠️ Вы уже записаны!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Вы уже записаны!",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       if (players.length < MAX_PLAYERS) {
@@ -53,17 +61,26 @@ module.exports = (bot, GlobalState) => {
         queue.push(updatedUser);
       }
       await sendPlayerList(ctx);
-      const message = await ctx.reply(`✅ ${updatedUser.name} добавлен!`);
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        `✅ ${updatedUser.name} добавлен!`,
+      ]);
       deleteMessageAfterDelay(ctx, message.message_id);
 
     } else if (ctx.message.text === "-") {
-      await ctx.deleteMessage();
+      await ctx.deleteMessage().catch(() => {});
       if (!isMatchStarted) {
-        const message = await ctx.reply("⚠️ Матч не начат!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Матч не начат!",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       if (isTeamsDivided) {
-        const message = await ctx.reply("⚽ <b>Матч уже стартовал!</b> Запись закрыта, но ты можешь следить за игрой и готовиться к следующей. До встречи на поле! 🥅");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚽ <b>Матч уже стартовал!</b> Запись закрыта, но ты можешь следить за игрой и готовиться к следующей. До встречи на поле! 🥅",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       const playerIndex = players.findIndex((p) => p.id === updatedUser.id);
@@ -75,21 +92,33 @@ module.exports = (bot, GlobalState) => {
           sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
         }
         await sendPlayerList(ctx);
-        const message = await ctx.reply(`✅ ${updatedUser.name} удален!`);
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          `✅ ${updatedUser.name} удален!`,
+        ]);
         deleteMessageAfterDelay(ctx, message.message_id);
       } else {
-        const message = await ctx.reply("⚠️ Вы не в списке!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Вы не в списке!",
+        ]);
         deleteMessageAfterDelay(ctx, message.message_id);
       }
 
     } else if (ctx.message.text === "+1") {
-      await ctx.deleteMessage();
+      await ctx.deleteMessage().catch(() => {});
       if (ctx.from.id !== ADMIN_ID) {
-        const message = await ctx.reply("⛔ У вас нет прав для этой команды!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⛔ У вас нет прав для этой команды!",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
       if (!isMatchStarted) {
-        const message = await ctx.reply("⚠️ Матч не начат!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Матч не начат!",
+        ]);
         return deleteMessageAfterDelay(ctx, message.message_id);
       }
 
@@ -124,11 +153,17 @@ module.exports = (bot, GlobalState) => {
 
       if (addedPlayers.length > 0) {
         const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join("\n")}`;
-        const message = await ctx.reply(messageText);
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          messageText,
+        ]);
         deleteMessageAfterDelay(ctx, message.message_id);
         await sendPlayerList(ctx);
       } else {
-        const message = await ctx.reply("⚠️ Все тестовые игроки уже добавлены или нет места!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Все тестовые игроки уже добавлены или нет места!",
+        ]);
         deleteMessageAfterDelay(ctx, message.message_id);
       }
     }
@@ -141,7 +176,10 @@ module.exports = (bot, GlobalState) => {
     const isTeamsDivided = GlobalState.getDivided();
 
     if (isTeamsDivided) {
-      const message = await ctx.reply("⚽ <b>Матч уже стартовал!</b> Запись закрыта, но ты можешь следить за игрой и готовиться к следующей. До встречи на поле! 🥅");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚽ <b>Матч уже стартовал!</b> Запись закрыта, но ты можешь следить за игрой и готовиться к следующей. До встречи на поле! 🥅",
+      ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
