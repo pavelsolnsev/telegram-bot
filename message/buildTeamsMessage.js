@@ -1,4 +1,7 @@
 const buildTeamsMessage = (teams, title = "Составы команд", teamStats = {}) => {
+  console.log('Inside buildTeamsMessage:');
+  console.log('teams:', JSON.stringify(teams, null, 2));
+  console.log('teamStats:', JSON.stringify(teamStats, null, 2));
   const teamColors = ["🔴", "🔵", "🟢", "🟡"];
   
   // Создаем массив команд с их статистикой и индексами для сортировки
