@@ -3,7 +3,6 @@ const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessag
 const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
-
 module.exports = (bot, GlobalState) => {
   bot.hears(/^play (\d+) (\d+)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
@@ -58,11 +57,16 @@ module.exports = (bot, GlobalState) => {
 
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing');
 
+    // Получаем кнопки для каждой команды
+    const team1Buttons = createTeamButtons(team1, teamIndex1);
+    const team2Buttons = createTeamButtons(team2, teamIndex2);
+
     const sentMessage = await ctx.reply(teamsMessage, {
       parse_mode: "HTML",
       reply_markup: Markup.inlineKeyboard([
-        ...createTeamButtons(team1, teamIndex1),
-        ...createTeamButtons(team2, teamIndex2),
+        ...team1Buttons,           // Кнопки первой команды
+        [Markup.button.callback("—", "noop")], // Пустой ряд-разделитель
+        ...team2Buttons            // Кнопки второй команды
       ]).reply_markup,
     });
 

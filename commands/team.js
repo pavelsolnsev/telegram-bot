@@ -26,7 +26,8 @@ module.exports = (bot, GlobalState) => {
 
     // Распределяем игроков по рейтингу
     const teams = divideIntoTeams(players, numTeams);
-    const teamsMessage = buildTeamsMessage(teams, "Составы команд (по рейтингу)");
+    const teamStats = GlobalState.getTeamStats();
+    const teamsMessage = buildTeamsMessage(teams, "Составы команд (по рейтингу)", teamStats, teams);
 
     GlobalState.setTeams(teams);
     GlobalState.setLastTeamCount(numTeams);

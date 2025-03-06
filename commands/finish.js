@@ -78,7 +78,7 @@ const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose) => {
 };
 
 const updateTeamsMessage = async (ctx, GlobalState, allTeamsBase, teamStats) => {
-  const updatedMessage = buildTeamsMessage(allTeamsBase, "Составы команд после матча", teamStats);
+  const updatedMessage = buildTeamsMessage(allTeamsBase, "Составы команд после матча", teamStats, GlobalState.getTeams());
   const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
   if (lastTeamsMessage) {
     await safeTelegramCall(ctx, "editMessageText", [
@@ -143,11 +143,6 @@ module.exports = (bot, GlobalState) => {
       ]);
     }
 
-    // Добавляем логирование перед вызовом updateTeamsMessage
-    console.log('Before updateTeamsMessage in fin:');
-    console.log('allTeams:', JSON.stringify(allTeams, null, 2));
-    console.log('teamStats:', JSON.stringify(teamStats, null, 2));
-
     await updateTeamsMessage(ctx, GlobalState, GlobalState.getTeamsBase(), teamStats);
 
     const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
@@ -200,10 +195,6 @@ module.exports = (bot, GlobalState) => {
         { parse_mode: "HTML" },
       ]);
     }
-
-    console.log('Before updateTeamsMessage in next:');
-    console.log('allTeams:', JSON.stringify(allTeams, null, 2));
-    console.log('teamStats:', JSON.stringify(teamStats, null, 2));
 
     await updateTeamsMessage(ctx, GlobalState, GlobalState.getTeamsBase(), teamStats);
 
