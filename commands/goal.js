@@ -4,8 +4,8 @@ const { safeTelegramCall } = require("../utils/telegramUtils");
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
-  bot.hears(/^g (\d+) (\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.split(" ");
+  bot.hears(/^g(\d+)(\d+)$/i, async (ctx) => {
+    const args = ctx.message.text.match(/^g(\d+)(\d+)$/i);
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
@@ -62,14 +62,14 @@ module.exports = (bot, GlobalState) => {
 
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
-      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`,
+      `⚽ Гол забил ${team[playerIndex].name}!`,
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id);
   });
 
   // Обработчик команды "ug <team> <player>" для удаления гола
-  bot.hears(/^ug (\d+) (\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.split(" ");
+  bot.hears(/^ug(\d+)(\d+)$/i, async (ctx) => {
+    const args = ctx.message.text.match(/^ug(\d+)(\d+)$/i);
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
 
@@ -193,7 +193,7 @@ module.exports = (bot, GlobalState) => {
 
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
-      `⚽ Гол добавлен для ${team[playerIndex].name}! Теперь у него ${team[playerIndex].goals} гол(ов) в этом матче.`,
+      `⚽ Гол забил ${team[playerIndex].name}!`,
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id);
   });

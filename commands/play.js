@@ -4,7 +4,7 @@ const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^play (\d+) (\d+)$/i, async (ctx) => {
+  bot.hears(/^pl(\d+)(\d+)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const isStatsInitialized = GlobalState.getIsStatsInitialized();

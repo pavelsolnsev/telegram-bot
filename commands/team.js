@@ -4,7 +4,7 @@ const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { sendTeamsMessage } = require("../message/sendTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^team (2|3|4)$/i, async (ctx) => {
+  bot.hears(/^tm(2|3|4)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     await ctx.deleteMessage().catch(() => {});
 

@@ -1,26 +1,25 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay"); // Функция удаления сообщений с задержкой
-const { sendPlayerList } = require("../utils/sendPlayerList"); // Функция отправки списка игроков
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+const { sendPlayerList } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^r \d+$/i, async (ctx) => {
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начался ли матч
-    const players = GlobalState.getPlayers(); // Получаем список игроков
-    const queue = GlobalState.getQueue(); // Получаем очередь игроков
+  bot.hears(/^r(\d+)$/i, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const players = GlobalState.getPlayers();
+    const queue = GlobalState.getQueue();
     const isTeamsDivided = GlobalState.getDivided();
-    await ctx.deleteMessage().catch(() => {}); // Удаляем исходное сообщение
+    await ctx.deleteMessage().catch(() => {});
 
     // Проверяем, является ли отправитель администратором
     if (ctx.from.id !== ADMIN_ID) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды."); // Отправляем сообщение о запрете
-      return deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
       return deleteMessageAfterDelay(ctx, message.message_id);
-    } // Если матч не начался, выходим из функции
-
+    }
 
     if (isTeamsDivided) {
       const message = await ctx.reply("Игра уже идет!");
@@ -28,7 +27,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     // Получаем номер игрока из текста команды
-    const playerNumber = Number(ctx.message.text.trim().slice(2).trim());
+    const playerNumber = Number(ctx.message.text.match(/^r(\d+)$/i)[1]);
 
     // Проверяем, что номер игрока корректен
     if (playerNumber <= 0 || playerNumber > players.length) {
@@ -53,7 +52,7 @@ module.exports = (bot, GlobalState) => {
 
     // Отправляем уведомление о том, что игрок был удалён
     const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);
-    deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
+    deleteMessageAfterDelay(ctx, message.message_id);
 
     // Обновляем список игроков
     await sendPlayerList(ctx);
