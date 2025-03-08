@@ -99,7 +99,7 @@ const updateTeamsMessage = async (ctx, GlobalState, allTeamsBase, teamStats) => 
 };
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^fin$/i, async (ctx) => {
+  bot.hears(/^fn$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!await checkAdminRights(ctx, ADMIN_ID)) return;
     if (!await checkMatchStarted(ctx, GlobalState.getStart())) return;
@@ -152,7 +152,7 @@ module.exports = (bot, GlobalState) => {
     deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
 
-  bot.hears(/^next$/i, async (ctx) => {
+  bot.hears(/^nt$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!await checkAdminRights(ctx, ADMIN_ID)) return;
     if (!await checkMatchStarted(ctx, GlobalState.getStart())) return;
@@ -201,10 +201,11 @@ module.exports = (bot, GlobalState) => {
     const totalTeams = allTeams.length;
     if (totalTeams <= 2) {
       GlobalState.setPlayingTeams(null);
-      return safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ Недостаточно команд для следующего матча!",
       ]);
+      return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
     const resetGoals = (team) => team.map(player => ({ ...player, goals: 0 }));

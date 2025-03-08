@@ -36,15 +36,25 @@ const sendPlayerList = async (ctx) => {
   if (players.length > 0) {
     formattedList += `\n⚽ <b>В игре:</b>\n`;
     players.forEach((player, index) => {
-      formattedList += `\n${index + 1}. ${player.name} ${player.username ? `(${player.username})` : ""} ${player.paid ? " ✅" : ""} - ⭐${player.rating || 0}`;
+      const paidMark = player.paid ? " ✅" : "";
+      if (player.username) {
+        formattedList += `\n${index + 1}. ${player.username} ⭐${player.rating || 0} ${paidMark}`;
+      } else {
+        formattedList += `\n${index + 1}. ${player.name.split(" ")[0]} ⭐${player.rating || 0} ${paidMark}`;
+      }
     });
     formattedList += `\n\n------------------------------\n`;
   }
-
+  
   if (queue.length > 0) {
     formattedList += `\n📢 <b>Очередь игроков:</b>\n`;
     queue.forEach((player, index) => {
-      formattedList += `\n${index + 1}. ${player.name} ${player.username ? `(${player.username})` : ""} ${player.paid ? " ✅" : ""} ⭐${player.rating || 0}`;
+      const paidMark = player.paid ? " ✅" : "";
+      if (player.username) {
+        formattedList += `\n${index + 1}. ${player.username} ⭐${player.rating || 0} ${paidMark}`;
+      } else {
+        formattedList += `\n${index + 1}. ${player.name.split(" ")[0]} ⭐${player.rating || 0} ${paidMark}`;
+      }
     });
     formattedList += `\n\n------------------------------\n`;
   }
@@ -73,7 +83,7 @@ const sendPlayerList = async (ctx) => {
       GlobalState.setListMessageId(sentMessage.message_id);
     }
   } catch (error) {
-    if (error.description.includes("message to edit not found")) {
+    if (error.description?.includes("message to edit not found")) {
       listMessageId = null;
       const sentMessage = await ctx.replyWithPhoto(IMAGE_URL, {
         caption: formattedList,
@@ -81,6 +91,9 @@ const sendPlayerList = async (ctx) => {
         reply_markup: inlineKeyboard.reply_markup,
       });
       GlobalState.setListMessageId(sentMessage.message_id);
+    } else if (error.description?.includes("message is not modified")) {
+      // Игнорируем ошибку, если сообщение не изменилось
+      console.log("Сообщение не было изменено, пропускаем редактирование.");
     } else {
       console.error("Ошибка при отправке списка:", error);
     }

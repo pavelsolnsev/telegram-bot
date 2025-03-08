@@ -20,7 +20,9 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n`;
   team1.forEach((player, index) => {
     const goals = player.goals || 0;
-    message += `${index + 1}. ${player.name} ${goals > 0 ? `⚽${goals}` : ''}\n`;
+    // Используем username, если он есть, иначе берем только firstname из name
+    const displayName = player.username ? `${player.username}` : player.name.split(" ")[0];
+    message += `${index + 1}. ${displayName} ${goals > 0 ? `⚽${goals}` : ''}\n`;
   });
 
   // Короткий разделитель
@@ -30,7 +32,8 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n`;
   team2.forEach((player, index) => {
     const goals = player.goals || 0;
-    message += `${index + 1}. ${player.name} ${goals > 0 ? `⚽${goals}` : ''}\n`;
+    const displayName = player.username ? `${player.username}` : player.name.split(" ")[0];
+    message += `${index + 1}. ${displayName} ${goals > 0 ? `⚽${goals}` : ''}\n`;
   });
 
   // Итог матча, если статус finished
