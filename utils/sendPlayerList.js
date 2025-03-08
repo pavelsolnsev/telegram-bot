@@ -62,7 +62,7 @@ const sendPlayerList = async (ctx) => {
   formattedList += `\n📋 <b>Список игроков:</b> ${players.length} / ${GlobalState.getMaxPlayers()}`;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("⚽ Записаться на матч", "join_match"),
+    Markup.button.callback("⚽ Играть", "join_match"),
   ]);
 
   try {
