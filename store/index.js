@@ -21,6 +21,7 @@ const GlobalState = (() => {
   let playingTeamsMessageId = null;
   let teamStats = {};
   let allPlayersHistory = []; // Глобальная переменная для истории всех игроков
+  let isTextMessage = false; // Новый флаг для отслеживания типа сообщения
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -76,12 +77,9 @@ const GlobalState = (() => {
     getAllPlayersHistory: () => allPlayersHistory,
     setAllPlayersHistory: (players) => allPlayersHistory = players,
     appendToPlayersHistory: (newPlayers) => {
-      // Проходим по каждому новому игроку
       newPlayers.forEach(newPlayer => {
         const existingPlayer = allPlayersHistory.find(p => p.id === newPlayer.id);
-        
         if (existingPlayer) {
-          // Если игрок существует, обновляем его статистику
           existingPlayer.goals += newPlayer.goals;
           existingPlayer.gamesPlayed += newPlayer.gamesPlayed;
           existingPlayer.wins += newPlayer.wins;
@@ -89,11 +87,14 @@ const GlobalState = (() => {
           existingPlayer.losses += newPlayer.losses;
           existingPlayer.rating += newPlayer.rating;
         } else {
-          // Если игрока нет, добавляем копию нового игрока
           allPlayersHistory.push({ ...newPlayer });
         }
       });
-    }
+    },
+
+    // Новые методы для работы с isTextMessage
+    getIsTextMessage: () => isTextMessage,
+    setIsTextMessage: (value) => isTextMessage = value,
   };
 
   return Object.freeze(Store);
