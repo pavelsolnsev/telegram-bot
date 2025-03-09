@@ -2,6 +2,8 @@ const { Markup } = require("telegraf");
 const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessage");
 const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+const { buildTeamsMessage } = require("../message/buildTeamsMessage"); // Добавляем для редактирования
+const { safeTelegramCall } = require("../utils/telegramUtils"); // Добавляем для безопасного вызова
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^pl(\d+)(\d+)$/i, async (ctx) => {
@@ -55,6 +57,34 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsStatsInitialized(true);
     }
 
+    // Удаляем кнопку "Перемешать состав" из предыдущего сообщения
+    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
+    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
+      const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
+      const teamStats = GlobalState.getTeamStats() || {};
+      const updatedTeams = GlobalState.getTeams();
+
+      const teamsMessageWithoutButton = buildTeamsMessage(
+        teamsBase,
+        "Составы команд",
+        teamStats,
+        updatedTeams
+      );
+
+      try {
+        await safeTelegramCall(ctx, "editMessageText", [
+          lastTeamsMessage.chatId,
+          lastTeamsMessage.messageId,
+          null,
+          teamsMessageWithoutButton,
+          { parse_mode: "HTML" } // Без reply_markup, чтобы убрать кнопку
+        ]);
+      } catch (error) {
+        console.error("Ошибка при удалении кнопки из предыдущего сообщения:", error);
+      }
+    }
+
+    // Формируем новое сообщение для играющих команд
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing');
 
     // Получаем кнопки для каждой команды

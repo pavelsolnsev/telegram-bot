@@ -6,6 +6,7 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^c\d\d\d\d$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams(); // Проверяем, начат ли матч
     
     await ctx.deleteMessage().catch(() => {});
     
@@ -17,6 +18,12 @@ module.exports = (bot, GlobalState) => {
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
       return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    // Проверяем, начат ли матч между командами
+    if (playingTeams) {
+      const message = await ctx.reply("⛔ Нельзя менять игроков во время матча!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 2000);
     }
 
     const teams = GlobalState.getTeams();
@@ -65,14 +72,12 @@ module.exports = (bot, GlobalState) => {
 
     // Если teamsBase пустой, используем текущие команды как базовые
     if (!teamsBase || teamsBase.length === 0) {
-      console.warn("teamsBase пустой, используем текущие команды как базовые");
       teamsBase = updatedTeams.map(team => [...team]);
       GlobalState.setTeamsBase(teamsBase);
     }
 
-    // Если teamStats пустой, инициализируем его с нулями для каждой команды
+    // Если teamStats пустой, инициализируем его с нулями
     if (!teamStats || Object.keys(teamStats).length === 0) {
-      console.warn("teamStats пустой, инициализируем с нулями");
       teamStats = {};
       teamsBase.forEach((_, index) => {
         const teamKey = `team${index + 1}`;
