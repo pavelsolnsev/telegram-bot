@@ -22,6 +22,7 @@ require("./commands/startMatch")(bot, GlobalState); // Команда s для �
 require("./commands/remove")(bot, GlobalState); // Команда r для удаления игроков из списка игроков
 require("./commands/pay")(bot, GlobalState); // Команда p для оплаты
 require("./commands/team")(bot, GlobalState); // деление команд
+require("./commands/change")(bot, GlobalState); // замена игрока
 require("./commands/play")(bot, GlobalState); // начать матч
 require("./commands/goal")(bot, GlobalState); // отметить гол
 require("./commands/finish")(bot, GlobalState); // закончить матч
