@@ -34,7 +34,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         "⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ"
       );
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     // Обновляем дату сбора в глобальном состоянии
@@ -45,7 +45,7 @@ module.exports = (bot, GlobalState) => {
     // GlobalState.setStart(true);
 
     const message = await ctx.reply(`✅ Время тренировки изменено на: ${userInput}`);
-    deleteMessageAfterDelay(ctx, message.message_id, 2000);
+    deleteMessageAfterDelay(ctx, message.message_id, 3000);
 
     // Обновляем список игроков
     await sendPlayerList(ctx);

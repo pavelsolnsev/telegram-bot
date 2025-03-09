@@ -9,7 +9,7 @@ module.exports = (bot, GlobalState) => {
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000); // Удаляем через 5 секунд
     }
 
     if (isTeamsDivided) {
@@ -32,7 +32,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         "⚠️ Не удалось найти закрепленное сообщение."
       );
-      deleteMessageAfterDelay(ctx, message.message_id, 2000); // Удаляем через 5 секунд
+      deleteMessageAfterDelay(ctx, message.message_id, 3000); // Удаляем через 5 секунд
     }
   });
 };

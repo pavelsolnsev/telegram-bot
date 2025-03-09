@@ -39,8 +39,8 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
       const staticRating = basePlayer.rating || 0; // Статичный рейтинг из teamsBase
       const goalsText = player.goals && player.goals > 0 ? ` ⚽${player.goals}` : "";
       
-      // Используем username, если он есть, иначе берем только firstname из name
-      const displayName = player.username ? `${player.username}` : player.name.split(" ")[0];
+      // Используем username, если он есть, иначе берем только firstname из name, убираем @ из username
+      const displayName = player.username ? player.username.replace(/^@/, "") : player.name.split(" ")[0];
       
       message += `${i + 1}. ${displayName} (⭐${staticRating}) ${goalsText}\n`;
     });

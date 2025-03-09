@@ -23,7 +23,7 @@ module.exports = (bot, GlobalState) => {
     // Проверяем, начат ли матч между командами
     if (playingTeams) {
       const message = await ctx.reply("⛔ Нельзя менять игроков во время матча!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     const teams = GlobalState.getTeams();
@@ -44,7 +44,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         `⚠️ Неверный номер команды! Доступно команд: ${teams.length}`
       );
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     if (player1 < 0 || player1 >= teams[team1].length ||
@@ -52,7 +52,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         `⚠️ Неверная позиция игрока! В команде ${team1 + 1}: ${teams[team1].length} игроков, в команде ${team2 + 1}: ${teams[team2].length} игроков`
       );
-      return deleteMessageAfterDelay(ctx, message.message_id, 2000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     // Создаем копию текущих команд для изменений
