@@ -179,7 +179,8 @@ module.exports = (bot, GlobalState) => {
     if (isTeamsDivided) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        "⚽ <b>Матч уже стартовал!</b> Запись закрыта, но ты можешь следить за игрой и готовиться к следующей. До встречи на поле! 🥅",
+        "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
+        { parse_mode: "HTML" },
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
