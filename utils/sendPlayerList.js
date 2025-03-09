@@ -38,7 +38,9 @@ const sendPlayerList = async (ctx) => {
     players.forEach((player, index) => {
       const paidMark = player.paid ? " ✅" : "";
       if (player.username) {
-        formattedList += `\n${index + 1}. ${player.username} ⭐${player.rating || 0} ${paidMark}`;
+        // Убираем @ из username, если он там есть
+        const cleanUsername = player.username.replace(/^@/, "");
+        formattedList += `\n${index + 1}. ${cleanUsername} ⭐${player.rating || 0} ${paidMark}`;
       } else {
         formattedList += `\n${index + 1}. ${player.name.split(" ")[0]} ⭐${player.rating || 0} ${paidMark}`;
       }
@@ -51,7 +53,9 @@ const sendPlayerList = async (ctx) => {
     queue.forEach((player, index) => {
       const paidMark = player.paid ? " ✅" : "";
       if (player.username) {
-        formattedList += `\n${index + 1}. ${player.username} ⭐${player.rating || 0} ${paidMark}`;
+        // Убираем @ из username, если он там есть
+        const cleanUsername = player.username.replace(/^@/, "");
+        formattedList += `\n${index + 1}. ${cleanUsername} ⭐${player.rating || 0} ${paidMark}`;
       } else {
         formattedList += `\n${index + 1}. ${player.name.split(" ")[0]} ⭐${player.rating || 0} ${paidMark}`;
       }
@@ -92,7 +96,6 @@ const sendPlayerList = async (ctx) => {
       });
       GlobalState.setListMessageId(sentMessage.message_id);
     } else if (error.description?.includes("message is not modified")) {
-      // Игнорируем ошибку, если сообщение не изменилось
       console.log("Сообщение не было изменено, пропускаем редактирование.");
     } else {
       console.error("Ошибка при отправке списка:", error);
