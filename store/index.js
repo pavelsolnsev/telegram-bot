@@ -22,6 +22,7 @@ const GlobalState = (() => {
   let teamStats = {};
   let allPlayersHistory = []; // Глобальная переменная для истории всех игроков
   let isTextMessage = false; // Новый флаг для отслеживания типа сообщения
+  let listMessageChatId = null;
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -48,6 +49,8 @@ const GlobalState = (() => {
     setNotificationSent: (status) => notificationSent = status,
     getListMessageId: () => listMessageId,
     setListMessageId: (id) => listMessageId = id,
+    getListMessageChatId: () => listMessageChatId,
+    setListMessageChatId: (chatId) => listMessageChatId = chatId,
     getIMAGE_URL: () => IMAGE_URL,
     setIMAGE_URL: (url) => IMAGE_URL = url,
     getTeams: () => teams,
