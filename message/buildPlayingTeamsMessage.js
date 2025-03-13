@@ -16,26 +16,49 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
 
   let message = `${emoji} <b>${title}</b>\n\n`;
 
+  // Функция для форматирования имени игрока (такая же как в sendPlayerList)
+  const formatPlayerName = (name, maxLength = 11) => {
+    const cleanName = name.replace(/^@/, "");
+    return cleanName.length > maxLength ? cleanName.slice(0, maxLength - 3) + "..." : cleanName;
+  };
+
+  // Функция для форматирования строки игрока
+  const formatPlayerLine = (index, name, rating, goals) => {
+    const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : "";
+    const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
+    const paddedName = formatPlayerName(name).padEnd(11, " ");
+    const formattedRating = parseFloat(rating).toString();
+
+    let ratingIcon;
+    if (rating < 10) ratingIcon = "⭐";
+    else if (rating < 30) ratingIcon = "🌟";
+    else if (rating < 50) ratingIcon = "💫";
+    else if (rating < 70) ratingIcon = "✨";
+    else if (rating < 100) ratingIcon = "🌠";
+    else if (rating < 150) ratingIcon = "⚡"; 
+    return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
+  };
+
   // Команда 1
-  message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n`;
+  message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n<code>`;
   team1.forEach((player, index) => {
-    const goals = player.goals || 0;
-    // Используем username, если он есть, иначе берем только firstname из name, убираем @ из username
-    const displayName = player.username ? player.username.replace(/^@/, "") : player.name.split(" ")[0];
-    message += `${index + 1}. ${displayName} ${goals > 0 ? `⚽${goals}` : ''}\n`;
+    const displayName = player.username ? player.username : player.name.split(" ")[0];
+    const rating = player.rating || 0;
+    message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });
+  message += "</code>";
 
   // Короткий разделитель
-  message += `〰️\n`;
+  message += `\n〰️\n`;
 
   // Команда 2
-  message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n`;
+  message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n<code>`;
   team2.forEach((player, index) => {
-    const goals = player.goals || 0;
-    // Используем username, если он есть, иначе берем только firstname из name, убираем @ из username
-    const displayName = player.username ? player.username.replace(/^@/, "") : player.name.split(" ")[0];
-    message += `${index + 1}. ${displayName} ${goals > 0 ? `⚽${goals}` : ''}\n`;
+    const displayName = player.username ? player.username : player.name.split(" ")[0];
+    const rating = player.rating || 0;
+    message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });
+  message += "</code>";
 
   // Итог матча, если статус finished
   if (status === 'finished') {

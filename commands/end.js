@@ -1,9 +1,11 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const savePlayersToDatabase = require("../database/savePlayers");
+const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^e!$/i, async (ctx) => {
     const listMessageId = GlobalState.getListMessageId();
+    const listMessageChatId = GlobalState.getListMessageChatId(); // ID группы
     const isMatchStarted = GlobalState.getStart();
     const ADMIN_ID = GlobalState.getAdminId();
 
@@ -15,23 +17,50 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!isMatchStarted) {
-			const message = await ctx.reply("⚠️ Матч не начат!");
-			return deleteMessageAfterDelay(ctx, message.message_id);
-		} // Если матч не начался, выходим из функции
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id);
+    }
 
-    if (listMessageId) {
-      await ctx.telegram.deleteMessage(ctx.chat.id, listMessageId).catch(() => {});
+    // Удаляем сообщение со списком игроков из группы
+    if (listMessageId && listMessageChatId) {
+      await ctx.telegram.deleteMessage(listMessageChatId, listMessageId).catch((error) => {
+        console.error("Ошибка удаления сообщения из группы:", error);
+      });
       GlobalState.setListMessageId(null);
+      GlobalState.setListMessageChatId(null);
     }
 
     const allTeams = GlobalState.getTeams();
+    const teamStats = GlobalState.getTeamStats();
     const allPlayers = allTeams.flat();
 
-
-
+    // Сохраняем игроков в базу данных и обновляем историю
     await savePlayersToDatabase(allPlayers);
     GlobalState.appendToPlayersHistory(allPlayers);
 
+    // Формируем и отправляем сообщение с таблицей в группу
+    if (listMessageChatId && allTeams.length > 0) {
+      const teamsMessage = buildTeamsMessage(allTeams, "Итоги матча", teamStats);
+      try {
+        const sentMessage = await ctx.telegram.sendMessage(listMessageChatId, teamsMessage, {
+          parse_mode: "HTML",
+        });
+
+        // Закрепляем сообщение в группе
+        await ctx.telegram.pinChatMessage(listMessageChatId, sentMessage.message_id, {
+          disable_notification: true, // Закрепляем без уведомления участников
+        }).catch((error) => {
+          console.error("Ошибка закрепления сообщения:", error);
+        });
+
+        // Удаляем сообщение через 10 секунд
+        // deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 10000);
+      } catch (error) {
+        console.error("Ошибка отправки таблицы в группу:", error);
+      }
+    }
+
+    // Сбрасываем состояние
     GlobalState.setPlayers([]);
     GlobalState.setQueue([]);
     GlobalState.setCollectionDate(null);
@@ -48,6 +77,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setDivided(false);
     GlobalState.setIsStatsInitialized(false);
 
+    // Отправляем подтверждение в личку
     const message = await ctx.reply("✅ Сбор успешно завершён!");
     deleteMessageAfterDelay(ctx, message.message_id);
   });

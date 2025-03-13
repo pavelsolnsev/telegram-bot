@@ -27,23 +27,42 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
 
   message += "</pre>\n";
 
+  // Функция для форматирования имени игрока (такая же как в sendPlayerList)
+  const formatPlayerName = (name, maxLength = 11) => {
+    const cleanName = name.replace(/^@/, "");
+    return cleanName.length > maxLength ? cleanName.slice(0, maxLength - 3) + "..." : cleanName;
+  };
+
+  // Функция для форматирования строки игрока
+  const formatPlayerLine = (index, name, rating, goals) => {
+    const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : "";
+    const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
+    const paddedName = formatPlayerName(name).padEnd(11, " ");
+    const formattedRating = parseFloat(rating).toString();
+
+    let ratingIcon;
+    if (rating < 10) ratingIcon = "⭐";
+    else if (rating < 30) ratingIcon = "🌟";
+    else if (rating < 50) ratingIcon = "💫";
+    else if (rating < 70) ratingIcon = "✨";
+    else if (rating < 100) ratingIcon = "🌠";
+    else if (rating < 150) ratingIcon = "⚡";  
+    return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
+  };
+
   message += "<b>Составы:</b>\n";
   updatedTeams.forEach((updatedTeam, index) => {
-    const baseTeam = teamsBase[index] || []; // Берем соответствующую команду из teamsBase
+    const baseTeam = teamsBase[index] || [];
     const teamColor = teamColors[index] || "⚽";
-    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
+    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n<code>`;
     
     updatedTeam.forEach((player, i) => {
-      // Находим игрока в baseTeam по id для статичного рейтинга
       const basePlayer = baseTeam.find(bp => bp.id === player.id) || player;
-      const staticRating = basePlayer.rating || 0; // Статичный рейтинг из teamsBase
-      const goalsText = player.goals && player.goals > 0 ? ` ⚽${player.goals}` : "";
-      
-      // Используем username, если он есть, иначе берем только firstname из name, убираем @ из username
-      const displayName = player.username ? player.username.replace(/^@/, "") : player.name.split(" ")[0];
-      
-      message += `${i + 1}. ${displayName} (⭐${staticRating}) ${goalsText}\n`;
+      const staticRating = basePlayer.rating || 0;
+      const displayName = player.username ? player.username : player.name.split(" ")[0];
+      message += `${formatPlayerLine(i, displayName, staticRating, player.goals)}\n`;
     });
+    message += "</code>";
   });
 
   return message;

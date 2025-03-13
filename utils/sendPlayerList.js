@@ -36,40 +36,42 @@ const sendPlayerList = async (ctx) => {
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 12) => {
-    const cleanName = name.replace(/^@/, ""); // Убираем @
+    const cleanName = name.replace(/^@/, "");
     return cleanName.length > maxLength ? cleanName.slice(0, maxLength - 3) + "..." : cleanName;
-  };
-
-  // Функция для форматирования рейтинга с фиксированной шириной
-  const formatRating = (rating) => {
-    const numericRating = parseFloat(rating) || 0;
-    return numericRating.toFixed(2).padStart(5, " ");
   };
 
   // Форматирование строки игрока
   const formatPlayerLine = (index, name, rating, paid) => {
     const paidMark = paid ? " ✅" : "";
-    const paddedIndex = (index + 1).toString().padStart(2, " ") + "."; // " 1.", "10."
-    const paddedName = formatPlayerName(name).padEnd(12, " "); // Имя на 12 символов
-    return `${paddedIndex} ${paddedName} - ⭐ ${formatRating(rating)}${paidMark}`;
+    const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
+    const paddedName = formatPlayerName(name).padEnd(12, " ");
+    const formattedRating = parseFloat(rating).toString();
+    
+    let ratingIcon;
+    if (rating < 10) ratingIcon = "⭐";
+    else if (rating < 30) ratingIcon = "🌟";
+    else if (rating < 50) ratingIcon = "💫";
+    else if (rating < 70) ratingIcon = "✨";
+    else if (rating < 100) ratingIcon = "🌠";
+    else if (rating < 150) ratingIcon = "⚡"; 
+  
+    return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${paidMark}`;
   };
 
-  // Список игроков "В игре" (сортировка по рейтингу)
+  // Список игроков "В игре"
   if (players.length > 0) {
     formattedList += `\n🏆 <b>В игре:</b>\n<code>`;
-    const sortedPlayers = [...players].sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-    sortedPlayers.forEach((player, index) => {
+    players.forEach((player, index) => {
       const name = player.username ? player.username : player.name.split(" ")[0];
       formattedList += `${formatPlayerLine(index, name, player.rating, player.paid)}\n`;
     });
-    formattedList += `</code>\n----------------------------------\n`;
+    formattedList += `</code>\n------------------------------\n`;
   }
 
-  // Список игроков в очереди (сортировка по рейтингу)
+  // Список игроков в очереди
   if (queue.length > 0) {
     formattedList += `\n📢 <b>Очередь игроков:</b>\n<code>`;
-    const sortedQueue = [...queue].sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-    sortedQueue.forEach((player, index) => {
+    queue.forEach((player, index) => {
       const name = player.username ? player.username : player.name.split(" ")[0];
       formattedList += `${formatPlayerLine(index, name, player.rating, player.paid)}\n`;
     });
@@ -98,6 +100,7 @@ const sendPlayerList = async (ctx) => {
         reply_markup: inlineKeyboard.reply_markup,
       });
       GlobalState.setListMessageId(sentMessage.message_id);
+      GlobalState.setListMessageChatId(ctx.chat.id);
     }
   } catch (error) {
     if (error.description?.includes("message to edit not found")) {
@@ -107,6 +110,7 @@ const sendPlayerList = async (ctx) => {
         reply_markup: inlineKeyboard.reply_markup,
       });
       GlobalState.setListMessageId(sentMessage.message_id);
+      GlobalState.setListMessageChatId(ctx.chat.id);
     } else if (error.description?.includes("message is not modified")) {
       console.log("Сообщение не было изменено, пропускаем редактирование.");
     } else {
