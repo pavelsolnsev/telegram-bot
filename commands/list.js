@@ -1,15 +1,22 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay"); // Импорт функции удаления сообщений с задержкой
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^list$/i, async (ctx) => {
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
+    const isMatchStarted = GlobalState.getStart();
     let listMessageId = GlobalState.getListMessageId();
     const isTeamsDivided = GlobalState.getDivided();
+    const GROUP_ID = GlobalState.getGroupId(); // Получаем ID группы
     await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, что команда отправлена в личку (chat.id > 0 для личных чатов)
+    if (ctx.chat.id < 0) {
+      const msg = await ctx.reply("Напиши мне в ЛС.");
+      return deleteMessageAfterDelay(ctx, msg.message_id);
+    }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000); // Удаляем через 5 секунд
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     if (isTeamsDivided) {
@@ -17,22 +24,27 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
+    if (!listMessageId || !GROUP_ID) {
+      const message = await ctx.reply("⚠️ Список игроков недоступен.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
+
     try {
-      // Прокручиваем чат до закрепленного сообщения
+      // Пересылаем сообщение из группы в личный чат пользователя
       const sentMessage = await ctx.telegram.forwardMessage(
-        ctx.chat.id,
-        ctx.chat.id,
-        listMessageId
+        ctx.chat.id, // ID личного чата пользователя
+        GROUP_ID,    // ID группы, откуда берем сообщение
+        listMessageId // ID сообщения со списком
       );
 
-      // Удаляем сообщение со списком через 5 секунд
-      deleteMessageAfterDelay(ctx, sentMessage.message_id, 10000);
+      // Удаляем пересланное сообщение через 60 секунд
+      deleteMessageAfterDelay(ctx, sentMessage.message_id, 60000);
     } catch (error) {
-      console.error("Ошибка при прокрутке к закрепленному сообщению:", error);
+      console.error("Ошибка при пересылке списка:", error);
       const message = await ctx.reply(
-        "⚠️ Не удалось найти закрепленное сообщение."
+        "⚠️ Не удалось получить список игроков из группы."
       );
-      deleteMessageAfterDelay(ctx, message.message_id, 3000); // Удаляем через 5 секунд
+      deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
   });
 };

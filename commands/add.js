@@ -29,6 +29,7 @@ module.exports = (bot, GlobalState) => {
     };
 
     const [updatedUser] = await getPlayerStats([user]);
+    const isAdmin = updatedUser.id === ADMIN_ID;
 
     if (ctx.message.text === "+") {
       await ctx.deleteMessage().catch(() => {});
@@ -57,8 +58,24 @@ module.exports = (bot, GlobalState) => {
       }
       if (players.length < MAX_PLAYERS) {
         players.push(updatedUser);
+        // Уведомление администратору, только если это не сам админ
+        if (!isAdmin) {
+          await sendPrivateMessage(
+            bot,
+            ADMIN_ID,
+            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав`
+          );
+        }
       } else {
         queue.push(updatedUser);
+        // Уведомление администратору, только если это не сам админ
+        if (!isAdmin) {
+          await sendPrivateMessage(
+            bot,
+            ADMIN_ID,
+            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь`
+          );
+        }
       }
       await sendPlayerList(ctx);
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -87,10 +104,27 @@ module.exports = (bot, GlobalState) => {
       const playerIndex = players.findIndex((p) => p.id === updatedUser.id);
       if (playerIndex !== -1) {
         players.splice(playerIndex, 1);
+        // Уведомление администратору, только если это не сам админ
+        if (!isAdmin) {
+          await sendPrivateMessage(
+            bot,
+            ADMIN_ID,
+            `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из основного состава`
+          );
+        }
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
           players.push(movedPlayer);
-          sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
+          // Уведомление перемещенному игроку
+          await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
+          // Уведомление администратору о перемещении, только если это не сам админ
+          if (movedPlayer.id !== ADMIN_ID) {
+            await sendPrivateMessage(
+              bot,
+              ADMIN_ID,
+              `🔄 Игрок ${movedPlayer.username || movedPlayer.name} перемещен из очереди в основной состав`
+            );
+          }
         }
         await sendPlayerList(ctx);
         const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -99,11 +133,30 @@ module.exports = (bot, GlobalState) => {
         ]);
         deleteMessageAfterDelay(ctx, message.message_id);
       } else {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
-          ctx.chat.id,
-          "⚠️ Вы не в списке!",
-        ]);
-        deleteMessageAfterDelay(ctx, message.message_id);
+        const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
+        if (queueIndex !== -1) {
+          queue.splice(queueIndex, 1);
+          // Уведомление администратору, только если это не сам админ
+          if (!isAdmin) {
+            await sendPrivateMessage(
+              bot,
+              ADMIN_ID,
+              `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из очереди`
+            );
+          }
+          await sendPlayerList(ctx);
+          const message = await safeTelegramCall(ctx, "sendMessage", [
+            ctx.chat.id,
+            `✅ ${updatedUser.name} удален!`,
+          ]);
+          deleteMessageAfterDelay(ctx, message.message_id);
+        } else {
+          const message = await safeTelegramCall(ctx, "sendMessage", [
+            ctx.chat.id,
+            "⚠️ Вы не в списке!",
+          ]);
+          deleteMessageAfterDelay(ctx, message.message_id);
+        }
       }
 
     } else if (ctx.message.text === "+1") {
@@ -175,6 +228,7 @@ module.exports = (bot, GlobalState) => {
     let queue = GlobalState.getQueue();
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
+    const ADMIN_ID = GlobalState.getAdminId();
 
     if (isTeamsDivided) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -199,6 +253,7 @@ module.exports = (bot, GlobalState) => {
 
     const [updatedUser] = await getPlayerStats([user]);
     const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
+    const isAdmin = updatedUser.id === ADMIN_ID;
 
     if (isInList) {
       await ctx.answerCbQuery("⚠️ Вы уже записаны!");
@@ -208,9 +263,25 @@ module.exports = (bot, GlobalState) => {
     if (players.length < MAX_PLAYERS) {
       players.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в список!");
+      // Уведомление администратору, только если это не сам админ
+      if (!isAdmin) {
+        await sendPrivateMessage(
+          bot,
+          ADMIN_ID,
+          `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав через кнопку`
+        );
+      }
     } else {
       queue.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в очередь!");
+      // Уведомление администратору, только если это не сам админ
+      if (!isAdmin) {
+        await sendPrivateMessage(
+          bot,
+          ADMIN_ID,
+          `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь через кнопку`
+        );
+      }
     }
 
     await sendPlayerList(ctx);

@@ -42,11 +42,11 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
 
     let ratingIcon;
     if (rating < 10) ratingIcon = "⭐";
-    else if (rating < 30) ratingIcon = "🌟";
-    else if (rating < 50) ratingIcon = "💫";
-    else if (rating < 70) ratingIcon = "✨";
+    else if (rating < 30) ratingIcon = "💫";
+    else if (rating < 60) ratingIcon = "✨";
     else if (rating < 100) ratingIcon = "🌠";
-    else if (rating < 150) ratingIcon = "⚡";  
+    else if (rating < 150) ratingIcon = "💎";
+    else ratingIcon = "🏆";
     return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
   };
 
