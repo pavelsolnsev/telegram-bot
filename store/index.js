@@ -20,8 +20,7 @@ const GlobalState = (() => {
   let playingTeams = null;
   let playingTeamsMessageId = null;
   let teamStats = {};
-  let allPlayersHistory = []; // Глобальная переменная для истории всех игроков
-  let isTextMessage = false; // Новый флаг для отслеживания типа сообщения
+  let allPlayersHistory = [];
   let listMessageChatId = null;
 
   const Store = {
@@ -94,10 +93,6 @@ const GlobalState = (() => {
         }
       });
     },
-
-    // Новые методы для работы с isTextMessage
-    getIsTextMessage: () => isTextMessage,
-    setIsTextMessage: (value) => isTextMessage = value,
   };
 
   return Object.freeze(Store);
