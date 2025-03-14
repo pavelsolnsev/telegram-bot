@@ -6,8 +6,21 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
+    const GROUP_ID = GlobalState.getGroupId();
 
     await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
+    if (ctx.chat.id > 0) {
+      const message = await ctx.reply("Напиши в группу!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
+
+    // Проверяем, что сообщение отправлено в правильной группе
+    if (ctx.chat.id !== GROUP_ID) {
+      const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
 
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ Нет прав!");
@@ -51,8 +64,21 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^test$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
+    const GROUP_ID = GlobalState.getGroupId(); // Предполагаем, что ID группы доступен
 
     await ctx.deleteMessage().catch(() => {});
+
+    // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
+    if (ctx.chat.id > 0) {
+      const message = await ctx.reply("Напиши мне в группу!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
+
+    // Проверяем, что сообщение отправлено в правильной группе
+    if (ctx.chat.id !== GROUP_ID) {
+      const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
 
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ Нет прав!");

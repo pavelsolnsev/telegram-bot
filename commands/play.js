@@ -2,8 +2,8 @@ const { Markup } = require("telegraf");
 const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessage");
 const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage"); // Добавляем для редактирования
-const { safeTelegramCall } = require("../utils/telegramUtils"); // Добавляем для безопасного вызова
+const { buildTeamsMessage } = require("../message/buildTeamsMessage");
+const { safeTelegramCall } = require("../utils/telegramUtils");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^pl(\d+)(\d+)$/i, async (ctx) => {

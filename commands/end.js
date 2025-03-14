@@ -11,6 +11,12 @@ module.exports = (bot, GlobalState) => {
 
     await ctx.deleteMessage().catch(() => {});
 
+
+    if (ctx.chat.id < 0) {
+      const msg = await ctx.reply("Напиши мне в ЛС.");
+      return deleteMessageAfterDelay(ctx, msg.message_id);
+    }
+
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
@@ -30,8 +36,10 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setListMessageChatId(null);
     }
 
+
     const allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
+    const teamsBase = GlobalState.getTeamsBase()
     const allPlayers = allTeams.flat();
 
     // Сохраняем игроков в базу данных и обновляем историю
@@ -40,7 +48,7 @@ module.exports = (bot, GlobalState) => {
 
     // Формируем и отправляем сообщение с таблицей в группу
     if (listMessageChatId && allTeams.length > 0) {
-      const teamsMessage = buildTeamsMessage(allTeams, "Итоги матча", teamStats);
+      const teamsMessage = buildTeamsMessage(teamsBase, "Итоги матча", teamStats, allTeams);
       try {
         const sentMessage = await ctx.telegram.sendMessage(listMessageChatId, teamsMessage, {
           parse_mode: "HTML",
@@ -54,12 +62,12 @@ module.exports = (bot, GlobalState) => {
         });
 
         // Удаляем сообщение через 10 секунд
-        // deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 10000);
+        deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 7200000);
       } catch (error) {
         console.error("Ошибка отправки таблицы в группу:", error);
       }
     }
-
+ 
     // Сбрасываем состояние
     GlobalState.setPlayers([]);
     GlobalState.setQueue([]);
