@@ -20,7 +20,6 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    // Проверяем, начат ли матч между командами
     if (playingTeams) {
       const message = await ctx.reply("⛔ Нельзя менять игроков во время матча!");
       return deleteMessageAfterDelay(ctx, message.message_id, 3000);
@@ -81,10 +80,33 @@ module.exports = (bot, GlobalState) => {
       teamStats = {};
       teamsBase.forEach((_, index) => {
         const teamKey = `team${index + 1}`;
-        teamStats[teamKey] = { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
+        teamStats[teamKey] = { 
+          wins: 0, 
+          losses: 0, 
+          draws: 0, 
+          games: 0, 
+          consecutiveWins: 0, 
+          goalsScored: 0, 
+          goalsConceded: 0,
+          opponentsInCurrentStreak: []
+        };
       });
-      GlobalState.setTeamStats(teamStats);
     }
+
+    // Сбрасываем серию побед и список оппонентов для затронутых команд
+    const team1Key = `team${team1 + 1}`;
+    const team2Key = `team${team2 + 1}`;
+    if (teamStats[team1Key]) {
+      teamStats[team1Key].consecutiveWins = 0;
+      teamStats[team1Key].opponentsInCurrentStreak = [];
+    }
+    if (teamStats[team2Key]) {
+      teamStats[team2Key].consecutiveWins = 0;
+      teamStats[team2Key].opponentsInCurrentStreak = [];
+    }
+
+    // Сохраняем обновленную статистику
+    GlobalState.setTeamStats(teamStats);
 
     // Формируем сообщение с обновленными составами
     const teamsMessage = buildTeamsMessage(

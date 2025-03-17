@@ -1,17 +1,16 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay"); // Импорт функции для удаления сообщений с задержкой
-const { sendPlayerList } = require("../utils/sendPlayerList"); // Импорт функции для отправки списка игроков
+const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
+const { sendPlayerList } = require("../utils/sendPlayerList");
 const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^l(\d+)$/i, async (ctx) => {
-    // Обработчик команд, соответствующих шаблону "l<число>"
-    const ADMIN_ID = GlobalState.getAdminId(); // Получаем ID администратора
-    const isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
-    let players = GlobalState.getPlayers(); // Получаем список текущих игроков
-    let queue = GlobalState.getQueue(); // Получаем очередь игроков
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    let players = GlobalState.getPlayers();
+    let queue = GlobalState.getQueue();
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
-    await ctx.deleteMessage().catch(() => {}); // Удаляем сообщение пользователя (если возможно)
+    await ctx.deleteMessage().catch(() => {});
 
     if (ctx.from.id !== ADMIN_ID) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
@@ -28,9 +27,8 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
-    const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]); // Получаем число после "l"
+    const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]);
     if (newLimit <= 0) {
-      // Проверяем, что лимит положительный
       const message = await ctx.reply(
         "⚠️ Лимит должен быть положительным числом!"
       );
@@ -39,28 +37,34 @@ module.exports = (bot, GlobalState) => {
 
     if (newLimit < MAX_PLAYERS) {
       // Если новый лимит меньше текущего
-      const playersToMove = players.slice(newLimit); // Определяем игроков, которых нужно переместить в очередь
+      const playersToMove = players.slice(newLimit); // Игроки, которые перемещаются в очередь
       queue.unshift(...playersToMove); // Добавляем этих игроков в начало очереди
       players = players.slice(0, newLimit); // Оставляем только нужное количество игроков в списке
+
+      // Отправляем уведомления игрокам, перемещённым в очередь
+      playersToMove.forEach((player) => {
+        sendPrivateMessage(bot, player.id, "⚠️ Вы перемещены в очередь!");
+      });
     } else if (newLimit > MAX_PLAYERS) {
       // Если новый лимит больше текущего
       const availableSlots = newLimit - players.length; // Рассчитываем количество доступных мест
       const playersToAdd = queue.splice(0, availableSlots); // Извлекаем нужное количество игроков из очереди
       players.push(...playersToAdd); // Добавляем их в основной список игроков
 
+      // Отправляем уведомления игрокам, перемещённым в основной состав
       playersToAdd.forEach((player) => {
         sendPrivateMessage(bot, player.id, "🎉 Вы в основном составе!");
-      }); // Отправляем личное сообщение каждому перемещенному игроку
+      });
     }
 
-    GlobalState.setMaxPlayers(newLimit); // Устанавливаем новый лимит игроков
-    GlobalState.setPlayers(players); // Сохраняем обновленный список игроков
-    GlobalState.setQueue(queue); // Сохраняем обновленный список очереди
+    GlobalState.setMaxPlayers(newLimit);
+    GlobalState.setPlayers(players);
+    GlobalState.setQueue(queue);
 
     const message = await ctx.reply(
       `✅ Лимит игроков установлен на ${newLimit}.`
     );
-    deleteMessageAfterDelay(ctx, message.message_id); // Удаляем сообщение через некоторое время
-    await sendPlayerList(ctx); // Отправляем обновленный список игроков
+    deleteMessageAfterDelay(ctx, message.message_id);
+    await sendPlayerList(ctx);
   });
 };

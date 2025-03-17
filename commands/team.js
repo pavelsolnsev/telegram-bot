@@ -6,10 +6,18 @@ const { sendTeamsMessage } = require("../message/sendTeamsMessage");
 module.exports = (bot, GlobalState) => {
   bot.hears(/^tm(2|3|4)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
+    const playingTeams = GlobalState.getPlayingTeams();
     await ctx.deleteMessage().catch(() => {});
-    // Проверка на админа остается
+
+    // Проверка на админа
     if (ctx.from.id !== ADMIN_ID) {
       const msg = await ctx.reply("⛔ Нет прав!");
+      return deleteMessageAfterDelay(ctx, msg.message_id);
+    }
+
+    // Проверка, начат ли матч между командами
+    if (playingTeams) {
+      const msg = await ctx.reply("⛔ Нельзя менять составы команд во время матча!");
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
