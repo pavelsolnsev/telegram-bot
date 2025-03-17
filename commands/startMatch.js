@@ -76,7 +76,7 @@ module.exports = (bot, GlobalState) => {
 
     // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
     if (ctx.chat.id > 0) {
-      const message = await ctx.reply("Напиши мне в группу!");
+      const message = await ctx.reply("Напиши в группу!");
       return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 

@@ -19,6 +19,11 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
+    if (ctx.chat.id < 0) {
+      const msg = await ctx.reply("Напиши мне в ЛС.");
+      return deleteMessageAfterDelay(ctx, msg.message_id);
+    }
+
     const playerNumber = Number(ctx.message.text.match(/^p(\d+)$/i)[1]);
 
     if (playerNumber <= 0 || playerNumber > players.length) {

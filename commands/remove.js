@@ -1,5 +1,6 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList");
+const { sendPrivateMessage } = require("../message/sendPrivateMessage"); // Добавляем импорт sendPrivateMessage
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^r(\d+)$/i, async (ctx) => {
@@ -26,6 +27,11 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
 
+    if (ctx.chat.id > 0) {
+      const message = await ctx.reply("Напиши в группу!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    }
+
     // Получаем номер игрока из текста команды
     const playerNumber = Number(ctx.message.text.match(/^r(\d+)$/i)[1]);
 
@@ -44,11 +50,14 @@ module.exports = (bot, GlobalState) => {
 
     // Если в очереди есть игроки, добавляем первого в список игроков
     if (queue.length > 0) {
-      players.push(queue.shift());
+      const newPlayer = queue.shift(); // Извлекаем первого игрока из очереди
+      players.push(newPlayer); // Добавляем его в основной состав
+      sendPrivateMessage(bot, newPlayer.id, "🎉 Вы в основном составе!"); // Отправляем уведомление
     }
 
-    // Обновляем список игроков в GlobalState
+    // Обновляем список игроков и очередь в GlobalState
     GlobalState.setPlayers(players);
+    GlobalState.setQueue(queue);
 
     // Отправляем уведомление о том, что игрок был удалён
     const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);

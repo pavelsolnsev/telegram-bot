@@ -6,7 +6,7 @@ const GlobalState = (() => {
   let isMatchStarted = false;
   let isTeamsDivided = false;
   let isStatsInitialized = false;
-  let MAX_PLAYERS = 14;
+  let MAX_PLAYERS = 28;
   let players = [];
   let teamsBase = [];
   let queue = [];

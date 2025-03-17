@@ -73,7 +73,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setQueue([]);
     GlobalState.setCollectionDate(null);
     GlobalState.setLocation("Локация пока не определена");
-    GlobalState.setMaxPlayers(14);
+    GlobalState.setMaxPlayers(28);
     GlobalState.setStart(false);
     GlobalState.setNotificationSent(false);
     GlobalState.setTeams([]);
