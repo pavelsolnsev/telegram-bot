@@ -6,6 +6,7 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
+    const isMatchStarted = GlobalState.getStart();
     const GROUP_ID = GlobalState.getGroupId();
 
     await ctx.deleteMessage().catch(() => {});
@@ -30,6 +31,11 @@ module.exports = (bot, GlobalState) => {
     if (isTeamsDivided) {
       const message = await ctx.reply("Игра уже идет!");
       return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    if (isMatchStarted) {
+      const message = await ctx.reply("⛔ Матч уже запущен!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     const [, datePart, timePart] = ctx.message.text.match(/(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2})/);
@@ -65,7 +71,7 @@ module.exports = (bot, GlobalState) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const GROUP_ID = GlobalState.getGroupId(); // Предполагаем, что ID группы доступен
-
+    const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
 
     // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
@@ -88,6 +94,12 @@ module.exports = (bot, GlobalState) => {
     if (isTeamsDivided) {
       const message = await ctx.reply("Игра уже идет!");
       return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+
+    if (isMatchStarted) {
+      const message = await ctx.reply("⛔ Матч уже запущен!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     // Устанавливаем фиксированную дату 21.03.2026 19:00

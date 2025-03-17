@@ -197,6 +197,9 @@ module.exports = (bot, GlobalState) => {
           goalsConceded: 0,
           opponentsInCurrentStreak: []
         };
+      } else if (!Array.isArray(teamStats[teamKey].opponentsInCurrentStreak)) {
+        // Если объект существует, но opponentsInCurrentStreak отсутствует или не массив
+        teamStats[teamKey].opponentsInCurrentStreak = [];
       }
       teamStats[teamKey].games += 1;
       if (isWin) {
