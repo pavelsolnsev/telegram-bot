@@ -31,8 +31,27 @@ module.exports = (bot, GlobalState) => {
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = updatedUser.id === ADMIN_ID;
 
+    // Проверка, состоит ли пользователь в группе
+    let isMember = false;
+    try {
+      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, user.id);
+      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+    } catch (error) {
+      console.error("Ошибка проверки членства в группе:", error);
+    }
+
     if (ctx.message.text === "+") {
       await ctx.deleteMessage().catch(() => {});
+
+      // Проверка на членство в группе
+      if (!isMember) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Чтобы записаться, вступите в группу!",
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id);
+      }
+
       if (!isMatchStarted) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
@@ -58,7 +77,6 @@ module.exports = (bot, GlobalState) => {
       }
       if (players.length < MAX_PLAYERS) {
         players.push(updatedUser);
-        // Уведомление администратору, только если это не сам админ
         if (!isAdmin) {
           await sendPrivateMessage(
             bot,
@@ -68,7 +86,6 @@ module.exports = (bot, GlobalState) => {
         }
       } else {
         queue.push(updatedUser);
-        // Уведомление администратору, только если это не сам админ
         if (!isAdmin) {
           await sendPrivateMessage(
             bot,
@@ -104,7 +121,6 @@ module.exports = (bot, GlobalState) => {
       const playerIndex = players.findIndex((p) => p.id === updatedUser.id);
       if (playerIndex !== -1) {
         players.splice(playerIndex, 1);
-        // Уведомление администратору, только если это не сам админ
         if (!isAdmin) {
           await sendPrivateMessage(
             bot,
@@ -115,9 +131,7 @@ module.exports = (bot, GlobalState) => {
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
           players.push(movedPlayer);
-          // Уведомление перемещенному игроку
           await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
-          // Уведомление администратору о перемещении, только если это не сам админ
           if (movedPlayer.id !== ADMIN_ID) {
             await sendPrivateMessage(
               bot,
@@ -136,7 +150,6 @@ module.exports = (bot, GlobalState) => {
         const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
         if (queueIndex !== -1) {
           queue.splice(queueIndex, 1);
-          // Уведомление администратору, только если это не сам админ
           if (!isAdmin) {
             await sendPrivateMessage(
               bot,
@@ -229,6 +242,21 @@ module.exports = (bot, GlobalState) => {
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
+    const GROUP_ID = GlobalState.getGroupId();
+
+    // Проверка, состоит ли пользователь в группе
+    let isMember = false;
+    try {
+      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
+      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+    } catch (error) {
+      console.error("Ошибка проверки членства в группе:", error);
+    }
+
+    if (!isMember) {
+      await ctx.answerCbQuery("⚠️ Чтобы записаться, вступите в группу!");
+      return;
+    }
 
     if (isTeamsDivided) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -263,7 +291,6 @@ module.exports = (bot, GlobalState) => {
     if (players.length < MAX_PLAYERS) {
       players.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в список!");
-      // Уведомление администратору, только если это не сам админ
       if (!isAdmin) {
         await sendPrivateMessage(
           bot,
@@ -274,7 +301,6 @@ module.exports = (bot, GlobalState) => {
     } else {
       queue.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в очередь!");
-      // Уведомление администратору, только если это не сам админ
       if (!isAdmin) {
         await sendPrivateMessage(
           bot,
