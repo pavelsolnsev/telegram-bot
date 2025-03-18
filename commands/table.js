@@ -2,7 +2,7 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^tbl$/i, async (ctx) => {
+  bot.hears(/^table$/i, async (ctx) => {
     await ctx.deleteMessage().catch(() => {});
 
     const isMatchStarted = GlobalState.getStart();
@@ -25,7 +25,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply("⚠️ Команды ещё не сформированы!");
       return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
-
+  
     try {
       // Формируем сообщение с таблицей в реальном времени
       const tableMessage = buildTeamsMessage(
