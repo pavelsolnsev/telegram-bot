@@ -7,7 +7,6 @@ function checkTimeAndNotify(bot) {
   let notificationSent = GlobalState.getNotificationSent(); // Проверяем, было ли уже отправлено уведомление
   let isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
   const players = GlobalState.getPlayers(); // Получаем список игроков
-  let location = GlobalState.getLocation(); // Получаем место проведения
 
   // Если матч не начат, нет даты или уведомление уже отправлено — ничего не делаем
   if (!isMatchStarted || !collectionDate || notificationSent) return;
@@ -33,7 +32,8 @@ function checkTimeAndNotify(bot) {
         `✅ Подготовить экипировку\n` +
         `✅ Оплатить участие\n` +
         `✅ Прийти за 15 минут до начала\n\n` +
-        `📍 Место: ${location}\n` +  
+        `🏟 <b>Адрес:</b> <a href="https://yandex.ru/maps/-/CHVkaAYv">Стадион Пионер, Раменское (маленькое поле)</a>\n` +  
+        `📍 <b>Маршрут:</b> <a href="https://yandex.ru/maps/?mode=routes&rtext=~55.569020,38.240384&rtt=auto">Построить маршрут</a>\n` +  
         `🕒 Время: ${collectionDate.toLocaleString("ru-RU", { 
           hour: "2-digit", 
           minute: "2-digit",

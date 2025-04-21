@@ -14,7 +14,6 @@ const GlobalState = (() => {
   let collectionDate = null;
   let notificationSent = false;
   let listMessageId = null;
-  let location = 'Локации нету';
   let lastTeamCount = null;
   let lastTeamsMessage = null;
   let playingTeams = null;
@@ -22,6 +21,7 @@ const GlobalState = (() => {
   let teamStats = {};
   let allPlayersHistory = [];
   let listMessageChatId = null;
+
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -42,8 +42,6 @@ const GlobalState = (() => {
     setQueue: (array) => queue = array,
     getCollectionDate: () => collectionDate,
     setCollectionDate: (date) => collectionDate = date,
-    getLocation: () => location,
-    setLocation: (string) => location = string,
     getNotificationSent: () => notificationSent,
     setNotificationSent: (status) => notificationSent = status,
     getListMessageId: () => listMessageId,

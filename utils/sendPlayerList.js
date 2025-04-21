@@ -5,7 +5,6 @@ const sendPlayerList = async (ctx) => {
   let collectionDate = GlobalState.getCollectionDate();
   let players = GlobalState.getPlayers();
   let queue = GlobalState.getQueue();
-  let location = GlobalState.getLocation();
   let listMessageId = GlobalState.getListMessageId();
 
   let formattedList = "";
@@ -28,7 +27,8 @@ const sendPlayerList = async (ctx) => {
   }
 
   // Информация о локации и оплате
-  formattedList += `📍 <b>Место:</b> ${location || "Пока не выбрано 🌍"}\n`;
+  formattedList += `🏟 <b>Адрес:</b> <a href="https://yandex.ru/maps/-/CHVkaAYv">Стадион Пионер, Раменское (маленькое поле)</a>\n`;
+  formattedList += `📍 <b>Маршрут:</b> <a href="https://yandex.ru/maps/?mode=routes&rtext=~55.569020,38.240384&rtt=auto">Построить маршрут</a>\n`;
   formattedList += `💰 <b>400 ₽</b> (вода, съёмка, манишки, аптечка, музыка)\n`;
   formattedList += `💸 <b>Оплатить:</b>\n`;
   formattedList += `<code>📲 89166986185</code>\n`;
@@ -42,6 +42,7 @@ const sendPlayerList = async (ctx) => {
   `- <b>Рейтинг:</b> У каждого игрока есть рейтинг, который зависит от голов и результатов матчей. За гол +0.5, за победу +3, за ничью +1, за поражение -1.5. Уровни: ⭐ (0-9), 💫 (10-29), ✨ (30-59), 🌠 (60-99), 💎 (100-149), 🏆 (150+). Больше играете и забиваете — выше рейтинг!\n` +
   `- <b>Уведомления:</b> Нажмите "Старт" в личке у бота, чтобы получать уведомления и писать ему команды. Вы получите напоминание за 3 часа до матча и уведомление о переходе из очереди в основной список или обратно.\n` +
   `- <b>Оплата:</b> По возможности оплачиваете игру заранее, чтобы не тратить время на сборах. \n`;
+  
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 12) => {
     const cleanName = name.replace(/^@/, "");
@@ -92,6 +93,12 @@ const sendPlayerList = async (ctx) => {
     Markup.button.callback("⚽ Играть", "join_match"),
   ]);
 
+  const messageOptions = {
+    parse_mode: "HTML",
+    reply_markup: inlineKeyboard.reply_markup,
+    disable_web_page_preview: true // Отключаем превью ссылок
+  };
+
   try {
     if (listMessageId) {
       await ctx.telegram.editMessageText(
@@ -99,23 +106,17 @@ const sendPlayerList = async (ctx) => {
         listMessageId,
         null,
         formattedList,
-        { parse_mode: "HTML", reply_markup: inlineKeyboard.reply_markup }
+        messageOptions
       );
     } else {
-      const sentMessage = await ctx.reply(formattedList, {
-        parse_mode: "HTML",
-        reply_markup: inlineKeyboard.reply_markup,
-      });
+      const sentMessage = await ctx.reply(formattedList, messageOptions);
       GlobalState.setListMessageId(sentMessage.message_id);
       GlobalState.setListMessageChatId(ctx.chat.id);
     }
   } catch (error) {
     if (error.description?.includes("message to edit not found")) {
       listMessageId = null;
-      const sentMessage = await ctx.reply(formattedList, {
-        parse_mode: "HTML",
-        reply_markup: inlineKeyboard.reply_markup,
-      });
+      const sentMessage = await ctx.reply(formattedList, messageOptions);
       GlobalState.setListMessageId(sentMessage.message_id);
       GlobalState.setListMessageChatId(ctx.chat.id);
     } else if (error.description?.includes("message is not modified")) {

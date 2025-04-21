@@ -11,7 +11,6 @@ module.exports = (bot, GlobalState) => {
 
     await ctx.deleteMessage().catch(() => {});
 
-
     if (ctx.chat.id < 0) {
       const msg = await ctx.reply("Напиши мне в ЛС.");
       return deleteMessageAfterDelay(ctx, msg.message_id);
@@ -36,10 +35,9 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setListMessageChatId(null);
     }
 
-
     const allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
-    const teamsBase = GlobalState.getTeamsBase()
+    const teamsBase = GlobalState.getTeamsBase();
     const allPlayers = allTeams.flat();
 
     // Сохраняем игроков в базу данных и обновляем историю
@@ -52,16 +50,14 @@ module.exports = (bot, GlobalState) => {
       try {
         const sentMessage = await ctx.telegram.sendMessage(listMessageChatId, teamsMessage, {
           parse_mode: "HTML",
+          disable_notification: true, // Отключаем уведомление о сообщении
         });
 
-        // Закрепляем сообщение в группе
-        await ctx.telegram.pinChatMessage(listMessageChatId, sentMessage.message_id, {
-          disable_notification: true, // Закрепляем без уведомления участников
-        }).catch((error) => {
-          console.error("Ошибка закрепления сообщения:", error);
+        // Убеждаемся, что сообщение не закреплено
+        await ctx.telegram.unpinChatMessage(listMessageChatId, sentMessage.message_id).catch((error) => {
+          console.log("Сообщение не было закреплено или ошибка при откреплении:", error);
         });
 
-        // Удаляем сообщение через 10 секунд
         deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 7200000);
       } catch (error) {
         console.error("Ошибка отправки таблицы в группу:", error);
@@ -72,7 +68,6 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayers([]);
     GlobalState.setQueue([]);
     GlobalState.setCollectionDate(null);
-    GlobalState.setLocation("Локация пока не определена");
     GlobalState.setMaxPlayers(28);
     GlobalState.setStart(false);
     GlobalState.setNotificationSent(false);
