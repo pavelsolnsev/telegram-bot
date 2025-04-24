@@ -1,12 +1,13 @@
 const GlobalState = (() => {
-  const ADMIN_ID = Number(process.env.ADMIN_ID);
+  const ADMIN_ID = process.env.ADMIN_ID.split(',').map(id => Number(id.trim()));
   const GROUP_ID = Number(process.env.ID);
+  const GROUP_TEST_ID = Number(process.env.ID_TEST);
   const IMAGE_URL = process.env.IMAGE_URL;
 
   let isMatchStarted = false;
   let isTeamsDivided = false;
   let isStatsInitialized = false;
-  let MAX_PLAYERS = 28;
+  let MAX_PLAYERS = 20;
   let players = [];
   let teamsBase = [];
   let queue = [];
@@ -26,6 +27,7 @@ const GlobalState = (() => {
   const Store = {
     getAdminId: () => ADMIN_ID,
     getGroupId: () => GROUP_ID,
+    getGroupTestId: () => GROUP_TEST_ID,
     getStart: () => isMatchStarted,
     setStart: (status) => isMatchStarted = status,
     getDivided: () => isTeamsDivided,

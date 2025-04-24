@@ -14,8 +14,6 @@ module.exports = (bot, GlobalState) => {
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
 
-    if (ctx.chat.id !== GROUP_ID) return;
-
     const user = {
       id: ctx.from.id,
       name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
@@ -29,7 +27,7 @@ module.exports = (bot, GlobalState) => {
     };
 
     const [updatedUser] = await getPlayerStats([user]);
-    const isAdmin = updatedUser.id === ADMIN_ID;
+    const isAdmin = ADMIN_ID.includes(updatedUser.id);
 
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
@@ -78,20 +76,32 @@ module.exports = (bot, GlobalState) => {
       if (players.length < MAX_PLAYERS) {
         players.push(updatedUser);
         if (!isAdmin) {
-          await sendPrivateMessage(
-            bot,
-            ADMIN_ID,
-            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав`
-          );
+          for (const adminId of ADMIN_ID) {
+            if (isNaN(adminId) || adminId <= 0) {
+              console.warn(`Некорректный adminId: ${adminId}`);
+              continue;
+            }
+            await sendPrivateMessage(
+              bot,
+              adminId,
+              `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав`
+            );
+          }
         }
       } else {
         queue.push(updatedUser);
         if (!isAdmin) {
-          await sendPrivateMessage(
-            bot,
-            ADMIN_ID,
-            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь`
-          );
+          for (const adminId of ADMIN_ID) {
+            if (isNaN(adminId) || adminId <= 0) {
+              console.warn(`Некорректный adminId: ${adminId}`);
+              continue;
+            }
+            await sendPrivateMessage(
+              bot,
+              adminId,
+              `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь`
+            );
+          }
         }
       }
       await sendPlayerList(ctx);
@@ -122,22 +132,34 @@ module.exports = (bot, GlobalState) => {
       if (playerIndex !== -1) {
         players.splice(playerIndex, 1);
         if (!isAdmin) {
-          await sendPrivateMessage(
-            bot,
-            ADMIN_ID,
-            `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из основного состава`
-          );
+          for (const adminId of ADMIN_ID) {
+            if (isNaN(adminId) || adminId <= 0) {
+              console.warn(`Некорректный adminId: ${adminId}`);
+              continue;
+            }
+            await sendPrivateMessage(
+              bot,
+              adminId,
+              `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из основного состава`
+            );
+          }
         }
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
           players.push(movedPlayer);
           await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
-          if (movedPlayer.id !== ADMIN_ID) {
-            await sendPrivateMessage(
-              bot,
-              ADMIN_ID,
-              `🔄 Игрок ${movedPlayer.username || movedPlayer.name} перемещен из очереди в основной состав`
-            );
+          if (!ADMIN_ID.includes(movedPlayer.id)) {
+            for (const adminId of ADMIN_ID) {
+              if (isNaN(adminId) || adminId <= 0) {
+                console.warn(`Некорректный adminId: ${adminId}`);
+                continue;
+              }
+              await sendPrivateMessage(
+                bot,
+                adminId,
+                `🔄 Игрок ${movedPlayer.username || movedPlayer.name} перемещен из очереди в основной состав`
+              );
+            }
           }
         }
         await sendPlayerList(ctx);
@@ -151,11 +173,17 @@ module.exports = (bot, GlobalState) => {
         if (queueIndex !== -1) {
           queue.splice(queueIndex, 1);
           if (!isAdmin) {
-            await sendPrivateMessage(
-              bot,
-              ADMIN_ID,
-              `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из очереди`
-            );
+            for (const adminId of ADMIN_ID) {
+              if (isNaN(adminId) || adminId <= 0) {
+                console.warn(`Некорректный adminId: ${adminId}`);
+                continue;
+              }
+              await sendPrivateMessage(
+                bot,
+                adminId,
+                `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из очереди`
+              );
+            }
           }
           await sendPlayerList(ctx);
           const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -174,7 +202,7 @@ module.exports = (bot, GlobalState) => {
 
     } else if (ctx.message.text === "+1") {
       await ctx.deleteMessage().catch(() => {});
-      if (ctx.from.id !== ADMIN_ID) {
+      if (!ADMIN_ID.includes(ctx.from.id)) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           "⛔ У вас нет прав для этой команды!",
@@ -281,7 +309,7 @@ module.exports = (bot, GlobalState) => {
 
     const [updatedUser] = await getPlayerStats([user]);
     const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
-    const isAdmin = updatedUser.id === ADMIN_ID;
+    const isAdmin = ADMIN_ID.includes(updatedUser.id);
 
     if (isInList) {
       await ctx.answerCbQuery("⚠️ Вы уже записаны!");
@@ -292,21 +320,33 @@ module.exports = (bot, GlobalState) => {
       players.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в список!");
       if (!isAdmin) {
-        await sendPrivateMessage(
-          bot,
-          ADMIN_ID,
-          `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав через кнопку`
-        );
+        for (const adminId of ADMIN_ID) {
+          if (isNaN(adminId) || adminId <= 0) {
+            console.warn(`Некорректный adminId: ${adminId}`);
+            continue;
+          }
+          await sendPrivateMessage(
+            bot,
+            adminId,
+            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав через кнопку`
+          );
+        }
       }
     } else {
       queue.push(updatedUser);
       await ctx.answerCbQuery("✅ Вы добавлены в очередь!");
       if (!isAdmin) {
-        await sendPrivateMessage(
-          bot,
-          ADMIN_ID,
-          `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь через кнопку`
-        );
+        for (const adminId of ADMIN_ID) {
+          if (isNaN(adminId) || adminId <= 0) {
+            console.warn(`Некорректный adminId: ${adminId}`);
+            continue;
+          }
+          await sendPrivateMessage(
+            bot,
+            adminId,
+            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь через кнопку`
+          );
+        }
       }
     }
 

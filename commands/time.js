@@ -8,7 +8,7 @@ module.exports = (bot, GlobalState) => {
     const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
     const isTeamsDivided = GlobalState.getDivided();
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ Нет прав!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }

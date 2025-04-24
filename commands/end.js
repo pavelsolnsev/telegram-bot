@@ -3,6 +3,18 @@ const savePlayersToDatabase = require("../database/savePlayers");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
+  // Регистрируем обработчик pinned_message для удаления системных сообщений о закреплении
+  bot.on("pinned_message", async (ctx) => {
+    try {
+      // Удаляем системное сообщение о закреплении
+      await ctx.deleteMessage().catch((error) => {
+        console.error("Ошибка удаления системного сообщения о закреплении:", error);
+      });
+    } catch (error) {
+      console.error("Общая ошибка в обработчике pinned_message:", error);
+    }
+  });
+
   bot.hears(/^e!$/i, async (ctx) => {
     const listMessageId = GlobalState.getListMessageId();
     const listMessageChatId = GlobalState.getListMessageChatId(); // ID группы
@@ -11,12 +23,7 @@ module.exports = (bot, GlobalState) => {
 
     await ctx.deleteMessage().catch(() => {});
 
-    if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
-      return deleteMessageAfterDelay(ctx, msg.message_id);
-    }
-
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
@@ -28,11 +35,18 @@ module.exports = (bot, GlobalState) => {
 
     // Удаляем сообщение со списком игроков из группы
     if (listMessageId && listMessageChatId) {
-      await ctx.telegram.deleteMessage(listMessageChatId, listMessageId).catch((error) => {
-        console.error("Ошибка удаления сообщения из группы:", error);
-      });
-      GlobalState.setListMessageId(null);
-      GlobalState.setListMessageChatId(null);
+      try {
+        // Задержка в 1 секунду перед удалением (для стабильности)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        await ctx.telegram.deleteMessage(listMessageChatId, listMessageId).catch((error) => {
+          console.error("Ошибка удаления сообщения из группы:", error);
+        });
+        GlobalState.setListMessageId(null);
+        GlobalState.setListMessageChatId(null);
+      } catch (error) {
+        console.error("Общая ошибка при удалении сообщения:", error);
+      }
     }
 
     const allTeams = GlobalState.getTeams();
@@ -63,12 +77,12 @@ module.exports = (bot, GlobalState) => {
         console.error("Ошибка отправки таблицы в группу:", error);
       }
     }
- 
+
     // Сбрасываем состояние
     GlobalState.setPlayers([]);
     GlobalState.setQueue([]);
     GlobalState.setCollectionDate(null);
-    GlobalState.setMaxPlayers(28);
+    GlobalState.setMaxPlayers(20);
     GlobalState.setStart(false);
     GlobalState.setNotificationSent(false);
     GlobalState.setTeams([]);

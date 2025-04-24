@@ -10,7 +10,7 @@ module.exports = (bot, GlobalState) => {
     const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
@@ -73,7 +73,7 @@ module.exports = (bot, GlobalState) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
@@ -143,7 +143,7 @@ module.exports = (bot, GlobalState) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",

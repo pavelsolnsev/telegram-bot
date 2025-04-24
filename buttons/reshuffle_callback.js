@@ -21,7 +21,7 @@ module.exports = (bot, GlobalState) => {
   bot.action("reshuffle_callback", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",

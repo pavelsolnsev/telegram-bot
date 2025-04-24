@@ -16,7 +16,7 @@ module.exports = (bot, GlobalState) => {
 
     await ctx.deleteMessage().catch(() => {});
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }

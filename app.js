@@ -16,6 +16,19 @@ const { checkTimeAndNotify } = require("./utils/checkTimeAndNotify");
 //     sendLogToTelegram(bot, ADMIN_ID, message); // Отправляем в Телеграм
 // };
 
+// проверка id пользователя 
+
+bot.hears(/^id$/i, async (ctx) => {
+  const userId = ctx.from.id;
+  const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name || "Без имени";
+  await ctx.reply(`Ваш ID: ${userId}\nИмя: ${username}`);
+});
+
+bot.hears(/^gr$/i, async (ctx) => {
+  const chatId = ctx.chat.id;
+  const chatTitle = ctx.chat.title || "Чат без названия";
+  await ctx.reply(`ID группы: ${chatId}\nНазвание: ${chatTitle}`);
+});
 
 // Подключаем обработчики команд из отдельных файлов
 require("./commands/startMatch")(bot, GlobalState); // Команда s для начала матча

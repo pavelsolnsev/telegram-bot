@@ -12,7 +12,7 @@ module.exports = (bot, GlobalState) => {
     const isTeamsDivided = GlobalState.getDivided();
     await ctx.deleteMessage().catch(() => {});
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
@@ -25,6 +25,11 @@ module.exports = (bot, GlobalState) => {
     if (isTeamsDivided) {
       const message = await ctx.reply("Лимит закрыт");
       return deleteMessageAfterDelay(ctx, message.message_id);
+    }
+
+    if (ctx.chat.id > 0) {
+      const message = await ctx.reply("Напиши в группу!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
     }
 
     const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]);

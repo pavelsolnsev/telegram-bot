@@ -8,7 +8,7 @@ const { safeTelegramCall } = require("../utils/telegramUtils");
 // Вспомогательные функции остаются без изменений
 const checkAdminRights = async (ctx, ADMIN_ID) => {
   await ctx.deleteMessage().catch(() => {});
-  if (ctx.from.id !== ADMIN_ID) {
+  if (!ADMIN_ID.includes(ctx.from.id)) {
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
       "⛔ У вас нет прав для этой команды.",

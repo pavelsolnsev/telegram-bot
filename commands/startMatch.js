@@ -7,7 +7,6 @@ module.exports = (bot, GlobalState) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const isMatchStarted = GlobalState.getStart();
-    const GROUP_ID = GlobalState.getGroupId();
 
     await ctx.deleteMessage().catch(() => {});
 
@@ -18,12 +17,12 @@ module.exports = (bot, GlobalState) => {
     }
 
     // Проверяем, что сообщение отправлено в правильной группе
-    if (ctx.chat.id !== GROUP_ID) {
-      const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
-    }
+    // if (ctx.chat.id !== GROUP_ID) {
+    //   const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
+    //   return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    // }
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ Нет прав!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
@@ -70,7 +69,6 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^test$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
-    const GROUP_ID = GlobalState.getGroupId(); // Предполагаем, что ID группы доступен
     const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
 
@@ -81,12 +79,12 @@ module.exports = (bot, GlobalState) => {
     }
 
     // Проверяем, что сообщение отправлено в правильной группе
-    if (ctx.chat.id !== GROUP_ID) {
-      const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
-    }
+    // if (ctx.chat.id !== GROUP_ID) {
+    //   const message = await ctx.reply("⛔ Эта команда работает только в основной группе!");
+    //   return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+    // }
 
-    if (ctx.from.id !== ADMIN_ID) {
+    if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ Нет прав!");
       return deleteMessageAfterDelay(ctx, message.message_id);
     }
