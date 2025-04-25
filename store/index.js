@@ -5,6 +5,7 @@ const GlobalState = (() => {
   const IMAGE_URL = process.env.IMAGE_URL;
 
   let isMatchStarted = false;
+  let isMatchFinished = false;
   let isTeamsDivided = false;
   let isStatsInitialized = false;
   let MAX_PLAYERS = 20;
@@ -30,6 +31,8 @@ const GlobalState = (() => {
     getGroupTestId: () => GROUP_TEST_ID,
     getStart: () => isMatchStarted,
     setStart: (status) => isMatchStarted = status,
+    getIsMatchFinished: () => isMatchFinished,
+    setIsMatchFinished: (status) => isMatchFinished = status,
     getDivided: () => isTeamsDivided,
     setDivided: (status) => isTeamsDivided = status,
     getIsStatsInitialized: () => isStatsInitialized,
