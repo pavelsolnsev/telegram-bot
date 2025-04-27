@@ -1,7 +1,6 @@
 const GlobalState = (() => {
   const ADMIN_ID = process.env.ADMIN_ID.split(',').map(id => Number(id.trim()));
   const GROUP_ID = Number(process.env.ID);
-  const GROUP_TEST_ID = Number(process.env.ID_TEST);
   const IMAGE_URL = process.env.IMAGE_URL;
 
   let isMatchStarted = false;
@@ -28,7 +27,6 @@ const GlobalState = (() => {
   const Store = {
     getAdminId: () => ADMIN_ID,
     getGroupId: () => GROUP_ID,
-    getGroupTestId: () => GROUP_TEST_ID,
     getStart: () => isMatchStarted,
     setStart: (status) => isMatchStarted = status,
     getIsMatchFinished: () => isMatchFinished,

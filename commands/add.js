@@ -16,7 +16,8 @@ module.exports = (bot, GlobalState) => {
 
     const user = {
       id: ctx.from.id,
-      name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
+      first_name: ctx.from.first_name,
+      last_name: ctx.from.last_name || null,
       username: ctx.from.username ? `@${ctx.from.username}` : null,
       goals: 0,
       gamesPlayed: 0,
@@ -28,6 +29,18 @@ module.exports = (bot, GlobalState) => {
 
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
+
+    // Форматирование имени для сообщений
+    let displayName;
+    if (updatedUser.username && updatedUser.first_name && updatedUser.last_name) {
+      displayName = `${updatedUser.username} (${updatedUser.first_name} ${updatedUser.last_name})`;
+    } else if (updatedUser.username && updatedUser.first_name) {
+      displayName = `${updatedUser.username} (${updatedUser.first_name})`;
+    } else if (updatedUser.first_name && updatedUser.last_name) {
+      displayName = `${updatedUser.first_name} ${updatedUser.last_name}`;
+    } else {
+      displayName = updatedUser.first_name;
+    }
 
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
@@ -84,7 +97,7 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав`
+              `➕ Игрок ${displayName} записался в основной состав`
             );
           }
         }
@@ -99,7 +112,7 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь`
+              `➕ Игрок ${displayName} записался в очередь`
             );
           }
         }
@@ -107,7 +120,7 @@ module.exports = (bot, GlobalState) => {
       await sendPlayerList(ctx);
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        `✅ ${updatedUser.name} добавлен!`,
+        `✅ ${displayName} добавлен!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id);
 
@@ -140,13 +153,22 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из основного состава`
+              `➖ Игрок ${displayName} вышел из основного состава`
             );
           }
         }
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
           players.push(movedPlayer);
+          // Форматирование имени для перемещенного игрока
+          const movedDisplayName = movedPlayer.username && movedPlayer.first_name && movedPlayer.last_name
+            ? `${movedPlayer.username} (${movedPlayer.first_name} ${movedPlayer.last_name})`
+            : movedPlayer.username && movedPlayer.first_name
+            ? `${movedPlayer.username} (${movedPlayer.first_name})`
+            : movedPlayer.first_name && movedPlayer.last_name
+            ? `${movedPlayer.first_name} ${movedPlayer.last_name}`
+            : movedPlayer.first_name;
+
           await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
           if (!ADMIN_ID.includes(movedPlayer.id)) {
             for (const adminId of ADMIN_ID) {
@@ -157,7 +179,7 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `🔄 Игрок ${movedPlayer.username || movedPlayer.name} перемещен из очереди в основной состав`
+                `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
               );
             }
           }
@@ -165,7 +187,7 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
-          `✅ ${updatedUser.name} удален!`,
+          `✅ ${displayName} удален!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id);
       } else {
@@ -181,14 +203,14 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `➖ Игрок ${updatedUser.username || updatedUser.name} вышел из очереди`
+                `➖ Игрок ${displayName} вышел из очереди`
               );
             }
           }
           await sendPlayerList(ctx);
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
-            `✅ ${updatedUser.name} удален!`,
+            `✅ ${displayName} удален!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id);
         } else {
@@ -223,7 +245,8 @@ module.exports = (bot, GlobalState) => {
         const testUserCount = baseTestUserCount + i;
         const testUser = {
           id: 100000 + testUserCount,
-          name: `Test Player ${testUserCount}`,
+          first_name: `Test Player ${testUserCount}`,
+          last_name: null,
           username: `@TestPlayer${testUserCount}`,
           goals: 0,
           gamesPlayed: 0,
@@ -237,12 +260,17 @@ module.exports = (bot, GlobalState) => {
         const isInList = players.some((p) => p.id === updatedTestUser.id) || queue.some((p) => p.id === updatedTestUser.id);
         if (isInList) continue;
 
+        // Форматирование имени для тестового игрока
+        const testDisplayName = updatedTestUser.username && updatedTestUser.first_name
+          ? `${updatedTestUser.username} (${updatedTestUser.first_name})`
+          : updatedTestUser.first_name;
+
         if (players.length < MAX_PLAYERS) {
           players.push(updatedTestUser);
-          addedPlayers.push(updatedTestUser.name + " (в список игроков)");
+          addedPlayers.push(`${testDisplayName} (в список игроков)`);
         } else {
           queue.push(updatedTestUser);
-          addedPlayers.push(updatedTestUser.name + " (в очередь)");
+          addedPlayers.push(`${testDisplayName} (в очередь)`);
         }
       }
 
