@@ -14,22 +14,22 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (isTeamsDivided) {
       const message = await ctx.reply("Лимит закрыт");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id > 0) {
       const message = await ctx.reply("Напиши в группу!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]);
@@ -37,7 +37,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         "⚠️ Лимит должен быть положительным числом!"
       );
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (newLimit < MAX_PLAYERS) {
@@ -69,7 +69,7 @@ module.exports = (bot, GlobalState) => {
     const message = await ctx.reply(
       `✅ Лимит игроков установлен на ${newLimit}.`
     );
-    deleteMessageAfterDelay(ctx, message.message_id);
+    deleteMessageAfterDelay(ctx, message.message_id, 6000);
     await sendPlayerList(ctx);
   });
 };

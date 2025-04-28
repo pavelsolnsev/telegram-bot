@@ -60,7 +60,7 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           "⚠️ Чтобы записаться, вступите в группу!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       if (!isMatchStarted) {
@@ -68,7 +68,7 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           "⚠️ Матч не начат!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (isTeamsDivided) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -76,7 +76,7 @@ module.exports = (bot, GlobalState) => {
           "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
           { parse_mode: "HTML" },
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
       if (isInList) {
@@ -84,7 +84,7 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           "⚠️ Вы уже записаны!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (players.length < MAX_PLAYERS) {
         players.push(updatedUser);
@@ -122,7 +122,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         `✅ ${displayName} добавлен!`,
       ]);
-      deleteMessageAfterDelay(ctx, message.message_id);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
 
     } else if (ctx.message.text === "-") {
       await ctx.deleteMessage().catch(() => {});
@@ -131,7 +131,7 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           "⚠️ Матч не начат!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (isTeamsDivided) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -139,7 +139,7 @@ module.exports = (bot, GlobalState) => {
           "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
           { parse_mode: "HTML" },
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       const playerIndex = players.findIndex((p) => p.id === updatedUser.id);
       if (playerIndex !== -1) {
@@ -189,7 +189,7 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           `✅ ${displayName} удален!`,
         ]);
-        deleteMessageAfterDelay(ctx, message.message_id);
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
       } else {
         const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
         if (queueIndex !== -1) {
@@ -212,13 +212,13 @@ module.exports = (bot, GlobalState) => {
             ctx.chat.id,
             `✅ ${displayName} удален!`,
           ]);
-          deleteMessageAfterDelay(ctx, message.message_id);
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
             "⚠️ Вы не в списке!",
           ]);
-          deleteMessageAfterDelay(ctx, message.message_id);
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
       }
 
@@ -229,14 +229,14 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           "⛔ У вас нет прав для этой команды!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (!isMatchStarted) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           "⚠️ Матч не начат!",
         ]);
-        return deleteMessageAfterDelay(ctx, message.message_id);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       const addedPlayers = [];
@@ -280,14 +280,14 @@ module.exports = (bot, GlobalState) => {
           ctx.chat.id,
           messageText,
         ]);
-        deleteMessageAfterDelay(ctx, message.message_id);
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
         await sendPlayerList(ctx);
       } else {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           "⚠️ Все тестовые игроки уже добавлены или нет места!",
         ]);
-        deleteMessageAfterDelay(ctx, message.message_id);
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
     }
   });
@@ -320,7 +320,7 @@ module.exports = (bot, GlobalState) => {
         "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
         { parse_mode: "HTML" },
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const user = {

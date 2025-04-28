@@ -18,17 +18,17 @@ module.exports = (bot, GlobalState) => {
   
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   
     if (!teams[teamIndex1] || !teams[teamIndex2]) {
       const message = await ctx.reply("⛔ Команды не найдены!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   
     if (ctx.chat.id < 0) {

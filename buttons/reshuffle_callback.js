@@ -26,7 +26,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const numTeams = GlobalState.getLastTeamCount();
@@ -37,7 +37,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Недостаточно игроков для создания команд!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Перемешиваем игроков случайным образом

@@ -15,7 +15,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
@@ -23,7 +23,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⚠️ Матч не начат!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const teamIndex = parseInt(args[1], 10) - 1;
@@ -35,7 +35,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     let team =
@@ -64,7 +64,7 @@ module.exports = (bot, GlobalState) => {
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].name}!`,
     ]);
-    return deleteMessageAfterDelay(ctx, message.message_id);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик команды "ug <team> <player>" для удаления гола
@@ -78,7 +78,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
@@ -86,7 +86,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⚠️ Матч не начат!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const teamIndex = parseInt(args[1], 10) - 1;
@@ -98,7 +98,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     let team =
@@ -135,7 +135,7 @@ module.exports = (bot, GlobalState) => {
       ctx.chat.id,
       `⚽ Гол удалён у ${team[playerIndex].name}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
     ]);
-    return deleteMessageAfterDelay(ctx, message.message_id);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик нажатия кнопки "goal_<team>_<player>" для добавления гола
@@ -148,7 +148,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
@@ -156,7 +156,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⚠️ Матч не начат!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const teamIndex = parseInt(ctx.match[1], 10);
@@ -168,7 +168,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     let team =
@@ -195,6 +195,6 @@ module.exports = (bot, GlobalState) => {
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].name}!`,
     ]);
-    return deleteMessageAfterDelay(ctx, message.message_id);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };

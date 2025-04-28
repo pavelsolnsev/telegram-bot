@@ -16,17 +16,17 @@ module.exports = (bot, GlobalState) => {
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Список игроков ещё не создан.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (isTeamsDivided) {
       const message = await ctx.reply("Сейчас идет игра!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!listMessageId || !GROUP_ID) {
       const message = await ctx.reply("⚠️ Список игроков недоступен.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     try {
@@ -44,7 +44,7 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply(
         "⚠️ Не удалось получить список игроков из группы."
       );
-      deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });
 };

@@ -11,12 +11,12 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id < 0) {
@@ -28,7 +28,7 @@ module.exports = (bot, GlobalState) => {
 
     if (playerNumber <= 0 || playerNumber > players.length) {
       const message = await ctx.reply("⚠️ Неверный номер игрока!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const playerIndex = playerNumber - 1;
@@ -38,10 +38,10 @@ module.exports = (bot, GlobalState) => {
       player.paid = true;
       await sendPlayerList(ctx);
       const message = await ctx.reply(`✅ ${player.name} оплатил участие.`);
-      deleteMessageAfterDelay(ctx, message.message_id);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
       const message = await ctx.reply(`⚠️ ${player.name} уже отмечен как оплативший!`);
-      deleteMessageAfterDelay(ctx, message.message_id);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });
 
@@ -55,7 +55,7 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) return;
@@ -64,7 +64,7 @@ module.exports = (bot, GlobalState) => {
 
     if (playerNumber <= 0 || playerNumber > players.length) {
       const message = await ctx.reply("⚠️ Неверный номер игрока!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const playerIndex = playerNumber - 1;
@@ -74,10 +74,10 @@ module.exports = (bot, GlobalState) => {
       player.paid = false;
       await sendPlayerList(ctx);
       const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`);
-      deleteMessageAfterDelay(ctx, message.message_id);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
       const message = await ctx.reply(`⚠️ ${player.name} и так не отмечен как оплативший!`);
-      deleteMessageAfterDelay(ctx, message.message_id);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });
 };

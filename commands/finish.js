@@ -15,7 +15,7 @@ const checkAdminRights = async (ctx, ADMIN_ID) => {
       ctx.chat.id,
       "⛔ У вас нет прав для этой команды.",
     ]);
-    deleteMessageAfterDelay(ctx, message.message_id);
+    deleteMessageAfterDelay(ctx, message.message_id, 6000);
     return false;
   }
   return true;
@@ -27,7 +27,7 @@ const checkMatchStarted = async (ctx, isMatchStarted) => {
       ctx.chat.id,
       "⚠️ Матч не начат!",
     ]);
-    deleteMessageAfterDelay(ctx, message.message_id);
+    deleteMessageAfterDelay(ctx, message.message_id, 6000);
     return false;
   }
   return true;
@@ -147,7 +147,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id < 0) {
@@ -254,7 +254,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча для продолжения!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
@@ -388,7 +388,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Недостаточно команд для следующего матча!",
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const resetGoals = (team) =>

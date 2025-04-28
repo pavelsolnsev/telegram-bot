@@ -14,22 +14,22 @@ module.exports = (bot, GlobalState) => {
     // Проверяем, является ли отправитель администратором
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (isTeamsDivided) {
       const message = await ctx.reply("Игра уже идет!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id > 0) {
       const message = await ctx.reply("Напиши в группу!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Получаем номер игрока из текста команды
@@ -38,7 +38,7 @@ module.exports = (bot, GlobalState) => {
     // Проверяем, что номер игрока корректен
     if (playerNumber <= 0 || playerNumber > players.length) {
       const message = await ctx.reply("⚠️ Неверный номер игрока!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Находим игрока по его номеру
@@ -61,7 +61,7 @@ module.exports = (bot, GlobalState) => {
 
     // Отправляем уведомление о том, что игрок был удалён
     const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);
-    deleteMessageAfterDelay(ctx, message.message_id);
+    deleteMessageAfterDelay(ctx, message.message_id, 6000);
 
     // Обновляем список игроков
     await sendPlayerList(ctx);

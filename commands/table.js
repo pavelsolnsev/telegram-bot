@@ -18,12 +18,12 @@ module.exports = (bot, GlobalState) => {
     // Проверка условий
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч ещё не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isTeamsDivided || teamsBase.length === 0) {
       const message = await ctx.reply("⚠️ Команды ещё не сформированы!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   
     try {
@@ -43,7 +43,7 @@ module.exports = (bot, GlobalState) => {
     } catch (error) {
       console.error("Ошибка при формировании таблицы:", error);
       const message = await ctx.reply("⚠️ Не удалось сформировать таблицу.");
-      deleteMessageAfterDelay(ctx, message.message_id, 3000);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });
 };

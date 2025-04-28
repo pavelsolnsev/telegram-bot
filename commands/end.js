@@ -27,17 +27,17 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
       const message = await ctx.reply("⚠️ Матч не начат!");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (playingTeams && !isMatchFinished) {
       const message = await ctx.reply("⛔ Матч еще не завершен! Используйте команду fn для завершения матча.");
-      return deleteMessageAfterDelay(ctx, message.message_id);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Удаляем сообщение со списком игроков из группы
@@ -109,6 +109,6 @@ module.exports = (bot, GlobalState) => {
 
     // Отправляем подтверждение в личку
     const message = await ctx.reply("✅ Сбор успешно завершён!");
-    deleteMessageAfterDelay(ctx, message.message_id);
+    deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };
