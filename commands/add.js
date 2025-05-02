@@ -187,7 +187,7 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
-          `✅ ${displayName} удален!`,
+          `✅ ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       } else {
@@ -210,7 +210,7 @@ module.exports = (bot, GlobalState) => {
           await sendPlayerList(ctx);
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
-            `✅ ${displayName} удален!`,
+            `✅ ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
