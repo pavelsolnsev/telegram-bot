@@ -46,13 +46,19 @@ module.exports = (bot, GlobalState) => {
         : null;
 
     if (!team) {
-      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Команда не найдена!"]);
-      return;
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда не найдена!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Игрок не найден!"]);
-      return;
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Игрок не найден!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     team[playerIndex].goals = (team[playerIndex].goals || 0) + 1;
@@ -72,6 +78,7 @@ module.exports = (bot, GlobalState) => {
     const args = ctx.message.text.match(/^ug(\d+)(\d+)$/i);
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+    await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -109,23 +116,29 @@ module.exports = (bot, GlobalState) => {
         : null;
 
     if (!team) {
-      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Команда не найдена!"]);
-      return;
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда не найдена!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      await safeTelegramCall(ctx, "sendMessage", [ctx.chat.id, "⛔ Игрок не найден!"]);
-      return;
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Игрок не найден!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (team[playerIndex].goals && team[playerIndex].goals > 0) {
       team[playerIndex].goals -= 1;
     } else {
-      await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         `⚠️ У ${team[playerIndex].name} уже 0 голов.`,
       ]);
-      return;
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     GlobalState.setPlayingTeams(playingTeams);
@@ -148,6 +161,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
+      await ctx.answerCbQuery();
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -156,6 +170,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⚠️ Матч не начат!",
       ]);
+      await ctx.answerCbQuery();
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -168,6 +183,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
+      await ctx.answerCbQuery();
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -179,11 +195,21 @@ module.exports = (bot, GlobalState) => {
         : null;
 
     if (!team) {
-      return ctx.answerCbQuery("⛔ Команда не найдена!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда не найдена!",
+      ]);
+      await ctx.answerCbQuery();
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      return ctx.answerCbQuery("⛔ Игрок не найден!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Игрок не найден!",
+      ]);
+      await ctx.answerCbQuery();
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     team[playerIndex].goals = (team[playerIndex].goals || 0) + 1;
@@ -195,6 +221,7 @@ module.exports = (bot, GlobalState) => {
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].name}!`,
     ]);
+    await ctx.answerCbQuery();
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };

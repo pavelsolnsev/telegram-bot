@@ -16,9 +16,8 @@ module.exports = (bot, GlobalState) => {
 
     const user = {
       id: ctx.from.id,
-      first_name: ctx.from.first_name,
-      last_name: ctx.from.last_name || null,
-      username: ctx.from.username ? `@${ctx.from.username}` : null,
+      name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
+      username: ctx.from.username ? `${ctx.from.username}` : null,
       goals: 0,
       gamesPlayed: 0,
       wins: 0,
@@ -32,14 +31,14 @@ module.exports = (bot, GlobalState) => {
 
     // Форматирование имени для сообщений
     let displayName;
-    if (updatedUser.username && updatedUser.first_name && updatedUser.last_name) {
-      displayName = `${updatedUser.username} (${updatedUser.first_name} ${updatedUser.last_name})`;
-    } else if (updatedUser.username && updatedUser.first_name) {
-      displayName = `${updatedUser.username} (${updatedUser.first_name})`;
-    } else if (updatedUser.first_name && updatedUser.last_name) {
-      displayName = `${updatedUser.first_name} ${updatedUser.last_name}`;
+    if (user.username && user.name && user.last_name) {
+      displayName = `${user.username} (${user.name} ${user.last_name})`;
+    } else if (user.username && user.name) {
+      displayName = `${user.username} (${user.name})`;
+    } else if (user.name && user.last_name) {
+      displayName = `${user.name} ${user.last_name}`;
     } else {
-      displayName = updatedUser.first_name;
+      displayName = user.name;
     }
 
     // Проверка, состоит ли пользователь в группе
@@ -161,13 +160,29 @@ module.exports = (bot, GlobalState) => {
           const movedPlayer = queue.shift();
           players.push(movedPlayer);
           // Форматирование имени для перемещенного игрока
-          const movedDisplayName = movedPlayer.username && movedPlayer.first_name && movedPlayer.last_name
-            ? `${movedPlayer.username} (${movedPlayer.first_name} ${movedPlayer.last_name})`
-            : movedPlayer.username && movedPlayer.first_name
-            ? `${movedPlayer.username} (${movedPlayer.first_name})`
-            : movedPlayer.first_name && movedPlayer.last_name
-            ? `${movedPlayer.first_name} ${movedPlayer.last_name}`
-            : movedPlayer.first_name;
+          let movedDisplayName;
+          if (movedPlayer.username && movedPlayer.name && movedPlayer.last_name) {
+            movedDisplayName = `${movedPlayer.username} (${movedPlayer.name} ${movedPlayer.last_name})`;
+          } else if (movedPlayer.username && movedPlayer.name) {
+            movedDisplayName = `${movedPlayer.username} (${movedPlayer.name})`;
+          } else if (movedPlayer.name && movedPlayer.last_name) {
+            movedDisplayName = `${movedPlayer.name} ${movedPlayer.last_name}`;
+          } else {
+            movedDisplayName = movedPlayer.name || "Неизвестный";
+          }
+
+          let displayName;
+          if (user.username && user.name && user.last_name) {
+            displayName = `${user.username} (${user.name} ${user.last_name})`;
+          } else if (user.username && user.name) {
+            displayName = `${user.username} (${user.name})`;
+          } else if (user.name && user.last_name) {
+            displayName = `${user.name} ${user.last_name}`;
+          } else {
+            displayName = user.name;
+          }
+
+          console.log('movedPlayer', movedPlayer)
 
           await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
           if (!ADMIN_ID.includes(movedPlayer.id)) {
@@ -187,7 +202,7 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
-          `✅ ${displayName} вышел!`,
+          `❌ ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       } else {
@@ -210,7 +225,7 @@ module.exports = (bot, GlobalState) => {
           await sendPlayerList(ctx);
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
-            `✅ ${displayName} вышел!`,
+            `❌ ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
@@ -247,7 +262,7 @@ module.exports = (bot, GlobalState) => {
           id: 100000 + testUserCount,
           first_name: `Test Player ${testUserCount}`,
           last_name: null,
-          username: `@TestPlayer${testUserCount}`,
+          username: `TestPlayer${testUserCount}`,
           goals: 0,
           gamesPlayed: 0,
           wins: 0,
@@ -326,7 +341,7 @@ module.exports = (bot, GlobalState) => {
     const user = {
       id: ctx.from.id,
       name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
-      username: ctx.from.username ? `@${ctx.from.username}` : null,
+      username: ctx.from.username ? `${ctx.from.username}` : null,
       goals: 0,
       gamesPlayed: 0,
       wins: 0,

@@ -7,8 +7,8 @@ const createTeamButtons = (team, teamIndex) => {
   const buttons = team.map((player, index) => {
     // Убираем @ из username, если он есть
     const displayName = player.username 
-      ? player.username.replace(/^@/, "") 
-      : player.name.split(" ")[0];
+      ? player.username
+      : player.name;
     return Markup.button.callback(
       `${teamColor} ${index + 1}. ${displayName}`,
       `goal_${teamIndex}_${index}`

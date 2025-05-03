@@ -51,7 +51,8 @@ const sendPlayerList = async (ctx) => {
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 12) => {
-    const cleanName = name.replace(/^@/, "");
+    const cleanName = name;
+
     return cleanName.length > maxLength
       ? cleanName.slice(0, maxLength - 3) + "..."
       : cleanName;

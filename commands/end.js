@@ -35,10 +35,10 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    if (playingTeams && !isMatchFinished) {
-      const message = await ctx.reply("⛔ Матч еще не завершен! Используйте команду fn для завершения матча.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    }
+    // if (playingTeams && !isMatchFinished) {
+    //   const message = await ctx.reply("⛔ Матч еще не завершен! Используйте команду fn для завершения матча.");
+    //   return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    // }
 
     // Удаляем сообщение со списком игроков из группы
     if (listMessageId && listMessageChatId) {
@@ -71,6 +71,7 @@ module.exports = (bot, GlobalState) => {
       // Добавляем информацию о VK-странице
       const vkLinkMessage = `${teamsMessage}\n\n` +
         `<b>📸 Смотрите фото и видео матча!</b>\n` +
+        `Список игроков можно посмотреть здесь <a href="https://football.pavelsolnsev.ru/">football.pavelsolnsev.ru</a>\n` +
         `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>`;
 
       try {
