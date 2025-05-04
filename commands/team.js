@@ -7,11 +7,17 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^tm(2|3|4)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
+    const isTeamCommandAllowed = GlobalState.getIsTeamCommandAllowed();
     await ctx.deleteMessage().catch(() => {});
 
     // Проверка на админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const msg = await ctx.reply("⛔ Нет прав!");
+      return deleteMessageAfterDelay(ctx, msg.message_id);
+    }
+
+    if (!isTeamCommandAllowed) {
+      const msg = await ctx.reply("⛔ Команда tm запрещена, пока матчи между командами не завершён (используйте e!).");
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
@@ -45,6 +51,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setTeams(teams);
     GlobalState.setLastTeamCount(numTeams);
     GlobalState.setDivided(true);
+    GlobalState.setIsEndCommandAllowed(false);
     await sendTeamsMessage(ctx, teamsMessage);
   });
 };

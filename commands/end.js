@@ -19,10 +19,8 @@ module.exports = (bot, GlobalState) => {
     const listMessageId = GlobalState.getListMessageId();
     const listMessageChatId = GlobalState.getListMessageChatId(); // ID группы
     const isMatchStarted = GlobalState.getStart();
-    const isMatchFinished = GlobalState.getIsMatchFinished();
-    const playingTeams = GlobalState.getPlayingTeams();
     const ADMIN_ID = GlobalState.getAdminId();
-
+    const isEndCommandAllowed = GlobalState.getIsEndCommandAllowed();
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -35,10 +33,10 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    // if (playingTeams && !isMatchFinished) {
-    //   const message = await ctx.reply("⛔ Матч еще не завершен! Используйте команду fn для завершения матча.");
-    //   return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    // }
+    if (!isEndCommandAllowed) {
+      const message = await ctx.reply("⛔ Команда e! запрещена, пока не начат матч между командами (используйте pl).");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
 
     // Удаляем сообщение со списком игроков из группы
     if (listMessageId && listMessageChatId) {
@@ -107,7 +105,8 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setDivided(false);
     GlobalState.setIsStatsInitialized(false);
     GlobalState.setIsMatchFinished(false);
-
+    GlobalState.setIsEndCommandAllowed(true);
+    GlobalState.setIsTeamCommandAllowed(true);
     // Отправляем подтверждение в личку
     const message = await ctx.reply("✅ Сбор успешно завершён!");
     deleteMessageAfterDelay(ctx, message.message_id, 6000);

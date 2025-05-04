@@ -65,10 +65,9 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
-      `⚽ Гол забил ${team[playerIndex].name}!`,
+      `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
@@ -219,7 +218,7 @@ module.exports = (bot, GlobalState) => {
 
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
-      `⚽ Гол забил ${team[playerIndex].name}!`,
+      `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
     ]);
     await ctx.answerCbQuery();
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);

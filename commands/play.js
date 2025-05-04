@@ -112,6 +112,7 @@ module.exports = (bot, GlobalState) => {
       teamIndex1,
       teamIndex2,
     });
-    GlobalState.setIsMatchFinished(false); // Матч начат, еще не завершен
+    GlobalState.setIsEndCommandAllowed(true); // Разрешаем команду e!
+    GlobalState.setIsTeamCommandAllowed(false); // Запрещаем команду tm
   });
 };

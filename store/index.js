@@ -7,6 +7,8 @@ const GlobalState = (() => {
   let isMatchFinished = false;
   let isTeamsDivided = false;
   let isStatsInitialized = false;
+  let isEndCommandAllowed = true;
+  let isTeamCommandAllowed = true; // Новый флаг для команды tm
   let MAX_PLAYERS = 20;
   let players = [];
   let teamsBase = [];
@@ -43,6 +45,10 @@ const GlobalState = (() => {
     setPlayers: (array) => players = array,
     getQueue: () => queue,
     setQueue: (array) => queue = array,
+    getIsEndCommandAllowed: () => isEndCommandAllowed,
+    setIsEndCommandAllowed: (status) => isEndCommandAllowed = status,
+    getIsTeamCommandAllowed: () => isTeamCommandAllowed,
+    setIsTeamCommandAllowed: (status) => isTeamCommandAllowed = status,
     getCollectionDate: () => collectionDate,
     setCollectionDate: (date) => collectionDate = date,
     getNotificationSent: () => notificationSent,
