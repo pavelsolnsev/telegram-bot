@@ -89,7 +89,7 @@ const sendPlayerList = async (ctx) => {
         player.paid
       )}\n`;
     });
-    formattedList += `</code>\n------------------------------\n`;
+    formattedList += `</code>`;
   }
 
   // Список игроков в очереди
@@ -106,7 +106,7 @@ const sendPlayerList = async (ctx) => {
         player.paid
       )}\n`;
     });
-    formattedList += `</code>\n------------------------------\n`;
+    formattedList += `</code>`;
   }
 
   // Итоговая строка

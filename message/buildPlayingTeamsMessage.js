@@ -49,7 +49,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += "</code>";
 
   // Короткий разделитель
-  message += `\n〰️\n`;
+  message += `\n`;
 
   // Команда 2
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n<code>`;
