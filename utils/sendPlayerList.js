@@ -50,7 +50,7 @@ const sendPlayerList = async (ctx) => {
     // `- <b>Медиа:</b> Снимки и трансляции со сборов доступны в нашей <a href="https://vk.com/ramafootball">группе VK!</a>.\n`;
 
   // Функция для форматирования имени игрока
-  const formatPlayerName = (name, maxLength = 12) => {
+  const formatPlayerName = (name, maxLength = 14) => {
     const cleanName = name;
 
     return cleanName.length > maxLength
@@ -62,7 +62,7 @@ const sendPlayerList = async (ctx) => {
   const formatPlayerLine = (index, name, rating, paid) => {
     const paidMark = paid ? " ✅" : "";
     const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
-    const paddedName = formatPlayerName(name).padEnd(12, " ");
+    const paddedName = formatPlayerName(name).padEnd(14, " ");
     const formattedRating = parseFloat(rating).toString();
 
     let ratingIcon;
