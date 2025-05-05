@@ -3,7 +3,7 @@ const { sendPlayerList } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "p<номер игрока>" (помечает игрока как оплатившего)
-  bot.hears(/^p(\d+)$/i, async (ctx) => { 
+  bot.hears(/^p(\d+)$/i, async (ctx) => {
     const players = GlobalState.getPlayers();
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
@@ -36,7 +36,8 @@ module.exports = (bot, GlobalState) => {
 
     if (!player.paid) {
       player.paid = true;
-      await sendPlayerList(ctx);
+      GlobalState.setPlayers(players); // Обновляем список игроков
+      await sendPlayerList(ctx, GlobalState.getListMessageChatId()); // Обновляем список в группе
       const message = await ctx.reply(`✅ ${player.name} оплатил участие.`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
@@ -46,7 +47,7 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик команды "u<номер игрока>" (снимает отметку об оплате с игрока)
-  bot.hears(/^u(\d+)$/i, async (ctx) => { 
+  bot.hears(/^u(\d+)$/i, async (ctx) => {
     const players = GlobalState.getPlayers();
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
@@ -63,7 +64,10 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
-    if (!isMatchStarted) return;
+    if (!isMatchStarted) {
+      const message = await ctx.reply("⚠️ Матч не начат!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
 
     const playerNumber = Number(ctx.message.text.match(/^u(\d+)$/i)[1]);
 
@@ -77,7 +81,8 @@ module.exports = (bot, GlobalState) => {
 
     if (player.paid) {
       player.paid = false;
-      await sendPlayerList(ctx);
+      GlobalState.setPlayers(players); // Обновляем список игроков
+      await sendPlayerList(ctx, GlobalState.getListMessageChatId()); // Обновляем список в группе
       const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
