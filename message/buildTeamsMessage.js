@@ -11,7 +11,7 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
 
   teamsWithStats.sort((a, b) => b.points - a.points || (b.stats.goalsScored - b.stats.goalsConceded) - (a.stats.goalsScored - a.stats.goalsConceded));
 
-  let message = `🏆 <b>${title}:</b>\n\n<pre>`;
+  let message = `🏆 <b>${title}</b>\n\n<pre>`;
   message += "М  Команда|И|В|Н|П|ЗМ|ПМ|РМ|О\n";
   message += "--+-------+--+-+-+-+-+--+-+-+\n";
 

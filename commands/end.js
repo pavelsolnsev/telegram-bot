@@ -88,23 +88,37 @@ module.exports = (bot, GlobalState) => {
 
       // Отправляем сообщение с таблицей в группу
       if (listMessageChatId && allTeams.length > 0) {
-        const teamsMessage = buildTeamsMessage(teamsBase, "Итоги матча", teamStats, allTeams);
+        // Получаем дату матча
+        const collectionDate = GlobalState.getCollectionDate();
+        let formattedDate = '';
+        if (collectionDate) {
+          const day = String(collectionDate.getDate()).padStart(2, '0');
+          const month = String(collectionDate.getMonth() + 1).padStart(2, '0'); // Месяцы с 0
+          const year = collectionDate.getFullYear();
+          formattedDate = ` ${day}.${month}.${year}`;
+        }
+      
+        // Формируем заголовок с датой
+        const matchTitle = `Итоги матча${formattedDate}`;
+      
+        // Формируем сообщение с командами
+        const teamsMessage = buildTeamsMessage(teamsBase, matchTitle, teamStats, allTeams);
         const vkLinkMessage = `${teamsMessage}\n\n` +
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
           `Список игроков можно посмотреть здесь <a href="https://football.pavelsolnsev.ru/">football.pavelsolnsev.ru</a>\n` +
           `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>`;
-
+      
         try {
           const sentMessage = await ctx.telegram.sendMessage(listMessageChatId, vkLinkMessage, {
             parse_mode: "HTML",
             disable_notification: true,
           });
-
+      
           // Убеждаемся, что сообщение не закреплено
           await ctx.telegram.unpinChatMessage(listMessageChatId, sentMessage.message_id).catch((error) => {
             console.log("Сообщение не было закреплено или ошибка при откреплении:", error.message);
           });
-
+      
           // Optional: Uncomment to delete the message after a delay
           // deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 7200000);
         } catch (error) {

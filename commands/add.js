@@ -237,7 +237,7 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
-    } else if (ctx.message.text === "+1") {
+    } else if (ctx.message.text === "+1test") {
       await ctx.deleteMessage().catch(() => {});
       if (!ADMIN_ID.includes(ctx.from.id)) {
         const message = await safeTelegramCall(ctx, "sendMessage", [

@@ -1,7 +1,7 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^list$/i, async (ctx) => {
+  bot.hears(/^список$/i, async (ctx) => {
     const isMatchStarted = GlobalState.getStart();
     let listMessageId = GlobalState.getListMessageId();
     const isTeamsDivided = GlobalState.getDivided();
@@ -19,10 +19,10 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    if (isTeamsDivided) {
-      const message = await ctx.reply("Сейчас идет игра!");
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    }
+    // if (isTeamsDivided) {
+    //   const message = await ctx.reply("Сейчас идет игра!");
+    //   return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    // }
 
     if (!listMessageId || !GROUP_ID) {
       const message = await ctx.reply("⚠️ Список игроков недоступен.");

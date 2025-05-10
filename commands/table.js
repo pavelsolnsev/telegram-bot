@@ -2,7 +2,7 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
-  bot.hears(/^table$/i, async (ctx) => {
+  bot.hears(/^таблица$/i, async (ctx) => {
     await ctx.deleteMessage().catch(() => {});
 
     const isMatchStarted = GlobalState.getStart();
