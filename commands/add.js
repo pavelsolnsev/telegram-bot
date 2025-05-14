@@ -31,12 +31,10 @@ module.exports = (bot, GlobalState) => {
 
     // Форматирование имени для сообщений
     let displayName;
-    if (user.username && user.name && user.last_name) {
-      displayName = `${user.username} (${user.name} ${user.last_name})`;
-    } else if (user.username && user.name) {
+    if (user.username && user.name) {
       displayName = `${user.username} (${user.name})`;
-    } else if (user.name && user.last_name) {
-      displayName = `${user.name} ${user.last_name}`;
+    } else if (user.username) {
+      displayName = user.username;
     } else {
       displayName = user.name;
     }
@@ -45,7 +43,9 @@ module.exports = (bot, GlobalState) => {
     let isMember = false;
     try {
       const chatMember = await ctx.telegram.getChatMember(GROUP_ID, user.id);
-      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+      isMember = ["member", "administrator", "creator"].includes(
+        chatMember.status
+      );
     } catch (error) {
       console.error("Ошибка проверки членства в группе:", error);
     }
@@ -77,7 +77,9 @@ module.exports = (bot, GlobalState) => {
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
-      const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
+      const isInList =
+        players.some((p) => p.id === updatedUser.id) ||
+        queue.some((p) => p.id === updatedUser.id);
       if (isInList) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
@@ -122,7 +124,6 @@ module.exports = (bot, GlobalState) => {
         `✅ ${displayName} добавлен!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
-
     } else if (ctx.message.text === "-") {
       await ctx.deleteMessage().catch(() => {});
       if (!isMatchStarted) {
@@ -161,30 +162,21 @@ module.exports = (bot, GlobalState) => {
           players.push(movedPlayer);
           // Форматирование имени для перемещенного игрока
           let movedDisplayName;
-          if (movedPlayer.username && movedPlayer.name && movedPlayer.last_name) {
-            movedDisplayName = `${movedPlayer.username} (${movedPlayer.name} ${movedPlayer.last_name})`;
-          } else if (movedPlayer.username && movedPlayer.name) {
+          if (movedPlayer.username && movedPlayer.name) {
             movedDisplayName = `${movedPlayer.username} (${movedPlayer.name})`;
-          } else if (movedPlayer.name && movedPlayer.last_name) {
-            movedDisplayName = `${movedPlayer.name} ${movedPlayer.last_name}`;
+          } else if (movedPlayer.username) {
+            movedDisplayName = movedPlayer.username;
+          } else if (movedPlayer.name) {
+            movedDisplayName = movedPlayer.name;
           } else {
-            movedDisplayName = movedPlayer.name || "Неизвестный";
+            movedDisplayName = "Неизвестный";
           }
 
-          let displayName;
-          if (user.username && user.name && user.last_name) {
-            displayName = `${user.username} (${user.name} ${user.last_name})`;
-          } else if (user.username && user.name) {
-            displayName = `${user.username} (${user.name})`;
-          } else if (user.name && user.last_name) {
-            displayName = `${user.name} ${user.last_name}`;
-          } else {
-            displayName = user.name;
-          }
-
-          console.log('movedPlayer', movedPlayer)
-
-          await sendPrivateMessage(bot, movedPlayer.id, "🎉 Вы в основном составе!");
+          await sendPrivateMessage(
+            bot,
+            movedPlayer.id,
+            "🎉 Вы в основном составе!"
+          );
           if (!ADMIN_ID.includes(movedPlayer.id)) {
             for (const adminId of ADMIN_ID) {
               if (isNaN(adminId) || adminId <= 0) {
@@ -202,7 +194,7 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
-          `❌ ${displayName} вышел!`,
+          `🚶 ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       } else {
@@ -225,7 +217,7 @@ module.exports = (bot, GlobalState) => {
           await sendPlayerList(ctx);
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
-            `❌ ${displayName} вышел!`,
+            `🚶 ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
@@ -236,7 +228,6 @@ module.exports = (bot, GlobalState) => {
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
       }
-
     } else if (ctx.message.text === "+1test") {
       await ctx.deleteMessage().catch(() => {});
       if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -272,13 +263,16 @@ module.exports = (bot, GlobalState) => {
         };
 
         const [updatedTestUser] = await getPlayerStats([testUser]);
-        const isInList = players.some((p) => p.id === updatedTestUser.id) || queue.some((p) => p.id === updatedTestUser.id);
+        const isInList =
+          players.some((p) => p.id === updatedTestUser.id) ||
+          queue.some((p) => p.id === updatedTestUser.id);
         if (isInList) continue;
 
         // Форматирование имени для тестового игрока
-        const testDisplayName = updatedTestUser.username && updatedTestUser.first_name
-          ? `${updatedTestUser.username} (${updatedTestUser.first_name})`
-          : updatedTestUser.first_name;
+        const testDisplayName =
+          updatedTestUser.username && updatedTestUser.first_name
+            ? `${updatedTestUser.username} (${updatedTestUser.first_name})`
+            : updatedTestUser.first_name;
 
         if (players.length < MAX_PLAYERS) {
           players.push(updatedTestUser);
@@ -290,7 +284,9 @@ module.exports = (bot, GlobalState) => {
       }
 
       if (addedPlayers.length > 0) {
-        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join("\n")}`;
+        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join(
+          "\n"
+        )}`;
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           messageText,
@@ -318,8 +314,13 @@ module.exports = (bot, GlobalState) => {
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
     try {
-      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
-      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+      const chatMember = await ctx.telegram.getChatMember(
+        GROUP_ID,
+        ctx.from.id
+      );
+      isMember = ["member", "administrator", "creator"].includes(
+        chatMember.status
+      );
     } catch (error) {
       console.error("Ошибка проверки членства в группе:", error);
     }
@@ -351,8 +352,20 @@ module.exports = (bot, GlobalState) => {
     };
 
     const [updatedUser] = await getPlayerStats([user]);
-    const isInList = players.some((p) => p.id === updatedUser.id) || queue.some((p) => p.id === updatedUser.id);
+    const isInList =
+      players.some((p) => p.id === updatedUser.id) ||
+      queue.some((p) => p.id === updatedUser.id);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
+
+    // Форматирование имени для уведомлений (как в текстовом обработчике)
+    let displayName;
+    if (updatedUser.username && updatedUser.name) {
+      displayName = `${updatedUser.username} (${updatedUser.name})`;
+    } else if (updatedUser.username) {
+      displayName = updatedUser.username;
+    } else {
+      displayName = updatedUser.name;
+    }
 
     if (isInList) {
       await ctx.answerCbQuery("⚠️ Вы уже записаны!");
@@ -371,7 +384,7 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             adminId,
-            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в основной состав через кнопку`
+            `➕ Игрок ${displayName} записался в основной состав через кнопку`
           );
         }
       }
@@ -387,7 +400,7 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             adminId,
-            `➕ Игрок ${updatedUser.username || updatedUser.name} записался в очередь через кнопку`
+            `➕ Игрок ${displayName} записался в очередь через кнопку`
           );
         }
       }
