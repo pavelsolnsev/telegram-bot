@@ -17,7 +17,6 @@ const { checkTimeAndNotify } = require("./utils/checkTimeAndNotify");
 // };
 
 // проверка id пользователя 
-
 bot.hears(/^id$/i, async (ctx) => {
   const userId = ctx.from.id;
   const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name || "Без имени";
@@ -54,3 +53,5 @@ setInterval(() => checkTimeAndNotify(bot), 60000); // Передаем объе�
 
 // Логирование успешного запуска бота
 console.log("Бот запущен!");
+
+

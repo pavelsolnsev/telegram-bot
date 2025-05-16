@@ -105,7 +105,7 @@ module.exports = (bot, GlobalState) => {
         const teamsMessage = buildTeamsMessage(teamsBase, matchTitle, teamStats, allTeams);
         const vkLinkMessage = `${teamsMessage}\n\n` +
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
-          `Список игроков можно посмотреть здесь <a href="https://football.pavelsolnsev.ru/">football.pavelsolnsev.ru</a>\n` +
+          `Список игроков можно посмотреть здесь <a href="https://football.pavelsolntsev.ru/">football.pavelsolntsev.ru</a>\n` +
           `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>`;
       
         try {

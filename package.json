@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bottleneck": "^2.19.5",
     "dotenv": "^16.4.7",
     "lodash": "^4.17.21",
     "luxon": "^3.6.1",
