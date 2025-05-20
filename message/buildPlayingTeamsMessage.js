@@ -42,7 +42,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   // Команда 1
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n<code>`;
   team1.forEach((player, index) => {
-    const displayName = player.username ? player.username : player.name.split(" ")[0];
+    const displayName = player.username ? player.username : player.name;
     const rating = player.rating || 0;
     message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });
@@ -54,7 +54,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   // Команда 2
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n<code>`;
   team2.forEach((player, index) => {
-    const displayName = player.username ? player.username : player.name.split(" ")[0];
+    const displayName = player.username ? player.username : player.name;
     const rating = player.rating || 0;
     message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });

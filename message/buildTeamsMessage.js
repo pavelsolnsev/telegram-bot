@@ -59,7 +59,7 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
     updatedTeam.forEach((player, i) => {
       const basePlayer = baseTeam.find(bp => bp.id === player.id) || player;
       const staticRating = basePlayer.rating || 0;
-      const displayName = player.username ? player.username : player.name.split(" ")[0];
+      const displayName = player.username ? player.username : player.name;
       message += `${formatPlayerLine(i, displayName, staticRating, player.goals)}\n`;
     });
     message += "</code>";

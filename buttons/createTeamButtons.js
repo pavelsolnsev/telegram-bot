@@ -5,7 +5,6 @@ const createTeamButtons = (team, teamIndex) => {
   const teamColor = teamColors[teamIndex] || "⚽"; // Цвет команды
 
   const buttons = team.map((player, index) => {
-    // Убираем @ из username, если он есть
     const displayName = player.username 
       ? player.username
       : player.name;
