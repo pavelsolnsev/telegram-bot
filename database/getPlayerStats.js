@@ -32,11 +32,15 @@ async function getPlayerStats(players, retries = 3) {
       }));
     } catch (error) {
       console.error(`Попытка ${i + 1} получения статистики игроков не удалась:`, error);
+      if (error.code === "ER_CON_COUNT_ERROR") {
+        console.warn("Слишком много подключений, увеличиваем время ожидания...");
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Увеличиваем задержку для повторной попытки
+      }
       if (i === retries - 1) {
         console.error("Все попытки исчерпаны, возвращаем исходных игроков.");
-        return players; // Возвращаем исходных игроков после всех попыток
+        return players;
       }
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Ждем 1 секунду перед повтором
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 }
