@@ -38,7 +38,7 @@ module.exports = (bot, GlobalState) => {
       );
 
       // Удаляем пересланное сообщение через 60 секунд
-      deleteMessageAfterDelay(ctx, sentMessage.message_id, 60000);
+      deleteMessageAfterDelay(ctx, sentMessage.message_id, 120000);
     } catch (error) {
       console.error("Ошибка при пересылке списка:", error);
       const message = await ctx.reply(

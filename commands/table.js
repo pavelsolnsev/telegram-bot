@@ -38,7 +38,7 @@ module.exports = (bot, GlobalState) => {
       // Отправляем сообщение
       const sentMessage = await ctx.reply(tableMessage, { parse_mode: "HTML" });
 
-      deleteMessageAfterDelay(ctx, sentMessage.message_id, 60000);
+      deleteMessageAfterDelay(ctx, sentMessage.message_id, 120000);
     } catch (error) {
       console.error("Ошибка при формировании таблицы:", error);
       const message = await ctx.reply("⚠️ Не удалось сформировать таблицу.");

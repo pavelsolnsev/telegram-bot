@@ -1,5 +1,6 @@
 const { GlobalState } = require("../store");
 const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { deleteMessageAfterDelay } = require("./deleteMessageAfterDelay"); // Импортируем утилиту
 
 // Функция для проверки времени и отправки уведомления о матче
 function checkTimeAndNotify(bot) {
@@ -7,6 +8,7 @@ function checkTimeAndNotify(bot) {
   let notificationSent = GlobalState.getNotificationSent(); // Проверяем, было ли уже отправлено уведомление
   let isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
   const players = GlobalState.getPlayers(); // Получаем список игроков
+  const groupChatId = GlobalState.getGroupId(); // ID группы
 
   // Если матч не начат, нет даты или уведомление уже отправлено — ничего не делаем
   if (!isMatchStarted || !collectionDate || notificationSent) return;
@@ -22,13 +24,39 @@ function checkTimeAndNotify(bot) {
 
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000; // Время в миллисекундах (3 часа)
   if (timeDiff <= THREE_HOURS_MS) {
-    // Если до матча осталось менее 3 часов
-    // Отправляем уведомление каждому игроку
+    // Отправляем напоминание в группу
+    bot.telegram
+      .sendMessage(
+        groupChatId,
+        `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
+          `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "numeric",
+            month: "long",
+          })}\n` +
+          `✅ Приходите за 15 минут!\n\n` +
+          `📢 Следите за фото и трансляциями в <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
+          `🏅 Рейтинг игроков: <a href="https://football.pavelsolntsev.ru">тут</a>`,
+        { parse_mode: "HTML" }
+      )
+      .then((message) => {
+        deleteMessageAfterDelay(
+          { telegram: bot.telegram, chat: { id: groupChatId } },
+          message.message_id,
+          THREE_HOURS_MS
+        );
+      })
+      .catch((error) => {
+        console.error(`Ошибка при отправке сообщения в группу ${groupChatId}:`, error);
+      });
+
+    // Отправляем уведомления в личные сообщения игрокам
     players.forEach((player) => {
       sendPrivateMessage(
         bot,
         player.id,
-        `⏰ <b>Матч уже через 3 часа!</b>\n\n` +
+        `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
           `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",
@@ -39,13 +67,11 @@ function checkTimeAndNotify(bot) {
           `  • Подготовить экипировку\n` +
           `  • Оплатить участие (400 ₽)\n` +
           `  • Прибыть за 15 минут до начала\n\n` +
-          `💸 <b>Оплата:</b>\n` +
-          `  • <b>Онлайн:</b> <code>📲 89166986185</code> или <code>💳 2200700430851708</code>\n` +
-          `  • <b>Наличные:</b> На месте\n\n` +
           `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
-          `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="googlechrome://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>`
+          `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>`
       );
     });
+
     GlobalState.setNotificationSent(true); // Помечаем, что уведомление отправлено
   }
 }
