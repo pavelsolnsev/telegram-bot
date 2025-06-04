@@ -1,6 +1,6 @@
 const buildTeamsMessage = (teamsBase, title = "Составы команд", teamStats = {}, updatedTeams = teamsBase) => {
   const teamColors = ["🔴", "🔵", "🟢", "🟡"];
-  
+
   // Таблица статистики на основе teamsBase
   const teamsWithStats = teamsBase.map((team, index) => {
     const teamKey = `team${index + 1}`;
@@ -20,17 +20,27 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
     const teamColor = teamColors[originalIndex] || "⚽";
     const place = (position + 1).toString().padStart(2, " ");
     const teamName = `${teamColor}`.padEnd(7, " ");
-    const goalDifference = (stats.goalsScored - stats.goalsConceded);
+    const goalDifference = stats.goalsScored - stats.goalsConceded;
 
     message += `${place} ${teamName}|${stats.games}|${stats.wins}|${stats.draws}|${stats.losses}|${stats.goalsScored.toString().padStart(2, " ")}|${stats.goalsConceded.toString().padStart(2, " ")}|${goalDifference.toString().padStart(2, " ")}|${points}\n`;
   });
 
   message += "</pre>\n";
 
-  // Функция для форматирования имени игрока (такая же как в sendPlayerList)
+  // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 11) => {
-    const cleanName = name;
-    return cleanName.length > maxLength ? cleanName.slice(0, maxLength - 3) + "..." : cleanName;
+    // Удаляем все эмодзи, используя более широкий диапазон Unicode
+    const cleanName = name.replace(
+      /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu,
+      ""
+    ).trim();
+    // Подсчитываем длину строки с учетом Unicode-символов
+    const chars = Array.from(cleanName);
+    if (chars.length <= maxLength) {
+      return cleanName.padEnd(maxLength, " ");
+    }
+    // Обрезаем до maxLength - 3 и добавляем "...", сохраняя Unicode-символы
+    return chars.slice(0, maxLength - 3).join("") + "...";
   };
 
   // Функция для форматирования строки игрока
@@ -55,7 +65,7 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
     const baseTeam = teamsBase[index] || [];
     const teamColor = teamColors[index] || "⚽";
     message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n<code>`;
-    
+
     updatedTeam.forEach((player, i) => {
       const basePlayer = baseTeam.find(bp => bp.id === player.id) || player;
       const staticRating = basePlayer.rating || 0;

@@ -24,7 +24,7 @@ const GlobalState = (() => {
   let teamStats = {};
   let allPlayersHistory = [];
   let listMessageChatId = null;
-
+  let matchHistory = {};
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -100,6 +100,9 @@ const GlobalState = (() => {
         }
       });
     },
+
+    getMatchHistory: () => matchHistory,
+    setMatchHistory: (history) => matchHistory = history,
   };
 
   return Object.freeze(Store);
