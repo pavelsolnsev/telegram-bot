@@ -48,9 +48,7 @@ module.exports = (bot, GlobalState) => {
       // Удаляем сообщение со списком игроков из группы
       if (listMessageId && listMessageChatId) {
         try {
-          // Задержка для стабильности
           await new Promise((resolve) => setTimeout(resolve, 1000));
-
           await ctx.telegram.deleteMessage(listMessageChatId, listMessageId).catch((error) => {
             if (error.response?.error_code === 400 && error.response?.description.includes("message to delete not found")) {
               console.warn("Сообщение для удаления не найдено:", { chat_id: listMessageChatId, message_id: listMessageId });
@@ -70,6 +68,15 @@ module.exports = (bot, GlobalState) => {
       const teamsBase = GlobalState.getTeamsBase();
       const allPlayers = allTeams.flat();
 
+      // Находим лучшего игрока (MVP)
+      const mvpPlayer = allPlayers.reduce((best, player) => {
+        if (!best) return player;
+        if (player.goals > best.goals) return player;
+        if (player.goals === best.goals && player.rating > best.rating) return player;
+        if (player.goals === best.goals && player.rating === best.rating && player.wins > best.wins) return player;
+        return best;
+      }, null);
+
       // Сохраняем игроков в базу данных
       try {
         await savePlayersToDatabase(allPlayers);
@@ -88,21 +95,19 @@ module.exports = (bot, GlobalState) => {
 
       // Отправляем сообщение с таблицей в группу
       if (listMessageChatId && allTeams.length > 0) {
-        // Получаем дату матча
         const collectionDate = GlobalState.getCollectionDate();
         let formattedDate = '';
         if (collectionDate) {
           const day = String(collectionDate.getDate()).padStart(2, '0');
-          const month = String(collectionDate.getMonth() + 1).padStart(2, '0'); // Месяцы с 0
+          const month = String(collectionDate.getMonth() + 1).padStart(2, '0');
           const year = collectionDate.getFullYear();
           formattedDate = ` ${day}.${month}.${year}`;
         }
       
-        // Формируем заголовок с датой
         const matchTitle = `Итоги матча${formattedDate}`;
       
-        // Формируем сообщение с командами
-        const teamsMessage = buildTeamsMessage(teamsBase, matchTitle, teamStats, allTeams);
+        // Формируем сообщение с командами, передавая MVP
+        const teamsMessage = buildTeamsMessage(teamsBase, matchTitle, teamStats, allTeams, mvpPlayer);
         const vkLinkMessage = `${teamsMessage}\n\n` +
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
           `Список игроков можно посмотреть здесь <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
@@ -114,13 +119,9 @@ module.exports = (bot, GlobalState) => {
             disable_notification: true,
           });
       
-          // Убеждаемся, что сообщение не закреплено
           await ctx.telegram.unpinChatMessage(listMessageChatId, sentMessage.message_id).catch((error) => {
             console.log("Сообщение не было закреплено или ошибка при откреплении:", error.message);
           });
-      
-          // Optional: Uncomment to delete the message after a delay
-          // deleteMessageAfterDelay({ chat: { id: listMessageChatId }, telegram: ctx.telegram }, sentMessage.message_id, 7200000);
         } catch (error) {
           console.error("Ошибка при отправке таблицы в группу:", error.message);
         }

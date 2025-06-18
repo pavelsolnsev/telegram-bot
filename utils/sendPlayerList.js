@@ -7,6 +7,7 @@ const sendPlayerList = async (ctx, chatId = null) => {
   let queue = GlobalState.getQueue();
   let listMessageId = GlobalState.getListMessageId();
   let listMessageChatId = GlobalState.getListMessageChatId() || chatId;
+  let location = GlobalState.getLocation();
 
   let formattedList = "";
 
@@ -30,8 +31,14 @@ const sendPlayerList = async (ctx, chatId = null) => {
   }
 
   // Информация о локации и оплате
-  formattedList += `🏟 <b>Адрес:</b> <a href="https://yandex.ru/maps/-/CHfBZ-mH">Московская область, г. Раменское, ул. Махова, д.18. (Профилакторий)</a>\n`;
-  formattedList += `📍 <b>Маршрут:</b> <a href="https://yandex.ru/maps/?mode=routes&rtext=~55.578414,38.219605&rtt=auto">Построить маршрут</a>\n`;
+  if (location === "kz") {
+    formattedList += `🏟 <b>Адрес:</b> <a href="https://yandex.ru/maps/-/CHSQUT6x">Московская область, г. Раменское, ул. Воровского, д.4A (Красное Знамя)</a>\n`;
+    formattedList += `📍 <b>Маршрут:</b> <a href="https://yandex.ru/maps/?mode=routes&rtext=~55.574202,38.205299&rtt=auto">Построить маршрут</a>\n`;
+  } else {
+    formattedList += `🏟 <b>Адрес:</b> <a href="https://yandex.ru/maps/-/CHfBZ-mH">Московская область, г. Раменское, ул. Махова, д.18. (Профилакторий)</a>\n`;
+    formattedList += `📍 <b>Маршрут:</b> <a href="https://yandex.ru/maps/?mode=routes&rtext=~55.578414,38.219605&rtt=auto">Построить маршрут</a>\n`;
+  }
+
   formattedList += `💰 <b>Стоимость: 400 ₽</b> (аренда поля, съёмка, манишки, мячи, аптечка, музыка, вода)\n`;
   formattedList += `💸 <b>Оплата:</b>\n`;
   formattedList += `- <b>Перевод Т-Банк</b> (Павел С.):\n`;

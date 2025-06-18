@@ -8,7 +8,7 @@ const GlobalState = (() => {
   let isTeamsDivided = false;
   let isStatsInitialized = false;
   let isEndCommandAllowed = true;
-  let isTeamCommandAllowed = true; // Новый флаг для команды tm
+  let isTeamCommandAllowed = true;
   let MAX_PLAYERS = 20;
   let players = [];
   let teamsBase = [];
@@ -25,6 +25,7 @@ const GlobalState = (() => {
   let allPlayersHistory = [];
   let listMessageChatId = null;
   let matchHistory = {};
+  let location = null;
 
   const Store = {
     getAdminId: () => ADMIN_ID,
@@ -63,26 +64,20 @@ const GlobalState = (() => {
     setTeams: (newTeams) => teams = newTeams,
     getLastTeamCount: () => lastTeamCount,
     setLastTeamCount: (num) => lastTeamCount = num,
-
     setLastTeamsMessageId: (chatId, messageId) => {
       lastTeamsMessage = { chatId, messageId };
     },
     getLastTeamsMessageId: () => lastTeamsMessage,
-
     setPlayingTeams: (newPlayingTeams) => {
       playingTeams = newPlayingTeams;
     },
     getPlayingTeams: () => playingTeams,
-
     setPlayingTeamsMessageId: (chatId, messageId) => {
       playingTeamsMessageId = { chatId, messageId };
     },
     getPlayingTeamsMessageId: () => playingTeamsMessageId,
-
     getTeamStats: () => teamStats,
     setTeamStats: (stats) => teamStats = stats,
-
-    // Методы для работы с историей игроков
     getAllPlayersHistory: () => allPlayersHistory,
     setAllPlayersHistory: (players) => allPlayersHistory = players,
     appendToPlayersHistory: (newPlayers) => {
@@ -100,9 +95,10 @@ const GlobalState = (() => {
         }
       });
     },
-
     getMatchHistory: () => matchHistory,
     setMatchHistory: (history) => matchHistory = history,
+    getLocation: () => location,
+    setLocation: (loc) => location = loc,
   };
 
   return Object.freeze(Store);
