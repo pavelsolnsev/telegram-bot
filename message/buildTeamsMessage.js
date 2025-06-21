@@ -28,10 +28,10 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
   message += "</pre>\n";
 
   // Добавляем MVP игрока, если он есть
-if (mvpPlayer) {
+  if (mvpPlayer) {
     const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name} ${mvpPlayer.last_name || ''}`.trim();
-    message += `\n<b>🏅 MVP: ${mvpName}</b> <i>+${mvpPlayer.rating}</i>\n\n`;
-}
+    message += `<b>🏅 MVP: ${mvpName}</b> <i>+${mvpPlayer.rating}</i>\n\n`;
+  }
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 11) => {

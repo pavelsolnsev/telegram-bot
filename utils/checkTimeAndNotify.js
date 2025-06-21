@@ -1,9 +1,9 @@
 const { GlobalState } = require("../store");
-// const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 const { deleteMessageAfterDelay } = require("./deleteMessageAfterDelay");
+const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 
 // Функция для проверки времени и отправки уведомления о матче
-function checkTimeAndNotify(bot) {
+async function checkTimeAndNotify(bot) {
   let collectionDate = GlobalState.getCollectionDate(); // Получаем дату и время матча
   let notificationSent = GlobalState.getNotificationSent(); // Проверяем, было ли уже отправлено уведомление
   let isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
@@ -25,14 +25,17 @@ function checkTimeAndNotify(bot) {
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000; // Время в миллисекундах (3 часа)
   if (timeDiff <= THREE_HOURS_MS) {
     // Формируем сокращённый текст дополнительной информации
-    const additionalInfo = `\n📌 <b>Важно:</b>\n` +
+    const additionalInfo =
+      `\n📌 <b>Важно:</b>\n` +
       `• В 19:00 формируются составы. После этого записаться или выйти нельзя.\n` +
       `• Неявка без предупреждения (за 3 часа): первое — предупреждение, повторно — ограничение участия.\n` +
       `Спасибо за ответственный подход!`;
 
-    // Отправляем напоминание в группу
-    bot.telegram
-      .sendMessage(
+    // Проверяем, существует ли группа
+    try {
+      await bot.telegram.getChat(groupChatId); // Проверяем доступность группы
+      // Отправляем напоминание в группу
+      const message = await bot.telegram.sendMessage(
         groupChatId,
         `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
           `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
@@ -50,52 +53,50 @@ function checkTimeAndNotify(bot) {
           parse_mode: "HTML",
           link_preview_options: {
             url: "https://vk.com/ramafootball",
-            prefer_large_media: true, // Для большего превью
+            prefer_large_media: true,
           },
         }
-      )
-      .then((message) => {
-        deleteMessageAfterDelay(
-          { telegram: bot.telegram, chat: { id: groupChatId } },
-          message.message_id,
-          THREE_HOURS_MS
-        );
-      })
-      .catch((error) => {
-        console.error(`Ошибка при отправке сообщения в группу ${groupChatId}:`, error);
-      });
+      );
+      deleteMessageAfterDelay(
+        { telegram: bot.telegram, chat: { id: groupChatId } },
+        message.message_id,
+        THREE_HOURS_MS
+      );
+    } catch (error) {
+      console.error(
+        `Ошибка при отправке сообщения в группу ${groupChatId}:`,
+        error
+      );
+      return; // Прерываем выполнение, если группа недоступна
+    }
+
+    // Формируем текст для личных сообщений
+    const privateMessageText =
+      `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
+      `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "numeric",
+        month: "long",
+      })}\n\n` +
+      `✅ <b>Что нужно сделать:</b>\n` +
+      `  • Подготовить экипировку\n` +
+      `  • <a href="https://www.tbank.ru/cf/5jUDsBhRfBT">Оплатить участие (400 ₽)</a>\n` +
+      `  • Прибыть за 15 минут до начала\n\n` +
+      `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
+      `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
+      additionalInfo;
 
     // Отправляем уведомления в личные сообщения игрокам
-    players.forEach((player) => {
-      bot.telegram
-        .sendMessage(
-          player.id,
-          `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
-            `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
-              hour: "2-digit",
-              minute: "2-digit",
-              day: "numeric",
-              month: "long",
-            })}\n\n` +
-            `✅ <b>Что нужно сделать:</b>\n` +
-            `  • Подготовить экипировку\n` +
-            `  • <a href="https://www.tbank.ru/cf/5jUDsBhRfBT">Оплатить участие (400 ₽)</a>\n` +
-            `  • Прибыть за 15 минут до начала\n\n` +
-            `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
-            `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
-            additionalInfo,
-          {
-            parse_mode: "HTML",
-            link_preview_options: {
-              url: "https://vk.com/ramafootball",
-              prefer_large_media: true, // Для большего превью
-            },
-          }
-        )
-        .catch((error) => {
-          console.error(`Ошибка при отправке личного сообщения пользователю ${player.id}:`, error);
-        });
-    });
+    for (const player of players) {
+      await sendPrivateMessage(bot, player.id, privateMessageText, {
+        parse_mode: "HTML",
+        link_preview_options: {
+          url: "https://vk.com/ramafootball",
+          prefer_large_media: true,
+        },
+      });
+    }
 
     GlobalState.setNotificationSent(true); // Помечаем, что уведомление отправлено
   }
