@@ -4,6 +4,13 @@ const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 const { safeTelegramCall } = require("../utils/telegramUtils");
 const getPlayerStats = require("../database/getPlayerStats");
 
+// Функция для проверки наличия эмодзи или Unicode-символов
+const containsEmojiOrUnicode = (text) => {
+  // Регулярное выражение для основных эмодзи и нестандартных Unicode-символов
+  const emojiUnicodeRegex = /[\u{1F000}-\u{1FFFF}\u{2000}-\u{2FFF}\u{3000}-\u{3FFF}\u{FF00}-\u{FFFF}]/u;
+  return emojiUnicodeRegex.test(text);
+};
+
 module.exports = (bot, GlobalState) => {
   bot.on("text", async (ctx) => {
     const players = GlobalState.getPlayers();
@@ -28,6 +35,23 @@ module.exports = (bot, GlobalState) => {
 
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
+
+    // Проверка имени пользователя на эмодзи и Unicode-символы
+    const nameToCheck = user.name || user.username;
+    if (!nameToCheck) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`,
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 10000);
+    }
+    if (containsEmojiOrUnicode(nameToCheck)) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        `⚠️ Ваш ник (${nameToCheck}) содержит эмодзи или недопустимые Unicode-символы. Пожалуйста, установите нормальный ник без эмодзи или необычных символов.`,
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 10000);
+    }
 
     // Форматирование имени для сообщений
     let displayName;
@@ -330,15 +354,6 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    if (isTeamsDivided) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
-        ctx.chat.id,
-        "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-        { parse_mode: "HTML" },
-      ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    }
-
     const user = {
       id: ctx.from.id,
       name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
@@ -352,12 +367,37 @@ module.exports = (bot, GlobalState) => {
     };
 
     const [updatedUser] = await getPlayerStats([user]);
+
+    // Проверка имени пользователя на эмодзи и Unicode-символы
+    const nameToCheck = user.name || user.username;
+    if (!nameToCheck) {
+      await ctx.answerCbQuery(
+        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
+      );
+      return;
+    }
+    if (containsEmojiOrUnicode(nameToCheck)) {
+      await ctx.answerCbQuery(
+        `⚠️ Ваш ник (${nameToCheck}) содержит эмодзи или недопустимые Unicode-символы. Пожалуйста, установите нормальный ник без эмодзи или необычных символов.`
+      );
+      return;
+    }
+
+    if (isTeamsDivided) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
+        { parse_mode: "HTML" },
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
     const isInList =
       players.some((p) => p.id === updatedUser.id) ||
       queue.some((p) => p.id === updatedUser.id);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
 
-    // Форматирование имени для уведомлений (как в текстовом обработчике)
+    // Форматирование имени для уведомлений
     let displayName;
     if (updatedUser.username && updatedUser.name) {
       displayName = `${updatedUser.username} (${updatedUser.name})`;

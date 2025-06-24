@@ -49,6 +49,7 @@ module.exports = (bot, GlobalState) => {
     const teamsMessage = buildTeamsMessage(teams, "Составы команд (по рейтингу)", teamStats, teams);
 
     GlobalState.setTeams(teams);
+    GlobalState.setTeamsBase(teams);
     GlobalState.setLastTeamCount(numTeams);
     GlobalState.setDivided(true);
     GlobalState.setIsEndCommandAllowed(false);
