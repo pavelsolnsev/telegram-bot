@@ -7,10 +7,16 @@ module.exports = (bot, GlobalState) => {
   bot.on("pinned_message", async (ctx) => {
     try {
       await ctx.deleteMessage().catch((error) => {
-        console.error("Ошибка при удалении системного сообщения о закреплении:", error.message);
+        console.error(
+          "Ошибка при удалении системного сообщения о закреплении:",
+          error.message
+        );
       });
     } catch (error) {
-      console.error("Общая ошибка в обработчике pinned_message:", error.message);
+      console.error(
+        "Общая ошибка в обработчике pinned_message:",
+        error.message
+      );
     }
   });
 
@@ -49,13 +55,26 @@ module.exports = (bot, GlobalState) => {
       if (listMessageId && listMessageChatId) {
         try {
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          await ctx.telegram.deleteMessage(listMessageChatId, listMessageId).catch((error) => {
-            if (error.response?.error_code === 400 && error.response?.description.includes("message to delete not found")) {
-              console.warn("Сообщение для удаления не найдено:", { chat_id: listMessageChatId, message_id: listMessageId });
-            } else {
-              console.error("Ошибка при удалении сообщения из группы:", error.message);
-            }
-          });
+          await ctx.telegram
+            .deleteMessage(listMessageChatId, listMessageId)
+            .catch((error) => {
+              if (
+                error.response?.error_code === 400 &&
+                error.response?.description.includes(
+                  "message to delete not found"
+                )
+              ) {
+                console.warn("Сообщение для удаления не найдено:", {
+                  chat_id: listMessageChatId,
+                  message_id: listMessageId,
+                });
+              } else {
+                console.error(
+                  "Ошибка при удалении сообщения из группы:",
+                  error.message
+                );
+              }
+            });
           GlobalState.setListMessageId(null);
           GlobalState.setListMessageChatId(null);
         } catch (error) {
@@ -69,13 +88,20 @@ module.exports = (bot, GlobalState) => {
       const allPlayers = allTeams.flat();
 
       // Находим лучшего игрока (MVP)
-      const mvpPlayer = allPlayers.reduce((best, player) => {
-        if (!best) return player;
-        if (player.goals > best.goals) return player;
-        if (player.goals === best.goals && player.rating > best.rating) return player;
-        if (player.goals === best.goals && player.rating === best.rating && player.wins > best.wins) return player;
+      const mvpCandidates = allPlayers.reduce((best, player) => {
+        if (!best.length) return [player];
+        const topPlayer = best[0];
+        if (player.rating > topPlayer.rating) return [player];
+        if (player.rating === topPlayer.rating) {
+          if (player.goals > topPlayer.goals) return [player];
+          if (player.goals === topPlayer.goals) return [...best, player];
+        }
         return best;
-      }, null);
+      }, []);
+
+      // Выбираем случайного игрока из кандидатов с одинаковой статистикой
+      const mvpPlayer =
+        mvpCandidates[Math.floor(Math.random() * mvpCandidates.length)];
 
       // Сохраняем игроков в базу данных
       try {
@@ -83,12 +109,22 @@ module.exports = (bot, GlobalState) => {
         GlobalState.appendToPlayersHistory(allPlayers);
       } catch (error) {
         if (error.code === "ECONNRESET") {
-          console.error("Ошибка подключения к базе данных (ECONNRESET). Не удалось сохранить игроков:", error.message);
-          const message = await ctx.reply("⚠️ Ошибка подключения к базе данных. Данные не сохранены.");
+          console.error(
+            "Ошибка подключения к базе данных (ECONNRESET). Не удалось сохранить игроков:",
+            error.message
+          );
+          const message = await ctx.reply(
+            "⚠️ Ошибка подключения к базе данных. Данные не сохранены."
+          );
           return deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
-          console.error("Ошибка при сохранении игроков в базу данных:", error.message);
-          const message = await ctx.reply("⚠️ Ошибка при сохранении данных игроков.");
+          console.error(
+            "Ошибка при сохранении игроков в базу данных:",
+            error.message
+          );
+          const message = await ctx.reply(
+            "⚠️ Ошибка при сохранении данных игроков."
+          );
           return deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
       }
@@ -96,32 +132,48 @@ module.exports = (bot, GlobalState) => {
       // Отправляем сообщение с таблицей в группу
       if (listMessageChatId && allTeams.length > 0) {
         const collectionDate = GlobalState.getCollectionDate();
-        let formattedDate = '';
+        let formattedDate = "";
         if (collectionDate) {
-          const day = String(collectionDate.getDate()).padStart(2, '0');
-          const month = String(collectionDate.getMonth() + 1).padStart(2, '0');
+          const day = String(collectionDate.getDate()).padStart(2, "0");
+          const month = String(collectionDate.getMonth() + 1).padStart(2, "0");
           const year = collectionDate.getFullYear();
           formattedDate = ` ${day}.${month}.${year}`;
         }
-      
+
         const matchTitle = `Итоги матча${formattedDate}`;
-      
+
         // Формируем сообщение с командами, передавая MVP
-        const teamsMessage = buildTeamsMessage(teamsBase, matchTitle, teamStats, allTeams, mvpPlayer);
-        const vkLinkMessage = `${teamsMessage}\n\n` +
+        const teamsMessage = buildTeamsMessage(
+          teamsBase,
+          matchTitle,
+          teamStats,
+          allTeams,
+          mvpPlayer
+        );
+        const vkLinkMessage =
+          `${teamsMessage}\n\n` +
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
           `Список игроков можно посмотреть здесь <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
           `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>`;
-      
+
         try {
-          const sentMessage = await ctx.telegram.sendMessage(listMessageChatId, vkLinkMessage, {
-            parse_mode: "HTML",
-            disable_notification: true,
-          });
-      
-          await ctx.telegram.unpinChatMessage(listMessageChatId, sentMessage.message_id).catch((error) => {
-            console.log("Сообщение не было закреплено или ошибка при откреплении:", error.message);
-          });
+          const sentMessage = await ctx.telegram.sendMessage(
+            listMessageChatId,
+            vkLinkMessage,
+            {
+              parse_mode: "HTML",
+              disable_notification: true,
+            }
+          );
+
+          await ctx.telegram
+            .unpinChatMessage(listMessageChatId, sentMessage.message_id)
+            .catch((error) => {
+              console.log(
+                "Сообщение не было закреплено или ошибка при откреплении:",
+                error.message
+              );
+            });
         } catch (error) {
           console.error("Ошибка при отправке таблицы в группу:", error.message);
         }
@@ -150,8 +202,13 @@ module.exports = (bot, GlobalState) => {
       const message = await ctx.reply("✅ Сбор успешно завершён!");
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } catch (error) {
-      console.error("Необработанная ошибка в обработчике команды e!:", error.message);
-      const message = await ctx.reply("⚠️ Произошла ошибка при обработке команды.");
+      console.error(
+        "Необработанная ошибка в обработчике команды e!:",
+        error.message
+      );
+      const message = await ctx.reply(
+        "⚠️ Произошла ошибка при обработке команды."
+      );
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });

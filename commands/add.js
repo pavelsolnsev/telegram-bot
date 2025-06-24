@@ -39,6 +39,7 @@ module.exports = (bot, GlobalState) => {
     // Проверка имени пользователя на эмодзи и Unicode-символы
     const nameToCheck = user.name || user.username;
     if (!nameToCheck) {
+      await ctx.deleteMessage().catch(() => {});
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`,
@@ -46,9 +47,10 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 10000);
     }
     if (containsEmojiOrUnicode(nameToCheck)) {
+      await ctx.deleteMessage().catch(() => {});
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        `⚠️ Ваш ник (${nameToCheck}) содержит эмодзи или недопустимые Unicode-символы. Пожалуйста, установите нормальный ник без эмодзи или необычных символов.`,
+        `⚠️ Ваш ник (${nameToCheck}) недопустимые символы.`,
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 10000);
     }
@@ -378,7 +380,7 @@ module.exports = (bot, GlobalState) => {
     }
     if (containsEmojiOrUnicode(nameToCheck)) {
       await ctx.answerCbQuery(
-        `⚠️ Ваш ник (${nameToCheck}) содержит эмодзи или недопустимые Unicode-символы. Пожалуйста, установите нормальный ник без эмодзи или необычных символов.`
+        `⚠️ Некорректный ник`
       );
       return;
     }
