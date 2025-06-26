@@ -26,8 +26,11 @@ const GlobalState = (() => {
   let listMessageChatId = null;
   let matchHistory = {};
   let location = null;
+  let teamCount = 0;
 
   const Store = {
+    getTeamCount: () => teamCount,
+    setTeamCount: (count) => teamCount = count,
     getAdminId: () => ADMIN_ID,
     getGroupId: () => GROUP_ID,
     getStart: () => isMatchStarted,
