@@ -732,21 +732,17 @@ module.exports = (bot, GlobalState) => {
     deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
 
- bot.hears(/^ksk$/i, async (ctx) => {
+bot.hears(/^ksk$/i, async (ctx) => {
   const ADMIN_ID = GlobalState.getAdminId();
-  // Проверка прав администратора
   if (!(await checkAdminRights(ctx, ADMIN_ID))) return;
-  // Проверка, начат ли матч
   if (!(await checkMatchStarted(ctx, GlobalState.getStart()))) return;
 
-  // Проверка, что команда отправлена в личные сообщения
   if (ctx.chat.id < 0) {
     const msg = await ctx.reply("Напиши мне в ЛС.");
     return deleteMessageAfterDelay(ctx, msg.message_id);
   }
 
   const playingTeams = GlobalState.getPlayingTeams();
-  // Проверка, есть ли активный матч
   if (!playingTeams) {
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
@@ -760,60 +756,19 @@ module.exports = (bot, GlobalState) => {
   const teamStats = GlobalState.getTeamStats();
   const result = getMatchResult(team1, team2);
 
-  const team1Goals = team1.reduce(
-    (sum, player) => sum + (player.goals || 0),
-    0
-  );
-  const team2Goals = team2.reduce(
-    (sum, player) => sum + (player.goals || 0),
-    0
-  );
+  const team1Goals = team1.reduce((sum, player) => sum + (player.goals || 0), 0);
+  const team2Goals = team2.reduce((sum, player) => sum + (player.goals || 0), 0);
 
-  // Обновление статистики команд
-  updateTeamStats(
-    teamStats,
-    `team${teamIndex1 + 1}`,
-    result === "team1",
-    result === "draw",
-    team1Goals,
-    team2Goals
-  );
-  updateTeamStats(
-    teamStats,
-    `team${teamIndex2 + 1}`,
-    result === "team2",
-    result === "draw",
-    team2Goals,
-    team1Goals
-  );
+  updateTeamStats(teamStats, `team${teamIndex1 + 1}`, result === "team1", result === "draw", team1Goals, team2Goals);
+  updateTeamStats(teamStats, `team${teamIndex2 + 1}`, result === "team2", result === "draw", team2Goals, team1Goals);
 
-  // Обновление статистики игроков
-  allTeams[teamIndex1] = updatePlayerStats(
-    team1,
-    allTeams[teamIndex1],
-    result === "team1",
-    result === "draw",
-    result === "team2"
-  );
-  allTeams[teamIndex2] = updatePlayerStats(
-    team2,
-    allTeams[teamIndex2],
-    result === "team2",
-    result === "draw",
-    result === "team1"
-  );
+  allTeams[teamIndex1] = updatePlayerStats(team1, allTeams[teamIndex1], result === "team1", result === "draw", result === "team2");
+  allTeams[teamIndex2] = updatePlayerStats(team2, allTeams[teamIndex2], result === "team2", result === "draw", result === "team1");
 
   GlobalState.setTeams(allTeams);
   GlobalState.setTeamStats(teamStats);
 
-  // Обновление сообщения о завершённом матче
-  const finishedMessage = buildPlayingTeamsMessage(
-    team1,
-    team2,
-    teamIndex1,
-    teamIndex2,
-    "finished"
-  );
+  const finishedMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, "finished");
   const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
   if (playingTeamsMessage) {
     await safeTelegramCall(ctx, "editMessageText", [
@@ -825,16 +780,9 @@ module.exports = (bot, GlobalState) => {
     ]);
   }
 
-  // Обновление общего сообщения о составах команд
-  await updateTeamsMessage(
-    ctx,
-    GlobalState,
-    GlobalState.getTeamsBase(),
-    teamStats
-  );
+  await updateTeamsMessage(ctx, GlobalState, GlobalState.getTeamsBase(), teamStats);
 
   const totalTeams = allTeams.length;
-  // Проверка, достаточно ли команд для следующего матча
   if (totalTeams <= 2) {
     GlobalState.setPlayingTeams(null);
     const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -844,115 +792,83 @@ module.exports = (bot, GlobalState) => {
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
 
-  // Проверка изменения количества команд
   const previousTeamCount = GlobalState.getTeamCount();
   if (previousTeamCount !== totalTeams) {
-    GlobalState.setMatchHistory({}); // Сбрасываем историю матчей
-    GlobalState.setTeamCount(totalTeams); // Обновляем количество команд
+    GlobalState.setMatchHistory({});
+    GlobalState.setTeamCount(totalTeams);
+    GlobalState.setConsecutiveGames({});
   }
 
-  // Сброс голов для следующего матча
-  const resetGoals = (team) =>
-    team.map((player) => ({ ...player, goals: 0 }));
+  const resetGoals = (team) => team.map((player) => ({ ...player, goals: 0 }));
 
-  let nextTeamIndex1, nextTeamIndex2;
   let matchHistory = GlobalState.getMatchHistory();
+  for (let i = 0; i < totalTeams; i++) {
+    if (!matchHistory[i]) matchHistory[i] = {};
+  }
 
-  if (totalTeams === 3) {
-    // Инициализация истории для всех команд
-    for (let i = 0; i < totalTeams; i++) {
-      if (!matchHistory[i]) matchHistory[i] = {};
+  matchHistory[teamIndex1][teamIndex2] = (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
+  matchHistory[teamIndex2][teamIndex1] = (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
+
+  // === ЛОГИКА ПРОПУСКА ПОСЛЕ 2 ИГР ПОДРЯД ===
+  let consecutiveGames = GlobalState.getConsecutiveGames() || {};
+  consecutiveGames[teamIndex1] = (consecutiveGames[teamIndex1] || 0) + 1;
+  consecutiveGames[teamIndex2] = (consecutiveGames[teamIndex2] || 0) + 1;
+
+  // Все остальные сбрасываются
+  for (let i = 0; i < totalTeams; i++) {
+    if (i !== teamIndex1 && i !== teamIndex2) consecutiveGames[i] = 0;
+  }
+
+  // === ВЫБОР СЛЕДУЮЩЕЙ ПАРЫ ===
+  const allMatchups = [];
+  for (let i = 0; i < totalTeams; i++) {
+    for (let j = i + 1; j < totalTeams; j++) {
+      allMatchups.push([i, j]);
     }
+  }
 
-    // Обновление истории матчей
-    matchHistory[teamIndex1][teamIndex2] = (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
-    matchHistory[teamIndex2][teamIndex1] = (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
+  // Проверка равномерности
+  const minMatchesPlayed = Math.min(...allMatchups.map(([i, j]) => (matchHistory[i]?.[j]) || 0));
+  if (allMatchups.every(([i, j]) => (matchHistory[i]?.[j] || 0) >= minMatchesPlayed + 1)) {
+    matchHistory = {};
+    for (let i = 0; i < totalTeams; i++) matchHistory[i] = {};
+    GlobalState.setMatchHistory(matchHistory);
+  }
 
-    // Проверяем, первый ли это матч
-    const totalGames = Object.values(matchHistory).reduce(
-      (sum, opponents) => sum + Object.values(opponents).reduce((s, v) => s + v, 0),
-      0
-    );
-    const isFirstMatch = totalGames <= 2;
+  let nextTeamIndex1 = null;
+  let nextTeamIndex2 = null;
+  let minGames = Infinity;
 
-    if (isFirstMatch && result !== "draw") {
-      // Победитель первого матча играет следующий
-      const winnerIndex = result === "team1" ? teamIndex1 : teamIndex2;
-      const thirdTeamIndex = [0, 1, 2].find(
-        (i) => i !== teamIndex1 && i !== teamIndex2
-      );
-      nextTeamIndex1 = winnerIndex;
-      nextTeamIndex2 = thirdTeamIndex;
-    } else {
-      // Строгая очередность: 1-2, 2-3, 3-1
-      const lastPair = [teamIndex1, teamIndex2].sort().join("-");
-      if (lastPair === "0-1") {
-        nextTeamIndex1 = 1;
-        nextTeamIndex2 = 2;
-      } else if (lastPair === "1-2") {
-        nextTeamIndex1 = 2;
-        nextTeamIndex2 = 0;
-      } else if (lastPair === "0-2") {
-        nextTeamIndex1 = 0;
-        nextTeamIndex2 = 1;
-      }
-    }
-  } else {
-    // Логика для 4+ команд
-    for (let i = 0; i < totalTeams; i++) {
-      if (!matchHistory[i]) matchHistory[i] = {};
-    }
-    matchHistory[teamIndex1][teamIndex2] = (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
-    matchHistory[teamIndex2][teamIndex1] = (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
+  for (const [i, j] of allMatchups) {
+    if ((consecutiveGames[i] >= 2) || (consecutiveGames[j] >= 2)) continue;
 
-    // Генерация всех возможных пар
-    const allMatchups = [];
-    for (let i = 0; i < totalTeams; i++) {
-      for (let j = i + 1; j < totalTeams; j++) {
-        allMatchups.push([i, j]);
-      }
-    }
-
-    // Проверка, все ли пары сыграли одинаковое количество матчей
-    const minMatchesPlayed = Math.min(
-      ...allMatchups.map(([i, j]) => (matchHistory[i] && matchHistory[i][j]) || 0)
-    );
-    if (allMatchups.every(([i, j]) => (matchHistory[i] && matchHistory[i][j]) >= minMatchesPlayed + 1)) {
-      matchHistory = {};
-      GlobalState.setMatchHistory(matchHistory);
-      for (let i = 0; i < totalTeams; i++) {
-        matchHistory[i] = {};
-      }
-    }
-
-    // Поиск следующей пары с минимальным количеством сыгранных матчей
-    let minGames = Infinity;
-    for (const [i, j] of allMatchups) {
-      const gamesPlayed = (matchHistory[i] && matchHistory[i][j]) || 0;
-      if (gamesPlayed < minGames) {
-        minGames = gamesPlayed;
+    const gamesPlayed = matchHistory[i]?.[j] || 0;
+    if (gamesPlayed < minGames) {
+      minGames = gamesPlayed;
+      nextTeamIndex1 = i;
+      nextTeamIndex2 = j;
+    } else if (gamesPlayed === minGames) {
+      const iGames = teamStats[`team${i + 1}`]?.games || 0;
+      const jGames = teamStats[`team${j + 1}`]?.games || 0;
+      const currentMinGames = (teamStats[`team${nextTeamIndex1 + 1}`]?.games || 0) + (teamStats[`team${nextTeamIndex2 + 1}`]?.games || 0);
+      if (iGames + jGames < currentMinGames) {
         nextTeamIndex1 = i;
         nextTeamIndex2 = j;
-      } else if (gamesPlayed === minGames) {
-        // Разрешение конфликта: выбираем команды с меньшим количеством игр
-        const iGames = (teamStats[`team${i + 1}`]?.games || 0);
-        const jGames = (teamStats[`team${j + 1}`]?.games || 0);
-        const currentMinGames = (teamStats[`team${nextTeamIndex1 + 1}`]?.games || 0) +
-                                (teamStats[`team${nextTeamIndex2 + 1}`]?.games || 0);
-        if (iGames + jGames < currentMinGames) {
-          nextTeamIndex1 = i;
-          nextTeamIndex2 = j;
-        }
       }
     }
   }
 
+  if (nextTeamIndex1 === null || nextTeamIndex2 === null) {
+    const msg = await ctx.reply("⛔ Не удалось подобрать команды, которые не играли 3 раза подряд.");
+    return deleteMessageAfterDelay(ctx, msg.message_id);
+  }
+
+  GlobalState.setConsecutiveGames(consecutiveGames);
   GlobalState.setMatchHistory(matchHistory);
 
   const team1Next = resetGoals(allTeams[nextTeamIndex1]);
   const team2Next = resetGoals(allTeams[nextTeamIndex2]);
 
-  // Формирование сообщения о новом матче
   const teamsMessage = buildPlayingTeamsMessage(
     team1Next,
     team2Next,
@@ -972,11 +888,7 @@ module.exports = (bot, GlobalState) => {
     },
   ]);
 
-  // Обновление состояния текущего матча
-  GlobalState.setPlayingTeamsMessageId(
-    sentMessage.chat.id,
-    sentMessage.message_id
-  );
+  GlobalState.setPlayingTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
   GlobalState.setPlayingTeams({
     team1: team1Next,
     team2: team2Next,
@@ -984,13 +896,11 @@ module.exports = (bot, GlobalState) => {
     teamIndex2: nextTeamIndex2,
   });
 
-  // Уведомление о новом матче
   const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
     ctx.chat.id,
-    `🏀 Автоматически начат новый матч: Команда ${
-      nextTeamIndex1 + 1
-    } vs Команда ${nextTeamIndex2 + 1} (каждый с каждым)`,
+    `🏀 Автоматически начат новый матч: Команда ${nextTeamIndex1 + 1} vs Команда ${nextTeamIndex2 + 1} (каждая с каждой, с учётом отдыха)`,
   ]);
   deleteMessageAfterDelay(ctx, notificationMessage.message_id);
 });
+
 };

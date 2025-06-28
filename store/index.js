@@ -3,6 +3,7 @@ const GlobalState = (() => {
   const GROUP_ID = Number(process.env.ID);
   const IMAGE_URL = process.env.IMAGE_URL;
 
+  let consecutiveGames = {};
   let isMatchStarted = false;
   let isMatchFinished = false;
   let isTeamsDivided = false;
@@ -29,6 +30,8 @@ const GlobalState = (() => {
   let teamCount = 0;
 
   const Store = {
+    getConsecutiveGames: () => consecutiveGames,
+    setConsecutiveGames: (obj) => consecutiveGames = obj,
     getTeamCount: () => teamCount,
     setTeamCount: (count) => teamCount = count,
     getAdminId: () => ADMIN_ID,
