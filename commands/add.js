@@ -441,7 +441,7 @@ module.exports = (bot, GlobalState) => {
     await sendPlayerList(ctx);
   });
 
-  bot.action("leave_match", async (ctx) => {
+bot.action("leave_match", async (ctx) => {
     let players = GlobalState.getPlayers();
     let queue = GlobalState.getQueue();
     const isTeamsDivided = GlobalState.getDivided();
@@ -515,6 +515,11 @@ module.exports = (bot, GlobalState) => {
         }
       }
       await sendPlayerList(ctx);
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        `🚶 ${displayName} вышел!`,
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
       await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
     } else {
       const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
@@ -534,6 +539,11 @@ module.exports = (bot, GlobalState) => {
           }
         }
         await sendPlayerList(ctx);
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          `🚶 ${displayName} вышел!`,
+        ]);
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
         await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
       } else {
         await ctx.answerCbQuery("⚠️ Вы не в списке!");
