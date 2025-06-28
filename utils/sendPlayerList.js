@@ -49,7 +49,7 @@ const sendPlayerList = async (ctx, chatId = null) => {
   formattedList += `- <b>Наличные:</b> На месте\n`;
   formattedList += `\n📜 <b>Информация для игроков:</b>\n` +
     `- <b>Записаться:</b> Напишите "+" или нажмите "⚽ Играть"\n` +
-    `- <b>Выйти:</b> Напишите "-"\n`;
+    `- <b>Выйти:</b> Напишите "-" или нажмите "🚶 Выйти"\n`;
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 12) => {
@@ -120,7 +120,10 @@ const sendPlayerList = async (ctx, chatId = null) => {
   } / ${GlobalState.getMaxPlayers()}`;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("⚽ Играть", "join_match"),
+    [
+      Markup.button.callback("⚽ Играть", "join_match"),
+      Markup.button.callback("🚶 Выйти", "leave_match")
+    ]
   ]);
 
   const messageOptions = {
