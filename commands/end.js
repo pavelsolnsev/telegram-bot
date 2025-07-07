@@ -179,7 +179,7 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
-      // Сбрасываем состояние
+      // Сбрасываем состояние, включая matchHistory и consecutiveGames
       GlobalState.setPlayers([]);
       GlobalState.setQueue([]);
       GlobalState.setCollectionDate(null);
@@ -197,6 +197,8 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsMatchFinished(false);
       GlobalState.setIsEndCommandAllowed(true);
       GlobalState.setIsTeamCommandAllowed(true);
+      GlobalState.setMatchHistory({});
+      GlobalState.setConsecutiveGames({});
 
       // Отправляем подтверждение
       const message = await ctx.reply("✅ Сбор успешно завершён!");
