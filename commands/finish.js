@@ -88,7 +88,7 @@ const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose) => {
     const originalPlayer = originalTeam[index] || {};
     const totalGoals = (originalPlayer.goals || 0) + goals;
     let rating = originalPlayer.rating || 0;
-    rating += goals * 0.5 + (isWin ? 3 : isDraw ? 1 : isLose ? -1.5 : 0);
+    rating += goals * 0.5 + (isWin ? 2 : isDraw ? 0.5 : isLose ? -1 : 0);
 
     return {
       ...originalPlayer,

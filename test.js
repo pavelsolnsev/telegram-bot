@@ -462,3 +462,43 @@ DB_NAME=pavels3f_fball
     ]);
     deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
+
+
+  
+
+  const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose) => {
+  return team.map((player, index) => {
+    const goals = player.goals || 0;
+    const originalPlayer = team[index] || originalTeam[index] || {};
+    const totalGoals = (originalPlayer.goals || 0) + goals;
+    const gamesPlayed = (originalPlayer.gamesPlayed || 0) + 1;
+
+    // Расчёт изменения рейтинга (пункт 6 + бонус за участие)
+    let ratingChange = (isWin ? 2 : isDraw ? 0.5 : -1) + (goals * 0.3) + 0.1;
+
+    // Уменьшение прироста для высокого рейтинга
+    const normalizedRating = (originalPlayer.rating || 0) / (originalPlayer.gamesPlayed || 1);
+    const multiplier = 1 / (1 + 0.05 * normalizedRating);
+    const adjustedChange = ratingChange * multiplier;
+
+    // Обновление абсолютного рейтинга
+    let newRating = (originalPlayer.rating || 0) + adjustedChange;
+
+    // Нормализация рейтинга (пункт 1)
+    let finalRating = gamesPlayed >= 3 ? newRating / gamesPlayed : newRating;
+
+    return {
+      ...originalPlayer,
+      name: player.name,
+      username: player.username,
+      gamesPlayed,
+      wins: (originalPlayer.wins || 0) + (isWin ? 1 : 0),
+      draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
+      losses: (originalPlayer.losses || 0) + (isLose ? 1 : 0),
+      goals: totalGoals,
+      rating: finalRating,
+    };
+  });
+};
+
+module.exports = updatePlayerStats;
