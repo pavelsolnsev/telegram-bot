@@ -82,24 +82,48 @@ const updateTeamStats = (
   teamStats[teamKey].goalsConceded += goalsConceded;
 };
 
+
+/* === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ === */
+const round1 = (n) => Math.round(n * 10) / 10;
+
+/* модификатор 1 → 0.2 на диапазоне 0‑300:
+   чем выше рейтинг, тем меньше прибавка */
+const growthModifier = (baseRating) =>
+  Math.max(0.2, 1 - baseRating / 200);
+
+/* === ОСНОВНАЯ ФУНКЦИЯ === */
 const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose) => {
   return team.map((player, index) => {
-    const goals = player.goals || 0;
+    const goals = Number(player.goals) || 0;
+
     const originalPlayer = originalTeam[index] || {};
-    const totalGoals = (originalPlayer.goals || 0) + goals;
-    let rating = originalPlayer.rating || 0;
-    rating += goals * 0.5 + (isWin ? 2 : isDraw ? 0.5 : isLose ? -1 : 0);
+    const prevRating   = Number(originalPlayer.rating) || 0;  // рейтинг до матча
+    const baseRating   = Number(player.rating)          || 0;  // рейтинг из базы
+    const mod          = growthModifier(baseRating);          // коэффициент 1…0.2
+
+    /* 1. Составляющие прироста, все (кроме поражения) умножаются на mod */
+    const goalDelta  = goals * 0.3 * mod;           // динамика для голов
+    const winDelta   = isWin  ? 2   * mod : 0;      // динамика для побед
+    const drawDelta  = isDraw ? 0.5 * mod : 0;      // динамика для ничьих
+    const loseDelta  = isLose ? -1        : 0;      // поражение без изменений
+
+    /* 2. Итоговый прирост */
+    const delta      = goalDelta + winDelta + drawDelta + loseDelta;
+
+    /* 3. Новый рейтинг: максимум 200, снизу не ограничиваем */
+    const newRating  = round1(Math.min(prevRating + delta, 200));
 
     return {
       ...originalPlayer,
+      id: player.id,
       name: player.name,
       username: player.username,
       gamesPlayed: (originalPlayer.gamesPlayed || 0) + 1,
-      wins: (originalPlayer.wins || 0) + (isWin ? 1 : 0),
-      draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
+      wins:   (originalPlayer.wins   || 0) + (isWin  ? 1 : 0),
+      draws:  (originalPlayer.draws  || 0) + (isDraw ? 1 : 0),
       losses: (originalPlayer.losses || 0) + (isLose ? 1 : 0),
-      goals: totalGoals,
-      rating,
+      goals:  (originalPlayer.goals  || 0) + goals,
+      rating: newRating,  // может быть отрицательным
     };
   });
 };

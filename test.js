@@ -464,8 +464,6 @@ DB_NAME=pavels3f_fball
   });
 
 
-  
-
   const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose) => {
   return team.map((player, index) => {
     const goals = player.goals || 0;
