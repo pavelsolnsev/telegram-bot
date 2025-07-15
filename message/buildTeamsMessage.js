@@ -65,15 +65,13 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
 
   message += "<b>Составы:</b>\n";
   updatedTeams.forEach((updatedTeam, index) => {
-    const baseTeam = teamsBase[index] || [];
     const teamColor = teamColors[index] || "⚽";
     message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n<code>`;
 
     updatedTeam.forEach((player, i) => {
-      const basePlayer = baseTeam.find(bp => bp.id === player.id) || player;
-      const staticRating = basePlayer.rating || 0;
       const displayName = player.username ? player.username : player.name;
-      message += `${formatPlayerLine(i, displayName, staticRating, player.goals)}\n`;
+      const rating = player.rating || 0; // Используем рейтинг из updatedTeams
+      message += `${formatPlayerLine(i, displayName, rating, player.goals)}\n`;
     });
     message += "</code>";
   });

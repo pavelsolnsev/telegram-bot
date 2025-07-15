@@ -1,4 +1,4 @@
-const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing') => {
+const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = []) => {
   const teamColors = ["🔴", "🔵", "🟢", "🟡"];
 
   const emoji = {
@@ -18,17 +18,14 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 11) => {
-    // Удаляем все эмодзи, используя более широкий диапазон Unicode
     const cleanName = name.replace(
       /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu,
       ""
     ).trim();
-    // Подсчитываем длину строки с учетом Unicode-символов
     const chars = Array.from(cleanName);
     if (chars.length <= maxLength) {
       return cleanName.padEnd(maxLength, " ");
     }
-    // Обрезаем до maxLength - 3 и добавляем "...", сохраняя Unicode-символы
     return chars.slice(0, maxLength - 3).join("") + "...";
   };
 
@@ -49,12 +46,15 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
   };
 
+  // Получаем актуальные команды из updatedTeams
+  const updatedTeam1 = updatedTeams[teamIndex1] || team1;
+  const updatedTeam2 = updatedTeams[teamIndex2] || team2;
+
   // Команда 1
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n<code>`;
-
-  team1.forEach((player, index) => {
+  updatedTeam1.forEach((player, index) => {
     const displayName = player.username ? player.username : player.name;
-    const rating = player.rating || 0;
+    const rating = player.rating || 0; // Используем рейтинг из updatedTeams
     message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });
   message += "</code>";
@@ -64,9 +64,9 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
 
   // Команда 2
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n<code>`;
-  team2.forEach((player, index) => {
+  updatedTeam2.forEach((player, index) => {
     const displayName = player.username ? player.username : player.name;
-    const rating = player.rating || 0;
+    const rating = player.rating || 0; // Используем рейтинг из updatedTeams
     message += `${formatPlayerLine(index, displayName, rating, player.goals)}\n`;
   });
   message += "</code>";

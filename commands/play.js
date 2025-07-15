@@ -33,7 +33,6 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    // Check if the same team is selected
     if (teamIndex1 === teamIndex2) {
       const message = await ctx.reply("⛔ Команда не может играть сама с собой!");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -44,7 +43,6 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    // Check if a match is already in progress
     if (playingTeams && !isMatchFinished) {
       const message = await ctx.reply("⛔ Уже идет матч! Завершите текущий матч перед началом нового.");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -76,7 +74,6 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsStatsInitialized(true);
     }
 
-    // Remove "Shuffle teams" button from the previous message
     const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
     if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
       const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
@@ -103,10 +100,10 @@ module.exports = (bot, GlobalState) => {
       }
     }
 
-    // Create new message for playing teams
-    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing');
+    // Получаем актуальные команды для рейтингов
+    const updatedTeams = GlobalState.getTeams();
+    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams);
 
-    // Get buttons for each team
     const team1Buttons = createTeamButtons(team1, teamIndex1);
     const team2Buttons = createTeamButtons(team2, teamIndex2);
 
@@ -126,8 +123,8 @@ module.exports = (bot, GlobalState) => {
       teamIndex1,
       teamIndex2,
     });
-    GlobalState.setIsEndCommandAllowed(true); // Allow end command
-    GlobalState.setIsTeamCommandAllowed(false); // Disallow team command
-    GlobalState.setIsMatchFinished(false); // Ensure match is marked as not finished
+    GlobalState.setIsEndCommandAllowed(true);
+    GlobalState.setIsTeamCommandAllowed(false);
+    GlobalState.setIsMatchFinished(false);
   });
 };
