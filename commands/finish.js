@@ -82,12 +82,8 @@ const updateTeamStats = (
   teamStats[teamKey].goalsConceded += goalsConceded;
 };
 
-
-/* === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ === */
 const round1 = (n) => Math.round(n * 10) / 10;
 
-/* модификатор 1 → 0.2 на диапазоне 0‑300:
-   чем выше рейтинг, тем меньше прибавка */
 const growthModifier = (baseRating) =>
   Math.max(0.2, 1 - baseRating / 200);
 
