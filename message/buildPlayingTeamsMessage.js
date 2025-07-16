@@ -43,7 +43,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     else if (rating < 100) ratingIcon = "🌠";
     else if (rating < 150) ratingIcon = "💎";
     else ratingIcon = "🏆";
-    return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
+    return `${paddedIndex}${paddedName} ${goalsMark}`;
   };
 
   // Получаем актуальные команды из updatedTeams
@@ -51,7 +51,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   const updatedTeam2 = updatedTeams[teamIndex2] || team2;
 
   // Команда 1
-  message += `${color1} <b>Команда ${teamIndex1 + 1}</b> 👥\n<code>`;
+  message += `${color1} <b>Команда ${teamIndex1 + 1}</b> \n<code>`;
   updatedTeam1.forEach((player, index) => {
     const displayName = player.username ? player.username : player.name;
     const rating = player.rating || 0; // Используем рейтинг из updatedTeams
@@ -63,7 +63,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `\n`;
 
   // Команда 2
-  message += `${color2} <b>Команда ${teamIndex2 + 1}</b> 👥\n<code>`;
+  message += `${color2} <b>Команда ${teamIndex2 + 1}</b> \n<code>`;
   updatedTeam2.forEach((player, index) => {
     const displayName = player.username ? player.username : player.name;
     const rating = player.rating || 0; // Используем рейтинг из updatedTeams

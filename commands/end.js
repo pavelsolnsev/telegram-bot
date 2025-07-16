@@ -148,7 +148,8 @@ module.exports = (bot, GlobalState) => {
           matchTitle,
           teamStats,
           allTeams,
-          mvpPlayer
+          mvpPlayer,
+          false
         );
         const vkLinkMessage =
           `${teamsMessage}\n\n` +

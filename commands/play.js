@@ -81,11 +81,13 @@ module.exports = (bot, GlobalState) => {
       const updatedTeams = GlobalState.getTeams();
 
       const teamsMessageWithoutButton = buildTeamsMessage(
-        teamsBase,
-        "Составы команд",
-        teamStats,
-        updatedTeams
-      );
+      teamsBase,
+      "Составы команд",
+      teamStats,
+      updatedTeams,
+      null,
+      false
+    );
 
       try {
         await safeTelegramCall(ctx, "editMessageText", [

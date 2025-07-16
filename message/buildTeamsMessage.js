@@ -1,4 +1,4 @@
-const buildTeamsMessage = (teamsBase, title = "Составы команд", teamStats = {}, updatedTeams = teamsBase, mvpPlayer = null) => {
+const buildTeamsMessage = (teamsBase, title = "Составы команд", teamStats = {}, updatedTeams = teamsBase, mvpPlayer = null, showRatings = true) => {
   const teamColors = ["🔴", "🔵", "🟢", "🟡"];
 
   // Таблица статистики на основе teamsBase
@@ -53,6 +53,11 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
     const paddedName = formatPlayerName(name).padEnd(11, " ");
     const formattedRating = parseFloat(rating).toString();
 
+    if (!showRatings) {
+      const ratingPrefix = rating > 0 ? "+" : "";
+      return `<code>${paddedIndex}${paddedName}</code> <i>${ratingPrefix}${formattedRating}</i>${goalsMark}`;
+    }
+
     let ratingIcon;
     if (rating < 10) ratingIcon = "⭐";
     else if (rating < 30) ratingIcon = "💫";
@@ -60,20 +65,19 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
     else if (rating < 100) ratingIcon = "🌠";
     else if (rating < 150) ratingIcon = "💎";
     else ratingIcon = "🏆";
-    return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}`;
+    return `<code>${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}</code>`;
   };
 
   message += "<b>Составы:</b>\n";
   updatedTeams.forEach((updatedTeam, index) => {
     const teamColor = teamColors[index] || "⚽";
-    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n<code>`;
+    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
 
     updatedTeam.forEach((player, i) => {
       const displayName = player.username ? player.username : player.name;
-      const rating = player.rating || 0; // Используем рейтинг из updatedTeams
+      const rating = player.rating || 0;
       message += `${formatPlayerLine(i, displayName, rating, player.goals)}\n`;
     });
-    message += "</code>";
   });
 
   return message;

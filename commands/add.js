@@ -269,8 +269,7 @@ module.exports = (bot, GlobalState) => {
         const testUserCount = baseTestUserCount + i;
         const testUser = {
           id: 100000 + testUserCount,
-          first_name: `Test Player ${testUserCount}`,
-          last_name: null,
+          name: `Test Player ${testUserCount}`,
           username: `TestPlayer${testUserCount}`,
           goals: 0,
           gamesPlayed: 0,
