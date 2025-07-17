@@ -6,7 +6,6 @@ const getPlayerStats = require("../database/getPlayerStats");
 
 // Функция для проверки наличия эмодзи или Unicode-символов
 const containsEmojiOrUnicode = (text) => {
-  // Регулярное выражение для основных эмодзи и нестандартных Unicode-символов
   const emojiUnicodeRegex = /[\u{1F000}-\u{1FFFF}\u{2000}-\u{2FFF}\u{3000}-\u{3FFF}\u{FF00}-\u{FFFF}]/u;
   return emojiUnicodeRegex.test(text);
 };
@@ -21,27 +20,16 @@ module.exports = (bot, GlobalState) => {
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
 
-    const user = {
-      id: ctx.from.id,
-      name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
-      username: ctx.from.username ? `${ctx.from.username}` : null,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    };
-
-    const [updatedUser] = await getPlayerStats([user]);
-    const isAdmin = ADMIN_ID.includes(updatedUser.id);
+    // Формирование объекта user с учётом проверки username и name
+    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
+    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
 
     // Проверка имени пользователя на эмодзи и Unicode-символы
-    let nameToCheck = user.username; // Сначала проверяем username
+    let nameToCheck = userUsername; // Сначала проверяем username
     let displayType = "username";
-    
+
     if (!nameToCheck) {
-      nameToCheck = user.name; // Если username отсутствует, проверяем name
+      nameToCheck = userName; // Если username отсутствует, проверяем name
       displayType = "name";
     }
 
@@ -58,13 +46,36 @@ module.exports = (bot, GlobalState) => {
       await ctx.deleteMessage().catch(() => {});
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        `⚠️ Недопустимые символы в нике.`,
+        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`,
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 10000);
     }
 
-    // Форматирование имени для сообщений
-    let displayName = user.username || user.name;
+    // Если username валиден, проверяем name и при необходимости заменяем его
+    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
+      if (userName && containsEmojiOrUnicode(userName)) {
+        userName = userUsername; // Заменяем name на username
+      }
+    }
+
+    const user = {
+      id: ctx.from.id,
+      name: userName,
+      username: userUsername,
+      goals: 0,
+      gamesPlayed: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      rating: 0,
+    };
+
+
+    const [updatedUser] = await getPlayerStats([user]);
+    const isAdmin = ADMIN_ID.includes(updatedUser.id);
+
+    // Используем name из объекта user как displayName
+    let displayName = updatedUser.name;
 
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
@@ -80,7 +91,6 @@ module.exports = (bot, GlobalState) => {
     if (ctx.message.text === "+") {
       await ctx.deleteMessage().catch(() => {});
 
-      // Проверка на членство в группе
       if (!isMember) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
@@ -186,16 +196,21 @@ module.exports = (bot, GlobalState) => {
         }
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
-          players.push(movedPlayer);
-          // Форматирование имени для перемещенного игрока
-          let movedDisplayName = movedPlayer.username || movedPlayer.name;
-
+          // Применяем проверку для перемещённого игрока
+          let movedName = movedPlayer.name;
+          if (movedPlayer.username && !containsEmojiOrUnicode(movedPlayer.username)) {
+            if (movedPlayer.name && containsEmojiOrUnicode(movedPlayer.name)) {
+              movedName = movedPlayer.username;
+            }
+          }
+          const updatedMovedPlayer = { ...movedPlayer, name: movedName };
+          players.push(updatedMovedPlayer);
           await sendPrivateMessage(
             bot,
-            movedPlayer.id,
+            updatedMovedPlayer.id,
             "🎉 Вы в основном составе!"
           );
-          if (!ADMIN_ID.includes(movedPlayer.id)) {
+          if (!ADMIN_ID.includes(updatedMovedPlayer.id)) {
             for (const adminId of ADMIN_ID) {
               if (isNaN(adminId) || adminId <= 0) {
                 console.warn(`Некорректный adminId: ${adminId}`);
@@ -204,7 +219,7 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
+                `🔄 Игрок ${updatedMovedPlayer.name} перемещен из очереди в основной состав`
               );
             }
           }
@@ -267,10 +282,20 @@ module.exports = (bot, GlobalState) => {
       const baseTestUserCount = players.length + queue.length;
       for (let i = 1; i <= 2; i++) {
         const testUserCount = baseTestUserCount + i;
+        let testUserName = `Test Player ${testUserCount}`;
+        const testUserUsername = `TestPlayer${testUserCount}`;
+
+        // Проверка тестового имени
+        if (!containsEmojiOrUnicode(testUserUsername)) {
+          if (containsEmojiOrUnicode(testUserName)) {
+            testUserName = testUserUsername;
+          }
+        }
+
         const testUser = {
           id: 100000 + testUserCount,
-          name: `Test Player ${testUserCount}`,
-          username: `TestPlayer${testUserCount}`,
+          name: testUserName,
+          username: testUserUsername,
           goals: 0,
           gamesPlayed: 0,
           wins: 0,
@@ -285,22 +310,17 @@ module.exports = (bot, GlobalState) => {
           queue.some((p) => p.id === updatedTestUser.id);
         if (isInList) continue;
 
-        // Форматирование имени для тестового игрока
-        const testDisplayName = updatedTestUser.username || updatedTestUser.first_name;
-
         if (players.length < MAX_PLAYERS) {
           players.push(updatedTestUser);
-          addedPlayers.push(`${testDisplayName} (в список игроков)`);
+          addedPlayers.push(`${updatedTestUser.name} (в список игроков)`);
         } else {
           queue.push(updatedTestUser);
-          addedPlayers.push(`${testDisplayName} (в очередь)`);
+          addedPlayers.push(`${updatedTestUser.name} (в очередь)`);
         }
       }
 
       if (addedPlayers.length > 0) {
-        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join(
-          "\n"
-        )}`;
+        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join("\n")}`;
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           messageText,
@@ -328,13 +348,8 @@ module.exports = (bot, GlobalState) => {
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
     try {
-      const chatMember = await ctx.telegram.getChatMember(
-        GROUP_ID,
-        ctx.from.id
-      );
-      isMember = ["member", "administrator", "creator"].includes(
-        chatMember.status
-      );
+      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
+      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
     } catch (error) {
       console.error("Ошибка проверки членства в группе:", error);
     }
@@ -344,26 +359,16 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    const user = {
-      id: ctx.from.id,
-      name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
-      username: ctx.from.username ? `${ctx.from.username}` : null,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    };
-
-    const [updatedUser] = await getPlayerStats([user]);
+    // Формирование объекта user с учётом проверки username и name
+    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
+    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
 
     // Проверка имени пользователя на эмодзи и Unicode-символы
-    let nameToCheck = user.username;
+    let nameToCheck = userUsername;
     let displayType = "username";
-    
+
     if (!nameToCheck) {
-      nameToCheck = user.name;
+      nameToCheck = userName;
       displayType = "name";
     }
 
@@ -376,10 +381,34 @@ module.exports = (bot, GlobalState) => {
 
     if (containsEmojiOrUnicode(nameToCheck)) {
       await ctx.answerCbQuery(
-        `⚠️ Недопустимые символы в нике.`
+        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
       );
       return;
     }
+
+    // Если username валиден, проверяем name и при необходимости заменяем его
+    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
+      if (userName && containsEmojiOrUnicode(userName)) {
+        userName = userUsername;
+      }
+    }
+
+    const user = {
+      id: ctx.from.id,
+      name: userName,
+      username: userUsername,
+      goals: 0,
+      gamesPlayed: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      rating: 0,
+    };
+
+
+    const [updatedUser] = await getPlayerStats([user]);
+    const isAdmin = ADMIN_ID.includes(updatedUser.id);
+    let displayName = updatedUser.name;
 
     if (isTeamsDivided) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -393,10 +422,6 @@ module.exports = (bot, GlobalState) => {
     const isInList =
       players.some((p) => p.id === updatedUser.id) ||
       queue.some((p) => p.id === updatedUser.id);
-    const isAdmin = ADMIN_ID.includes(updatedUser.id);
-
-    // Форматирование имени для уведомлений
-    let displayName = updatedUser.username || updatedUser.name;
 
     if (isInList) {
       await ctx.answerCbQuery("⚠️ Вы уже записаны!");
@@ -440,17 +465,51 @@ module.exports = (bot, GlobalState) => {
     await sendPlayerList(ctx);
   });
 
-bot.action("leave_match", async (ctx) => {
+  bot.action("leave_match", async (ctx) => {
     let players = GlobalState.getPlayers();
     let queue = GlobalState.getQueue();
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
     let isMatchStarted = GlobalState.getStart();
 
+    // Формирование объекта user с учётом проверки username и name
+    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
+    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
+
+    // Проверка имени пользователя на эмодзи и Unicode-символы
+    let nameToCheck = userUsername;
+    let displayType = "username";
+
+    if (!nameToCheck) {
+      nameToCheck = userName;
+      displayType = "name";
+    }
+
+    if (!nameToCheck) {
+      await ctx.answerCbQuery(
+        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
+      );
+      return;
+    }
+
+    if (containsEmojiOrUnicode(nameToCheck)) {
+      await ctx.answerCbQuery(
+        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
+      );
+      return;
+    }
+
+    // Если username валиден, проверяем name и при необходимости заменяем его
+    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
+      if (userName && containsEmojiOrUnicode(userName)) {
+        userName = userUsername;
+      }
+    }
+
     const user = {
       id: ctx.from.id,
-      name: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" "),
-      username: ctx.from.username ? `${ctx.from.username}` : null,
+      name: userName,
+      username: userUsername,
       goals: 0,
       gamesPlayed: 0,
       wins: 0,
@@ -459,9 +518,10 @@ bot.action("leave_match", async (ctx) => {
       rating: 0,
     };
 
+
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
-    let displayName = updatedUser.username || updatedUser.name;
+    let displayName = updatedUser.name;
 
     if (!isMatchStarted) {
       await ctx.answerCbQuery("⚠️ Матч не начат!");
@@ -491,15 +551,21 @@ bot.action("leave_match", async (ctx) => {
       }
       if (queue.length > 0) {
         const movedPlayer = queue.shift();
-        players.push(movedPlayer);
-        let movedDisplayName = movedPlayer.username || movedPlayer.name;
-
+        // Применяем проверку для перемещённого игрока
+        let movedName = movedPlayer.name;
+        if (movedPlayer.username && !containsEmojiOrUnicode(movedPlayer.username)) {
+          if (movedPlayer.name && containsEmojiOrUnicode(movedPlayer.name)) {
+            movedName = movedPlayer.username;
+          }
+        }
+        const updatedMovedPlayer = { ...movedPlayer, name: movedName };
+        players.push(updatedMovedPlayer);
         await sendPrivateMessage(
           bot,
-          movedPlayer.id,
+          updatedMovedPlayer.id,
           "🎉 Вы в основном составе!"
         );
-        if (!ADMIN_ID.includes(movedPlayer.id)) {
+        if (!ADMIN_ID.includes(updatedMovedPlayer.id)) {
           for (const adminId of ADMIN_ID) {
             if (isNaN(adminId) || adminId <= 0) {
               console.warn(`Некорректный adminId: ${adminId}`);
@@ -508,7 +574,7 @@ bot.action("leave_match", async (ctx) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
+              `🔄 Игрок ${updatedMovedPlayer.name} перемещен из очереди в основной состав`
             );
           }
         }

@@ -87,15 +87,26 @@ module.exports = (bot, GlobalState) => {
       const teamsBase = GlobalState.getTeamsBase();
       const allPlayers = allTeams.flat();
 
-      // Находим лучшего игрока (MVP)
+      // Находим лучшего игрока (MVP) по новым критериям
       const mvpCandidates = allPlayers.reduce((best, player) => {
         if (!best.length) return [player];
         const topPlayer = best[0];
+
+        // 1. Сравниваем по количеству голов
+        if (player.goals > topPlayer.goals) return [player];
+        if (player.goals < topPlayer.goals) return best;
+
+        // 2. Если голы равны, сравниваем по очкам (3 за победу, 1 за ничью, 0 за поражение)
+        const playerPoints = player.wins * 3 + player.draws;
+        const topPlayerPoints = topPlayer.wins * 3 + topPlayer.draws;
+
+        if (playerPoints > topPlayerPoints) return [player];
+        if (playerPoints < topPlayerPoints) return best;
+
+        // 3. Если очки равны, сравниваем по рейтингу
         if (player.rating > topPlayer.rating) return [player];
-        if (player.rating === topPlayer.rating) {
-          if (player.goals > topPlayer.goals) return [player];
-          if (player.goals === topPlayer.goals) return [...best, player];
-        }
+        if (player.rating === topPlayer.rating) return [...best, player];
+
         return best;
       }, []);
 
