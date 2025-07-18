@@ -74,13 +74,25 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsStatsInitialized(true);
     }
 
+    // Delete the previous teams message if it exists
     const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
     if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
-      const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
-      const teamStats = GlobalState.getTeamStats() || {};
-      const updatedTeams = GlobalState.getTeams();
+      try {
+        await safeTelegramCall(ctx, "deleteMessage", [
+          lastTeamsMessage.chatId,
+          lastTeamsMessage.messageId
+        ]);
+      } catch (error) {
+        console.error("Ошибка при удалении предыдущего сообщения:", error);
+      }
+    }
 
-      const teamsMessageWithoutButton = buildTeamsMessage(
+    // Send a new teams message
+    const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
+    const teamStats = GlobalState.getTeamStats() || {};
+    const updatedTeams = GlobalState.getTeams();
+
+    const teamsMessageWithoutButton = buildTeamsMessage(
       teamsBase,
       "Составы команд",
       teamStats,
@@ -89,23 +101,16 @@ module.exports = (bot, GlobalState) => {
       false
     );
 
-      try {
-        await safeTelegramCall(ctx, "editMessageText", [
-          lastTeamsMessage.chatId,
-          lastTeamsMessage.messageId,
-          null,
-          teamsMessageWithoutButton,
-          { parse_mode: "HTML" }
-        ]);
-      } catch (error) {
-        console.error("Ошибка при удалении кнопки из предыдущего сообщения:", error);
-      }
-    }
+    const sentTeamsMessage = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      teamsMessageWithoutButton,
+      { parse_mode: "HTML" }
+    ]);
 
-    // Получаем актуальные команды для рейтингов
-    const updatedTeams = GlobalState.getTeams();
+    GlobalState.setLastTeamsMessageId(sentTeamsMessage.chat.id, sentTeamsMessage.message_id);
+
+    // Send the playing teams message
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams);
-
     const team1Buttons = createTeamButtons(team1, teamIndex1);
     const team2Buttons = createTeamButtons(team2, teamIndex2);
 
