@@ -86,7 +86,7 @@ const growthModifier = (baseRating) =>
   Math.max(0.2, 1 - baseRating / 200);
 
 /* === ОСНОВНАЯ ФУНКЦИЯ === */
-const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose, allTeamsBase, teamIndex) => {
+const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose, allTeamsBase, teamIndex, teamGoals, opponentGoals) => {
   return team.map((player, index) => {
     const goals = Number(player.goals) || 0;
     
@@ -97,9 +97,14 @@ const updatePlayerStats = (team, originalTeam, isWin, isDraw, isLose, allTeamsBa
     const mod = growthModifier(baseRating);
 
     const goalDelta = goals * 0.3 * mod;
-    const winDelta = isWin ? 2 * mod : 0;
+    
+    // Check for shutout conditions (3-0 or greater)
+    const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
+    const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;
+    
+    const winDelta = isShutoutWin ? 3 * mod : isWin ? 2 * mod : 0;
     const drawDelta = isDraw ? 0.5 * mod : 0;
-    const loseDelta = isLose ? -1 : 0;
+    const loseDelta = isShutoutLoss ? -1.5 : isLose ? -1 : 0;
 
     const delta = goalDelta + winDelta + drawDelta + loseDelta;
 
@@ -177,7 +182,7 @@ module.exports = (bot, GlobalState) => {
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
     let allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
-    const allTeamsBase = GlobalState.getTeamsBase(); // Получаем базовые данные
+    const allTeamsBase = GlobalState.getTeamsBase();
     const result = getMatchResult(team1, team2);
 
     const team1Goals = team1.reduce(
@@ -206,7 +211,6 @@ module.exports = (bot, GlobalState) => {
       team1Goals
     );
 
-    // Передаём allTeamsBase и teamIndex в updatePlayerStats
     allTeams[teamIndex1] = updatePlayerStats(
       team1,
       allTeams[teamIndex1],
@@ -214,7 +218,9 @@ module.exports = (bot, GlobalState) => {
       result === "draw",
       result === "team2",
       allTeamsBase,
-      teamIndex1
+      teamIndex1,
+      team1Goals,
+      team2Goals
     );
     allTeams[teamIndex2] = updatePlayerStats(
       team2,
@@ -223,7 +229,9 @@ module.exports = (bot, GlobalState) => {
       result === "draw",
       result === "team1",
       allTeamsBase,
-      teamIndex2
+      teamIndex2,
+      team2Goals,
+      team1Goals
     );
 
     GlobalState.setTeams(allTeams);
@@ -334,18 +342,17 @@ module.exports = (bot, GlobalState) => {
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
     let allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
-    const allTeamsBase = GlobalState.getTeamsBase(); // Получаем базовые данные
+    const allTeamsBase = GlobalState.getTeamsBase();
     const result = getMatchResult(team1, team2);
 
     const team1Goals = team1.reduce((sum, player) => sum + (player.goals || 0), 0);
     const team2Goals = team2.reduce((sum, player) => sum + (player.goals || 0), 0);
 
     updateTeamStats(teamStats, `team${teamIndex1 + 1}`, result === "team1", result === "draw", team1Goals, team2Goals);
-    updateTeamStats(teamStats, `team${teamIndex2 + 1}`, result === "team2", result === "draw", team2Goals, team1Goals); // Исправлено: "auer" на "team2"
+    updateTeamStats(teamStats, `team${teamIndex2 + 1}`, result === "team2", result === "draw", team2Goals, team1Goals);
 
-    // Передаём allTeamsBase и teamIndex в updatePlayerStats
-    allTeams[teamIndex1] = updatePlayerStats(team1, allTeams[teamIndex1], result === "team1", result === "draw", result === "team2", allTeamsBase, teamIndex1);
-    allTeams[teamIndex2] = updatePlayerStats(team2, allTeams[teamIndex2], result === "team2", result === "draw", result === "team1", allTeamsBase, teamIndex2);
+    allTeams[teamIndex1] = updatePlayerStats(team1, allTeams[teamIndex1], result === "team1", result === "draw", result === "team2", allTeamsBase, teamIndex1, team1Goals, team2Goals);
+    allTeams[teamIndex2] = updatePlayerStats(team2, allTeams[teamIndex2], result === "team2", result === "draw", result === "team1", allTeamsBase, teamIndex2, team2Goals, team1Goals);
 
     GlobalState.setTeams(allTeams);
     GlobalState.setTeamStats(teamStats);
