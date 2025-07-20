@@ -70,12 +70,11 @@ module.exports = (bot, GlobalState) => {
       rating: 0,
     };
 
-
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
 
-    // Используем name из объекта user как displayName
-    let displayName = updatedUser.name;
+    // Формируем displayName как name и username в скобках, если username существует
+    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
 
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
@@ -204,6 +203,8 @@ module.exports = (bot, GlobalState) => {
             }
           }
           const updatedMovedPlayer = { ...movedPlayer, name: movedName };
+          // Формируем displayName для перемещённого игрока
+          const movedDisplayName = updatedMovedPlayer.username ? `${updatedMovedPlayer.name} (${updatedMovedPlayer.username})` : updatedMovedPlayer.name;
           players.push(updatedMovedPlayer);
           await sendPrivateMessage(
             bot,
@@ -219,7 +220,7 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `🔄 Игрок ${updatedMovedPlayer.name} перемещен из очереди в основной состав`
+                `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
               );
             }
           }
@@ -310,12 +311,15 @@ module.exports = (bot, GlobalState) => {
           queue.some((p) => p.id === updatedTestUser.id);
         if (isInList) continue;
 
+        // Формируем displayName для тестового игрока
+        const testDisplayName = updatedTestUser.username ? `${updatedTestUser.name} (${updatedTestUser.username})` : updatedTestUser.name;
+
         if (players.length < MAX_PLAYERS) {
           players.push(updatedTestUser);
-          addedPlayers.push(`${updatedTestUser.name} (в список игроков)`);
+          addedPlayers.push(`${testDisplayName} (в список игроков)`);
         } else {
           queue.push(updatedTestUser);
-          addedPlayers.push(`${updatedTestUser.name} (в очередь)`);
+          addedPlayers.push(`${testDisplayName} (в очередь)`);
         }
       }
 
@@ -344,7 +348,6 @@ module.exports = (bot, GlobalState) => {
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
     const GROUP_ID = GlobalState.getGroupId();
-
     // Проверка, состоит ли пользователь в группе
     let isMember = false;
     try {
@@ -405,10 +408,10 @@ module.exports = (bot, GlobalState) => {
       rating: 0,
     };
 
-
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
-    let displayName = updatedUser.name;
+    // Формируем displayName как name и username в скобках, если username существует
+    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
 
     if (isTeamsDivided) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -518,10 +521,10 @@ module.exports = (bot, GlobalState) => {
       rating: 0,
     };
 
-
     const [updatedUser] = await getPlayerStats([user]);
     const isAdmin = ADMIN_ID.includes(updatedUser.id);
-    let displayName = updatedUser.name;
+    // Формируем displayName как name и username в скобках, если username существует
+    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
 
     if (!isMatchStarted) {
       await ctx.answerCbQuery("⚠️ Матч не начат!");
@@ -559,6 +562,8 @@ module.exports = (bot, GlobalState) => {
           }
         }
         const updatedMovedPlayer = { ...movedPlayer, name: movedName };
+        // Формируем displayName для перемещённого игрока
+        const movedDisplayName = updatedMovedPlayer.username ? `${updatedMovedPlayer.name} (${updatedMovedPlayer.username})` : updatedMovedPlayer.name;
         players.push(updatedMovedPlayer);
         await sendPrivateMessage(
           bot,
@@ -574,7 +579,7 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `🔄 Игрок ${updatedMovedPlayer.name} перемещен из очереди в основной состав`
+              `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
             );
           }
         }
