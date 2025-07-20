@@ -15,6 +15,7 @@ module.exports = (bot, GlobalState) => {
     const teamIndex1 = parseInt(ctx.match[1], 10) - 1;
     const teamIndex2 = parseInt(ctx.match[2], 10) - 1;
     const teams = GlobalState.getTeams();
+    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
 
     await ctx.deleteMessage().catch(() => {});
 
@@ -74,40 +75,40 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsStatsInitialized(true);
     }
 
-    // Delete the previous teams message if it exists
-    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
-      try {
-        await safeTelegramCall(ctx, "deleteMessage", [
-          lastTeamsMessage.chatId,
-          lastTeamsMessage.messageId
-        ]);
-      } catch (error) {
-        console.error("Ошибка при удалении предыдущего сообщения:", error);
-      }
-    }
-
-    // Send a new teams message
-    const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
-    const teamStats = GlobalState.getTeamStats() || {};
+    // Define updatedTeams for buildPlayingTeamsMessage
     const updatedTeams = GlobalState.getTeams();
 
-    const teamsMessageWithoutButton = buildTeamsMessage(
-      teamsBase,
-      "Составы команд",
-      teamStats,
-      updatedTeams,
-      null,
-      false
-    );
+    // Update the existing teams message if it exists
+    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
+      const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
+      const teamStats = GlobalState.getTeamStats() || {};
 
-    const sentTeamsMessage = await safeTelegramCall(ctx, "sendMessage", [
-      ctx.chat.id,
-      teamsMessageWithoutButton,
-      { parse_mode: "HTML" }
-    ]);
+      const teamsMessageWithoutButton = buildTeamsMessage(
+        teamsBase,
+        "Составы команд",
+        teamStats,
+        updatedTeams,
+        null,
+        false
+      );
 
-    GlobalState.setLastTeamsMessageId(sentTeamsMessage.chat.id, sentTeamsMessage.message_id);
+      try {
+        await safeTelegramCall(ctx, "editMessageText", [
+          lastTeamsMessage.chatId,
+          lastTeamsMessage.messageId,
+          null,
+          teamsMessageWithoutButton,
+          { parse_mode: "HTML" }
+        ]);
+      } catch (error) {
+        console.error("Ошибка при редактировании сообщения:", error);
+        const message = await ctx.reply("⛔ Ошибка при обновлении состава команд!");
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+    } else {
+      const message = await ctx.reply("⛔ Сообщение с составами команд не найдено!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
 
     // Send the playing teams message
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams);
