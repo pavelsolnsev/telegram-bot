@@ -79,7 +79,7 @@ module.exports = (bot, GlobalState) => {
     const updatedTeams = GlobalState.getTeams();
 
     // Update the existing teams message if it exists
-    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
+     if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
       const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
       const teamStats = GlobalState.getTeamStats() || {};
 
@@ -101,9 +101,15 @@ module.exports = (bot, GlobalState) => {
           { parse_mode: "HTML" }
         ]);
       } catch (error) {
-        console.error("Ошибка при редактировании сообщения:", error);
-        const message = await ctx.reply("⛔ Ошибка при обновлении состава команд!");
-        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        // Если контент не изменился — просто игнорируем эту ошибку
+        const description = error?.response?.description || "";
+        if (description.includes("message is not modified")) {
+          // ничего не делаем
+        } else {
+          console.error("Ошибка при редактировании сообщения:", error);
+          const message = await ctx.reply("⛔ Ошибка при обновлении состава команд!");
+          return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
       }
     } else {
       const message = await ctx.reply("⛔ Сообщение с составами команд не найдено!");
