@@ -40,7 +40,7 @@ require("./commands/goal")(bot, GlobalState); // отметить гол
 require("./commands/finish")(bot, GlobalState); // закончить матч
 require("./commands/list")(bot, GlobalState); // Команда list для проверки списка
 require("./commands/table")(bot, GlobalState); // Команда для проверки таблицы
-require("./commands/result")(bot, GlobalState);
+// require("./commands/result")(bot, GlobalState);
 require("./commands/time")(bot, GlobalState); // Команда t для смены даты
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
