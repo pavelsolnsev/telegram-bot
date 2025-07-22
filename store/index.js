@@ -28,6 +28,7 @@ const GlobalState = (() => {
   let matchHistory = {};
   let location = null;
   let teamCount = 0;
+  let matchHistoryStack = [];
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
@@ -105,6 +106,15 @@ const GlobalState = (() => {
     setMatchHistory: (history) => matchHistory = history,
     getLocation: () => location,
     setLocation: (loc) => location = loc,
+    pushMatchHistory: (state) => {
+      matchHistoryStack.push(state);
+    },
+    popMatchHistory: () => {
+      return matchHistoryStack.pop();
+    },
+    clearMatchHistory: () => {
+      matchHistoryStack = [];
+    }
   };
 
   return Object.freeze(Store);
