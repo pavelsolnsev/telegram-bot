@@ -33,15 +33,16 @@ module.exports = (bot, GlobalState) => {
 
     const playerIndex = playerNumber - 1;
     const player = players[playerIndex];
+    let displayName = player.username ? `${player.name} (${player.username})` : player.name;
 
     if (!player.paid) {
       player.paid = true;
       GlobalState.setPlayers(players); // Обновляем список игроков
       await sendPlayerList(ctx, GlobalState.getListMessageChatId()); // Обновляем список в группе
-      const message = await ctx.reply(`✅ ${player.name} оплатил участие.`);
+      const message = await ctx.reply(`✅ ${displayName} оплатил участие.`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
-      const message = await ctx.reply(`⚠️ ${player.name} уже отмечен как оплативший!`);
+      const message = await ctx.reply(`⚠️ ${displayName} уже отмечен как оплативший!`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });
@@ -78,15 +79,16 @@ module.exports = (bot, GlobalState) => {
 
     const playerIndex = playerNumber - 1;
     const player = players[playerIndex];
-
+    let displayName = player.username ? `${player.name} (${player.username})` : player.name;
+    
     if (player.paid) {
       player.paid = false;
       GlobalState.setPlayers(players); // Обновляем список игроков
       await sendPlayerList(ctx, GlobalState.getListMessageChatId()); // Обновляем список в группе
-      const message = await ctx.reply(`❌ ${player.name} больше не отмечен как оплативший.`);
+      const message = await ctx.reply(`❌ ${displayName} больше не отмечен как оплативший.`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } else {
-      const message = await ctx.reply(`⚠️ ${player.name} и так не отмечен как оплативший!`);
+      const message = await ctx.reply(`⚠️ ${displayName} и так не отмечен как оплативший!`);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });

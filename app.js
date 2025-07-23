@@ -41,11 +41,12 @@ require("./commands/finish")(bot, GlobalState); // закончить матч
 require("./commands/list")(bot, GlobalState); // Команда list для проверки списка
 require("./commands/table")(bot, GlobalState); // Команда для проверки таблицы
 require("./commands/result")(bot, GlobalState);
+require("./commands/ready")(bot, GlobalState);
 require("./commands/time")(bot, GlobalState); // Команда t для смены даты
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
 require("./commands/add")(bot, GlobalState); // Добавление и удаление игроков
-require("./buttons/reshuffle_callback")(bot, GlobalState); // Обработка inline-кнопки "Перемешать составы"
+// require("./buttons/reshuffle_callback")(bot, GlobalState);
 // Запуск бота
 bot.launch();
 

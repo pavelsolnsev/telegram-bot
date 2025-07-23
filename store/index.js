@@ -29,6 +29,9 @@ const GlobalState = (() => {
   let location = null;
   let teamCount = 0;
   let matchHistoryStack = [];
+  let matchResults = [];
+  let lastResultMessage = null;
+  let isTableAllowed = false;
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
@@ -47,12 +50,21 @@ const GlobalState = (() => {
     setIsStatsInitialized: (status) => isStatsInitialized = status,
     getTeamsBase: () => teamsBase,
     setTeamsBase: (teams) => teamsBase = teams,
+    getIsTableAllowed: () => isTableAllowed,
+    setIsTableAllowed: (status) => isTableAllowed = status,
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => MAX_PLAYERS = number,
     getPlayers: () => players,
     setPlayers: (array) => players = array,
     getQueue: () => queue,
     setQueue: (array) => queue = array,
+    getMatchResults: () => matchResults,
+    addMatchResult: (result) => matchResults.push(result),
+    clearMatchResults: () => { matchResults = []; },
+    getLastResultMessageId: () => lastResultMessage,
+    setLastResultMessageId: (chatId, messageId) => {
+      lastResultMessage = { chatId, messageId };
+    },
     getIsEndCommandAllowed: () => isEndCommandAllowed,
     setIsEndCommandAllowed: (status) => isEndCommandAllowed = status,
     getIsTeamCommandAllowed: () => isTeamCommandAllowed,

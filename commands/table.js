@@ -7,9 +7,11 @@ module.exports = (bot, GlobalState) => {
 
     const isMatchStarted = GlobalState.getStart();
     const isTeamsDivided = GlobalState.getDivided();
-    const teamsBase = GlobalState.getTeamsBase()
+    const teamsBase = GlobalState.getTeamsBase();
     const allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
+
+
     if (ctx.chat.id < 0) {
       const msg = await ctx.reply("Напиши мне в ЛС.");
       return deleteMessageAfterDelay(ctx, msg.message_id);
@@ -21,11 +23,16 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
+    if (!GlobalState.getIsTableAllowed()) {
+      const msg = await ctx.reply("⚠️ Составы ещё не готовы.");
+      return deleteMessageAfterDelay(ctx, msg.message_id, 6000);
+    }
+
     if (!isTeamsDivided || teamsBase.length === 0) {
       const message = await ctx.reply("⚠️ Команды ещё не сформированы!");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
-  
+
     try {
       // Формируем сообщение с таблицей в реальном времени
       const tableMessage = buildTeamsMessage(

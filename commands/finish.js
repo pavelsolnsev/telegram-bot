@@ -142,7 +142,7 @@ const updateTeamsMessage = async (
 ) => {
   const updatedMessage = buildTeamsMessage(
     allTeamsBase,
-    "Составы команд после матча",
+    "Таблица",
     teamStats,
     GlobalState.getTeams(),
     null,
@@ -213,6 +213,21 @@ module.exports = (bot, GlobalState) => {
       (sum, player) => sum + (player.goals || 0),
       0
     );
+
+    GlobalState.addMatchResult({
+      teamIndex1,
+      teamIndex2,
+      score1: team1Goals,
+      score2: team2Goals,
+      players1: team1.map((p) => ({
+        name: p.username || p.name,
+        goals: p.goals || 0,
+      })),
+      players2: team2.map((p) => ({
+        name: p.username || p.name,
+        goals: p.goals || 0,
+      })),
+    });
 
     updateTeamStats(
       teamStats,
@@ -331,6 +346,21 @@ module.exports = (bot, GlobalState) => {
       (sum, player) => sum + (player.goals || 0),
       0
     );
+
+    GlobalState.addMatchResult({
+      teamIndex1,
+      teamIndex2,
+      score1: team1Goals,
+      score2: team2Goals,
+      players1: team1.map((p) => ({
+        name: p.username || p.name,
+        goals: p.goals || 0,
+      })),
+      players2: team2.map((p) => ({
+        name: p.username || p.name,
+        goals: p.goals || 0,
+      })),
+    });
 
     updateTeamStats(
       teamStats,
@@ -525,14 +555,12 @@ module.exports = (bot, GlobalState) => {
 
     const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
-      `🏀 Автоматически начат новый матч: Команда ${
-        nextTeamIndex1 + 1
-      } vs Команда ${nextTeamIndex2 + 1} (каждая с каждой, с учётом отдыха)`,
+      `Команда ${nextTeamIndex1 + 1} vs Команда ${nextTeamIndex2 + 1}`,
     ]);
     deleteMessageAfterDelay(ctx, notificationMessage.message_id);
   });
 
-  // Обновленная команда end
+
   bot.hears(/^end$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!(await checkAdminRights(ctx, ADMIN_ID))) return;
@@ -540,7 +568,7 @@ module.exports = (bot, GlobalState) => {
     const isMatchFinished = GlobalState.getIsMatchFinished();
     const isMatchStarted = GlobalState.getStart();
 
-    // Если есть завершенный матч (после fn/ksk) - откатываем изменения
+    // Если есть завершённый матч (после fn/ksk) — откатываем изменения
     if (isMatchFinished) {
       const previousState = GlobalState.popMatchHistory();
       if (!previousState) {
@@ -551,6 +579,13 @@ module.exports = (bot, GlobalState) => {
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
+      // Удаляем последний матч из результатов
+      const results = GlobalState.getMatchResults();
+      if (results.length > 0) {
+        results.pop();
+      }
+
+      // Откатываем состояние
       GlobalState.setTeams(previousState.teams);
       GlobalState.setTeamStats(previousState.teamStats);
       GlobalState.setMatchHistory(previousState.matchHistory);
@@ -558,7 +593,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setPlayingTeams(previousState.playingTeams);
       GlobalState.setIsMatchFinished(false);
 
-      // Обновляем сообщение с командами
+      // Обновляем сообщение с командами после отката
       await updateTeamsMessage(
         ctx,
         GlobalState,
@@ -566,7 +601,7 @@ module.exports = (bot, GlobalState) => {
         previousState.teamStats
       );
 
-      // Восстанавливаем сообщение с матчем, если он был
+      // Восстанавливаем сообщение с активным матчем (если было)
       if (previousState.playingTeams) {
         const { team1, team2, teamIndex1, teamIndex2 } =
           previousState.playingTeams;
@@ -577,8 +612,7 @@ module.exports = (bot, GlobalState) => {
           teamIndex2,
           "playing"
         );
-
-        const sentMessage = await safeTelegramCall(ctx, "sendMessage", [
+        const sent = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           teamsMessage,
           {
@@ -589,26 +623,21 @@ module.exports = (bot, GlobalState) => {
             ]).reply_markup,
           },
         ]);
-
-        GlobalState.setPlayingTeamsMessageId(
-          sentMessage.chat.id,
-          sentMessage.message_id
-        );
+        GlobalState.setPlayingTeamsMessageId(sent.chat.id, sent.message_id);
       }
 
       const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        "⏪ Последний матч отменен, статистика восстановлена!",
+        "⏪ Последний матч отменён, статистика восстановлена!",
       ]);
-      deleteMessageAfterDelay(ctx, notificationMessage.message_id);
-      return;
+      return deleteMessageAfterDelay(ctx, notificationMessage.message_id, 6000);
     }
 
-    // Если матч в процессе - отменяем его
+    // Если матч в процессе — отменяем его
     if (isMatchStarted) {
       if (ctx.chat.id < 0) {
         const msg = await ctx.reply("Напиши мне в ЛС.");
-        return deleteMessageAfterDelay(ctx, msg.message_id);
+        return deleteMessageAfterDelay(ctx, msg.message_id, 6000);
       }
 
       const playingTeams = GlobalState.getPlayingTeams();
@@ -621,11 +650,11 @@ module.exports = (bot, GlobalState) => {
       }
 
       const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-      const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
-      if (playingTeamsMessage) {
+      const playingMsg = GlobalState.getPlayingTeamsMessageId();
+      if (playingMsg) {
         await safeTelegramCall(ctx, "editMessageText", [
-          playingTeamsMessage.chatId,
-          playingTeamsMessage.messageId,
+          playingMsg.chatId,
+          playingMsg.messageId,
           null,
           buildPlayingTeamsMessage(
             team1,
@@ -638,18 +667,18 @@ module.exports = (bot, GlobalState) => {
         ]);
       }
 
+      // Удаляем запись о текущем матче
       GlobalState.setPlayingTeams(null);
       GlobalState.setPlayingTeamsMessageId(null, null);
 
       const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        "🚫 Матч отменен!",
+        "🚫 Матч отменён!",
       ]);
-      deleteMessageAfterDelay(ctx, notificationMessage.message_id);
-      return;
+      return deleteMessageAfterDelay(ctx, notificationMessage.message_id, 6000);
     }
 
-    // Если нет активного матча и нет завершенного
+    // Если нет ни активного, ни завершённого матча
     const message = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
       "⛔ Нет активного матча для отмены!",

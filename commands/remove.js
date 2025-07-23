@@ -43,8 +43,8 @@ module.exports = (bot, GlobalState) => {
 
     // Находим игрока по его номеру
     const playerIndex = playerNumber - 1;
-    const playerName = players[playerIndex].name;
-
+    const playerName = players[playerIndex];
+    let displayName = playerName.username ? `${playerName.name} (${playerName.username})` : playerName.name;
     // Удаляем игрока из списка
     players.splice(playerIndex, 1);
 
@@ -60,7 +60,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setQueue(queue);
 
     // Отправляем уведомление о том, что игрок был удалён
-    const message = await ctx.reply(`✅ Игрок ${playerName} удалён из списка!`);
+    const message = await ctx.reply(`✅ Игрок ${displayName} удалён из списка!`);
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
 
     // Обновляем список игроков

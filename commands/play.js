@@ -85,7 +85,7 @@ module.exports = (bot, GlobalState) => {
 
       const teamsMessageWithoutButton = buildTeamsMessage(
         teamsBase,
-        "Составы команд",
+        "Таблица",
         teamStats,
         updatedTeams,
         null,

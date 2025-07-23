@@ -211,7 +211,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsTeamCommandAllowed(true);
       GlobalState.setMatchHistory({});
       GlobalState.setConsecutiveGames({});
-
+      GlobalState.setIsTableAllowed(false);
       // Отправляем подтверждение
       const message = await ctx.reply("✅ Сбор успешно завершён!");
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
