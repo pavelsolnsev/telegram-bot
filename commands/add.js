@@ -10,6 +10,66 @@ const containsEmojiOrUnicode = (text) => {
   return emojiUnicodeRegex.test(text);
 };
 
+const notifyTeamFormation = async (ctx, bot, GlobalState) => {
+  const location = GlobalState.getLocation();
+  const players = GlobalState.getPlayers();
+  const queue = GlobalState.getQueue();
+  const groupId = GlobalState.getGroupId();
+
+  const count = players.length;
+
+  if (location === "kz") {
+    if (count === 16) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        groupId,
+        "🏆 Собрано 2 команды (16 игроков)",
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 60000);
+    } else if (count === 24) {
+      const queueLength = queue.length;
+      if (queueLength < 6) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          groupId,
+          `🏆 3 команды (24 игрока) собрались! Для открытия 4-й команды нужно еще минимум ${6 - queueLength} в очереди.`,
+        ]);
+        deleteMessageAfterDelay(ctx, message.message_id, 60000);
+      } else {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          groupId,
+          `🏆 3 команды собрались и очередь уже полна для 4-й! Готовимся к 4 командам.`,
+        ]);
+        deleteMessageAfterDelay(ctx, message.message_id, 60000);
+      }
+    } else if (count === 32) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        groupId,
+        "🏆 Собрано 4 команды (32 игрока)",
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 60000);
+    }
+  } else {
+    if (count === 10) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        groupId,
+        "🏆 Собрано 2 команды (10 игроков)!",
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 60000);
+    } else if (count === 15) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        groupId,
+        "🏆 Собрано 3 команды (15 игроков)!",
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 60000);
+    } else if (count === 20) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        groupId,
+        "🏆 Собрано 4 команды (20 игроков)!",
+      ]);
+      deleteMessageAfterDelay(ctx, message.message_id, 60000);
+    }
+  }
+};
+
 module.exports = (bot, GlobalState) => {
   bot.on("text", async (ctx) => {
     const players = GlobalState.getPlayers();
@@ -160,6 +220,8 @@ module.exports = (bot, GlobalState) => {
         `✅ ${displayName} добавлен!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      // Notify team formation after adding a player
+      await notifyTeamFormation(ctx, bot, GlobalState);
     } else if (ctx.message.text === "-") {
       await ctx.deleteMessage().catch(() => {});
       if (!isMatchStarted) {
@@ -231,6 +293,8 @@ module.exports = (bot, GlobalState) => {
           `🚶 ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        // Notify team formation after removing a player and possibly moving one from queue
+        await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
         if (queueIndex !== -1) {
@@ -254,6 +318,8 @@ module.exports = (bot, GlobalState) => {
             `🚶 ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
+          // Notify team formation after removing a player from queue
+          await notifyTeamFormation(ctx, bot, GlobalState);
         } else {
           const message = await safeTelegramCall(ctx, "sendMessage", [
             ctx.chat.id,
@@ -331,6 +397,8 @@ module.exports = (bot, GlobalState) => {
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
         await sendPlayerList(ctx);
+        // Notify team formation after adding test players
+        await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
@@ -466,6 +534,8 @@ module.exports = (bot, GlobalState) => {
     }
 
     await sendPlayerList(ctx);
+    // Notify team formation after adding a player
+    await notifyTeamFormation(ctx, bot, GlobalState);
   });
 
   bot.action("leave_match", async (ctx) => {
@@ -562,7 +632,7 @@ module.exports = (bot, GlobalState) => {
           }
         }
         const updatedMovedPlayer = { ...movedPlayer, name: movedName };
-        // Формируем displayName для перемещённого игрока
+
         const movedDisplayName = updatedMovedPlayer.username ? `${updatedMovedPlayer.name} (${updatedMovedPlayer.username})` : updatedMovedPlayer.name;
         players.push(updatedMovedPlayer);
         await sendPrivateMessage(
@@ -591,6 +661,8 @@ module.exports = (bot, GlobalState) => {
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
       await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
+      // Notify team formation after removing a player and possibly moving one from queue
+      await notifyTeamFormation(ctx, bot, GlobalState);
     } else {
       const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
       if (queueIndex !== -1) {
@@ -615,6 +687,8 @@ module.exports = (bot, GlobalState) => {
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
         await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
+        // Notify team formation after removing a player from queue
+        await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         await ctx.answerCbQuery("⚠️ Вы не в списке!");
       }
