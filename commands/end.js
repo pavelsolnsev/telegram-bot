@@ -167,6 +167,7 @@ module.exports = (bot, GlobalState) => {
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
           `Список игроков можно посмотреть здесь <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
           `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>`;
+          `Чтобы просмотреть список сыгранных матчей, отправьте команду «результаты» в личные сообщения <a href=\"http://t.me/football_ramen_bot\">бота</a>.`;
 
         try {
           const sentMessage = await ctx.telegram.sendMessage(
