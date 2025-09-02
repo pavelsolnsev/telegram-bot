@@ -106,7 +106,7 @@ const updatePlayerStats = (
     const baseRating = Number(basePlayer.rating) || 0;
     const mod = growthModifier(baseRating);
 
-    const goalDelta = goals * 0.3 * mod;
+    const goalDelta = goals * 0.5 * mod;
 
     const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
     const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;

@@ -44,7 +44,7 @@ async function checkTimeAndNotify(bot) {
             day: "numeric",
             month: "long",
           })}\n` +
-          `💸 <a href="https://www.tbank.ru/cf/5jUDsBhRfBT">Оплатить участие (400 ₽)</a>\n` +
+          `💸 <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие (400 ₽)</a>\n` +
           `✅ Приходите за 15 минут!\n\n` +
           `📢 Следите за фото и трансляциями в <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
           `🏅 Рейтинг игроков: <a href="https://football.pavelsolntsev.ru">тут</a>\n` +
@@ -81,7 +81,7 @@ async function checkTimeAndNotify(bot) {
       })}\n\n` +
       `✅ <b>Что нужно сделать:</b>\n` +
       `  • Подготовить экипировку\n` +
-      `  • <a href="https://www.tbank.ru/cf/5jUDsBhRfBT">Оплатить участие (400 ₽)</a>\n` +
+      `  • <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие (400 ₽)</a>\n` +
       `  • Прибыть за 15 минут до начала\n\n` +
       `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
       `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +

@@ -44,7 +44,7 @@ const sendPlayerList = async (ctx, chatId = null) => {
   formattedList += `- <b>Перевод Т-Банк</b> (Павел С.):\n`;
   formattedList += `  📱 <a href="tel:89166986185"><code>89166986185</code></a>\n`;
   formattedList += `  💳 <code>2200700430851708</code>\n`;
-  formattedList += `  🔗 <a href="https://www.tbank.ru/cf/5jUDsBhRfBT">Оплатить участие</a>\n`;
+  formattedList += `  🔗 <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие</a>\n`;
   formattedList += `  ❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n`;
   formattedList += `- <b>Наличные:</b> На месте\n`;
   formattedList += `\n📜 <b>Информация для игроков:</b>\n` +
