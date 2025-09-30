@@ -3,19 +3,8 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { reshuffleArray } = require("../utils/reshuffleArray");
 const { safeTelegramCall } = require("../utils/telegramUtils");
+const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 
-// Функция для безопасного ответа на callback-запрос
-const safeAnswerCallback = async (ctx, text) => {
-  try {
-    await ctx.answerCbQuery(text);
-  } catch (error) {
-    if (error.code === 400 && error.description.includes("query is too old")) {
-      console.log("Callback query устарел, пропускаем ответ:", text);
-    } else {
-      console.error("Ошибка при ответе на callback:", error);
-    }
-  }
-};
 
 module.exports = (bot, GlobalState) => {
   bot.action("reshuffle_callback", async (ctx) => {

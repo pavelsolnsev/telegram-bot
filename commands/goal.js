@@ -1,7 +1,7 @@
 const { updatePlayingTeamsMessage } = require("../message/updatePlayingTeamsMessage");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { safeTelegramCall } = require("../utils/telegramUtils");
-
+const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
   bot.hears(/^g(\d+)(\d+)$/i, async (ctx) => {
@@ -160,7 +160,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
       ]);
-      await ctx.answerCbQuery();
+      await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -169,7 +169,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⚠️ Матч не начат!",
       ]);
-      await ctx.answerCbQuery();
+      await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -182,7 +182,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Нет активного матча!",
       ]);
-      await ctx.answerCbQuery();
+      await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -198,7 +198,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Команда не найдена!",
       ]);
-      await ctx.answerCbQuery();
+      await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -207,7 +207,7 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         "⛔ Игрок не найден!",
       ]);
-      await ctx.answerCbQuery();
+      await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -220,7 +220,7 @@ module.exports = (bot, GlobalState) => {
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
     ]);
-    await ctx.answerCbQuery();
+    await safeAnswerCallback(ctx);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };

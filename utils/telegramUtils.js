@@ -1,7 +1,7 @@
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const safeTelegramCall = async (ctx, method, payload, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       return await ctx.telegram[method](...payload);
     } catch (error) {
@@ -13,15 +13,16 @@ const safeTelegramCall = async (ctx, method, payload, retries = 3) => {
       ) {
         return null;
       }
-      // Ретрай при rate limit
-      if (error.code === 429) {
-        const retryAfter = (error.response.parameters.retry_after || 1) * 1000;
-        console.log(`Too Many Requests, retrying after ${retryAfter}ms`);
+      // Ретрай при rate limit или gateway timeout
+      if (error.code === 429 || error.code === 504) {
+        const retryAfter = (error?.response?.parameters?.retry_after || 1) * 1000;
+        console.warn(`Error ${error.code} in ${method}, retrying after ${retryAfter}ms (attempt ${attempt}/${retries})`);
         await delay(retryAfter);
-      } else {
-        console.error(`Error in ${method}:`, error);
-        throw error;
+        continue;
       }
+      // Логируем и пробрасываем остальные ошибки
+      console.error(`Error in ${method} (attempt ${attempt}/${retries}):`, error);
+      throw error;
     }
   }
   throw new Error(`Failed after ${retries} retries`);

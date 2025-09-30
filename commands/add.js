@@ -2,6 +2,7 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList");
 const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 const { safeTelegramCall } = require("../utils/telegramUtils");
+const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 const getPlayerStats = require("../database/getPlayerStats");
 
 // Функция для проверки наличия эмодзи или Unicode-символов
@@ -426,7 +427,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!isMember) {
-      await ctx.answerCbQuery("⚠️ Чтобы записаться, вступите в группу!");
+      await safeAnswerCallback(ctx,"⚠️ Чтобы записаться, вступите в группу!");
       return;
     }
 
@@ -444,14 +445,14 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!nameToCheck) {
-      await ctx.answerCbQuery(
+      await safeAnswerCallback(ctx,
         `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
       );
       return;
     }
 
     if (containsEmojiOrUnicode(nameToCheck)) {
-      await ctx.answerCbQuery(
+      await safeAnswerCallback(ctx,
         `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
       );
       return;
@@ -495,13 +496,13 @@ module.exports = (bot, GlobalState) => {
       queue.some((p) => p.id === updatedUser.id);
 
     if (isInList) {
-      await ctx.answerCbQuery("⚠️ Вы уже записаны!");
+      await safeAnswerCallback(ctx,"⚠️ Вы уже записаны!");
       return;
     }
 
     if (players.length < MAX_PLAYERS) {
       players.push(updatedUser);
-      await ctx.answerCbQuery("✅ Вы добавлены в список!");
+      await safeAnswerCallback(ctx,"✅ Вы добавлены в список!");
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -517,7 +518,7 @@ module.exports = (bot, GlobalState) => {
       }
     } else {
       queue.push(updatedUser);
-      await ctx.answerCbQuery("✅ Вы добавлены в очередь!");
+      await safeAnswerCallback(ctx,"✅ Вы добавлены в очередь!");
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -559,14 +560,14 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!nameToCheck) {
-      await ctx.answerCbQuery(
+      await safeAnswerCallback(ctx,
         `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
       );
       return;
     }
 
     if (containsEmojiOrUnicode(nameToCheck)) {
-      await ctx.answerCbQuery(
+      await safeAnswerCallback(ctx,
         `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
       );
       return;
@@ -597,12 +598,12 @@ module.exports = (bot, GlobalState) => {
     let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
 
     if (!isMatchStarted) {
-      await ctx.answerCbQuery("⚠️ Матч не начат!");
+      await safeAnswerCallback(ctx,"⚠️ Матч не начат!");
       return;
     }
 
     if (isTeamsDivided) {
-      await ctx.answerCbQuery("⚽ Матч уже стартовал! Запись закрыта.");
+      await safeAnswerCallback(ctx,"⚽ Матч уже стартовал! Запись закрыта.");
       return;
     }
 
@@ -660,7 +661,7 @@ module.exports = (bot, GlobalState) => {
         `🚶 ${displayName} вышел!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
-      await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
+      await safeAnswerCallback(ctx,`🚶 ${displayName}, вы вышли!`);
       // Notify team formation after removing a player and possibly moving one from queue
       await notifyTeamFormation(ctx, bot, GlobalState);
     } else {
@@ -686,11 +687,11 @@ module.exports = (bot, GlobalState) => {
           `🚶 ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
-        await ctx.answerCbQuery(`🚶 ${displayName}, вы вышли!`);
+        await safeAnswerCallback(ctx,`🚶 ${displayName}, вы вышли!`);
         // Notify team formation after removing a player from queue
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
-        await ctx.answerCbQuery("⚠️ Вы не в списке!");
+        await safeAnswerCallback(ctx,"⚠️ Вы не в списке!");
       }
     }
   });
