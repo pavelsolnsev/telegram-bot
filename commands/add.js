@@ -11,6 +11,72 @@ const containsEmojiOrUnicode = (text) => {
   return emojiUnicodeRegex.test(text);
 };
 
+// Функция для проверки и создания объекта пользователя
+const validateAndCreateUser = async (ctx, GlobalState) => {
+  const GROUP_ID = GlobalState.getGroupId();
+  const ADMIN_ID = GlobalState.getAdminId();
+
+  // Проверка, состоит ли пользователь в группе
+  let isMember = false;
+  try {
+    const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
+    isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+  } catch (error) {
+    console.error("Ошибка проверки членства в группе:", error);
+  }
+
+  if (!isMember) {
+    return { error: "⚠️ Чтобы записаться, вступите в группу!" };
+  }
+
+  // Формирование объекта user с учётом проверки username и name
+  let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
+  let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
+
+  // Проверка имени пользователя на эмодзи и Unicode-символы
+  let nameToCheck = userUsername;
+  let displayType = "username";
+
+  if (!nameToCheck) {
+    nameToCheck = userName;
+    displayType = "name";
+  }
+
+  if (!nameToCheck) {
+    return { error: `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.` };
+  }
+
+  if (containsEmojiOrUnicode(nameToCheck)) {
+    return { error: `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.` };
+  }
+
+  // Если username валиден, проверяем name и при необходимости заменяем его
+  if (userUsername && !containsEmojiOrUnicode(userUsername)) {
+    if (userName && containsEmojiOrUnicode(userName)) {
+      userName = userUsername;
+    }
+  }
+
+  const user = {
+    id: ctx.from.id,
+    name: userName,
+    username: userUsername,
+    goals: 0,
+    gamesPlayed: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    rating: 0,
+  };
+
+  const [updatedUser] = await getPlayerStats([user]);
+  const isAdmin = ADMIN_ID.includes(updatedUser.id);
+  // Формируем displayName как name и username в скобках, если username существует
+  const displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
+
+  return { user: updatedUser, isAdmin, displayName };
+};
+
 const notifyTeamFormation = async (ctx, bot, GlobalState) => {
   const location = GlobalState.getLocation();
   const players = GlobalState.getPlayers();
@@ -19,7 +85,7 @@ const notifyTeamFormation = async (ctx, bot, GlobalState) => {
 
   const count = players.length;
 
-  if (location === "kz") {
+  if (location === "zalkz") {
     if (count === 16) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
         groupId,
@@ -75,89 +141,25 @@ module.exports = (bot, GlobalState) => {
   bot.on("text", async (ctx) => {
     const players = GlobalState.getPlayers();
     const queue = GlobalState.getQueue();
-    const GROUP_ID = GlobalState.getGroupId();
     const ADMIN_ID = GlobalState.getAdminId();
     let isMatchStarted = GlobalState.getStart();
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
 
-    // Формирование объекта user с учётом проверки username и name
-    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
-    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
-
-    // Проверка имени пользователя на эмодзи и Unicode-символы
-    let nameToCheck = userUsername; // Сначала проверяем username
-    let displayType = "username";
-
-    if (!nameToCheck) {
-      nameToCheck = userName; // Если username отсутствует, проверяем name
-      displayType = "name";
-    }
-
-    if (!nameToCheck) {
+    const validationResult = await validateAndCreateUser(ctx, GlobalState);
+    if (validationResult.error) {
       await ctx.deleteMessage().catch(() => {});
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
-        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`,
+        validationResult.error,
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 10000);
     }
 
-    if (containsEmojiOrUnicode(nameToCheck)) {
-      await ctx.deleteMessage().catch(() => {});
-      const message = await safeTelegramCall(ctx, "sendMessage", [
-        ctx.chat.id,
-        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`,
-      ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 10000);
-    }
-
-    // Если username валиден, проверяем name и при необходимости заменяем его
-    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
-      if (userName && containsEmojiOrUnicode(userName)) {
-        userName = userUsername; // Заменяем name на username
-      }
-    }
-
-    const user = {
-      id: ctx.from.id,
-      name: userName,
-      username: userUsername,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    };
-
-    const [updatedUser] = await getPlayerStats([user]);
-    const isAdmin = ADMIN_ID.includes(updatedUser.id);
-
-    // Формируем displayName как name и username в скобках, если username существует
-    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
-
-    // Проверка, состоит ли пользователь в группе
-    let isMember = false;
-    try {
-      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, user.id);
-      isMember = ["member", "administrator", "creator"].includes(
-        chatMember.status
-      );
-    } catch (error) {
-      console.error("Ошибка проверки членства в группе:", error);
-    }
+    const { user: updatedUser, isAdmin, displayName } = validationResult;
 
     if (ctx.message.text === "+") {
       await ctx.deleteMessage().catch(() => {});
-
-      if (!isMember) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
-          ctx.chat.id,
-          "⚠️ Чтобы записаться, вступите в группу!",
-        ]);
-        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-      }
 
       if (!isMatchStarted) {
         const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -221,7 +223,6 @@ module.exports = (bot, GlobalState) => {
         `✅ ${displayName} добавлен!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
-      // Notify team formation after adding a player
       await notifyTeamFormation(ctx, bot, GlobalState);
     } else if (ctx.message.text === "-") {
       await ctx.deleteMessage().catch(() => {});
@@ -258,7 +259,6 @@ module.exports = (bot, GlobalState) => {
         }
         if (queue.length > 0) {
           const movedPlayer = queue.shift();
-          // Применяем проверку для перемещённого игрока
           let movedName = movedPlayer.name;
           if (movedPlayer.username && !containsEmojiOrUnicode(movedPlayer.username)) {
             if (movedPlayer.name && containsEmojiOrUnicode(movedPlayer.name)) {
@@ -266,7 +266,6 @@ module.exports = (bot, GlobalState) => {
             }
           }
           const updatedMovedPlayer = { ...movedPlayer, name: movedName };
-          // Формируем displayName для перемещённого игрока
           const movedDisplayName = updatedMovedPlayer.username ? `${updatedMovedPlayer.name} (${updatedMovedPlayer.username})` : updatedMovedPlayer.name;
           players.push(updatedMovedPlayer);
           await sendPrivateMessage(
@@ -294,7 +293,6 @@ module.exports = (bot, GlobalState) => {
           `🚶 ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
-        // Notify team formation after removing a player and possibly moving one from queue
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
@@ -319,7 +317,6 @@ module.exports = (bot, GlobalState) => {
             `🚶 ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
-          // Notify team formation after removing a player from queue
           await notifyTeamFormation(ctx, bot, GlobalState);
         } else {
           const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -348,12 +345,11 @@ module.exports = (bot, GlobalState) => {
 
       const addedPlayers = [];
       const baseTestUserCount = players.length + queue.length;
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= 3; i++) {
         const testUserCount = baseTestUserCount + i;
         let testUserName = `Test Player ${testUserCount}`;
         const testUserUsername = `TestPlayer${testUserCount}`;
 
-        // Проверка тестового имени
         if (!containsEmojiOrUnicode(testUserUsername)) {
           if (containsEmojiOrUnicode(testUserName)) {
             testUserName = testUserUsername;
@@ -378,7 +374,6 @@ module.exports = (bot, GlobalState) => {
           queue.some((p) => p.id === updatedTestUser.id);
         if (isInList) continue;
 
-        // Формируем displayName для тестового игрока
         const testDisplayName = updatedTestUser.username ? `${updatedTestUser.name} (${updatedTestUser.username})` : updatedTestUser.name;
 
         if (players.length < MAX_PLAYERS) {
@@ -398,7 +393,6 @@ module.exports = (bot, GlobalState) => {
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
         await sendPlayerList(ctx);
-        // Notify team formation after adding test players
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -416,79 +410,18 @@ module.exports = (bot, GlobalState) => {
     let MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
-    const GROUP_ID = GlobalState.getGroupId();
-    // Проверка, состоит ли пользователь в группе
-    let isMember = false;
-    try {
-      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
-      isMember = ["member", "administrator", "creator"].includes(chatMember.status);
-    } catch (error) {
-      console.error("Ошибка проверки членства в группе:", error);
-    }
 
-    if (!isMember) {
-      await safeAnswerCallback(ctx,"⚠️ Чтобы записаться, вступите в группу!");
+    const validationResult = await validateAndCreateUser(ctx, GlobalState);
+    if (validationResult.error) {
+      await safeAnswerCallback(ctx, validationResult.error);
       return;
     }
 
-    // Формирование объекта user с учётом проверки username и name
-    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
-    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
-
-    // Проверка имени пользователя на эмодзи и Unicode-символы
-    let nameToCheck = userUsername;
-    let displayType = "username";
-
-    if (!nameToCheck) {
-      nameToCheck = userName;
-      displayType = "name";
-    }
-
-    if (!nameToCheck) {
-      await safeAnswerCallback(ctx,
-        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
-      );
-      return;
-    }
-
-    if (containsEmojiOrUnicode(nameToCheck)) {
-      await safeAnswerCallback(ctx,
-        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
-      );
-      return;
-    }
-
-    // Если username валиден, проверяем name и при необходимости заменяем его
-    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
-      if (userName && containsEmojiOrUnicode(userName)) {
-        userName = userUsername;
-      }
-    }
-
-    const user = {
-      id: ctx.from.id,
-      name: userName,
-      username: userUsername,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    };
-
-    const [updatedUser] = await getPlayerStats([user]);
-    const isAdmin = ADMIN_ID.includes(updatedUser.id);
-    // Формируем displayName как name и username в скобках, если username существует
-    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
+    const { user: updatedUser, isAdmin, displayName } = validationResult;
 
     if (isTeamsDivided) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
-        ctx.chat.id,
-        "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-        { parse_mode: "HTML" },
-      ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      await safeAnswerCallback(ctx, "⚽ Матч уже стартовал! Запись закрыта.");
+      return;
     }
 
     const isInList =
@@ -496,13 +429,13 @@ module.exports = (bot, GlobalState) => {
       queue.some((p) => p.id === updatedUser.id);
 
     if (isInList) {
-      await safeAnswerCallback(ctx,"⚠️ Вы уже записаны!");
+      await safeAnswerCallback(ctx, "⚠️ Вы уже записаны!");
       return;
     }
 
     if (players.length < MAX_PLAYERS) {
       players.push(updatedUser);
-      await safeAnswerCallback(ctx,"✅ Вы добавлены в список!");
+      await safeAnswerCallback(ctx, "✅ Вы добавлены в список!");
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -518,7 +451,7 @@ module.exports = (bot, GlobalState) => {
       }
     } else {
       queue.push(updatedUser);
-      await safeAnswerCallback(ctx,"✅ Вы добавлены в очередь!");
+      await safeAnswerCallback(ctx, "✅ Вы добавлены в очередь!");
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -535,7 +468,6 @@ module.exports = (bot, GlobalState) => {
     }
 
     await sendPlayerList(ctx);
-    // Notify team formation after adding a player
     await notifyTeamFormation(ctx, bot, GlobalState);
   });
 
@@ -546,64 +478,21 @@ module.exports = (bot, GlobalState) => {
     const ADMIN_ID = GlobalState.getAdminId();
     let isMatchStarted = GlobalState.getStart();
 
-    // Формирование объекта user с учётом проверки username и name
-    let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
-    let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
-
-    // Проверка имени пользователя на эмодзи и Unicode-символы
-    let nameToCheck = userUsername;
-    let displayType = "username";
-
-    if (!nameToCheck) {
-      nameToCheck = userName;
-      displayType = "name";
-    }
-
-    if (!nameToCheck) {
-      await safeAnswerCallback(ctx,
-        `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.`
-      );
+    const validationResult = await validateAndCreateUser(ctx, GlobalState);
+    if (validationResult.error) {
+      await safeAnswerCallback(ctx, validationResult.error);
       return;
     }
 
-    if (containsEmojiOrUnicode(nameToCheck)) {
-      await safeAnswerCallback(ctx,
-        `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.`
-      );
-      return;
-    }
-
-    // Если username валиден, проверяем name и при необходимости заменяем его
-    if (userUsername && !containsEmojiOrUnicode(userUsername)) {
-      if (userName && containsEmojiOrUnicode(userName)) {
-        userName = userUsername;
-      }
-    }
-
-    const user = {
-      id: ctx.from.id,
-      name: userName,
-      username: userUsername,
-      goals: 0,
-      gamesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      rating: 0,
-    };
-
-    const [updatedUser] = await getPlayerStats([user]);
-    const isAdmin = ADMIN_ID.includes(updatedUser.id);
-    // Формируем displayName как name и username в скобках, если username существует
-    let displayName = updatedUser.username ? `${updatedUser.name} (${updatedUser.username})` : updatedUser.name;
+    const { user: updatedUser, isAdmin, displayName } = validationResult;
 
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx,"⚠️ Матч не начат!");
+      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
       return;
     }
 
     if (isTeamsDivided) {
-      await safeAnswerCallback(ctx,"⚽ Матч уже стартовал! Запись закрыта.");
+      await safeAnswerCallback(ctx, "⚽ Матч уже стартовал! Запись закрыта.");
       return;
     }
 
@@ -625,7 +514,6 @@ module.exports = (bot, GlobalState) => {
       }
       if (queue.length > 0) {
         const movedPlayer = queue.shift();
-        // Применяем проверку для перемещённого игрока
         let movedName = movedPlayer.name;
         if (movedPlayer.username && !containsEmojiOrUnicode(movedPlayer.username)) {
           if (movedPlayer.name && containsEmojiOrUnicode(movedPlayer.name)) {
@@ -633,7 +521,6 @@ module.exports = (bot, GlobalState) => {
           }
         }
         const updatedMovedPlayer = { ...movedPlayer, name: movedName };
-
         const movedDisplayName = updatedMovedPlayer.username ? `${updatedMovedPlayer.name} (${updatedMovedPlayer.username})` : updatedMovedPlayer.name;
         players.push(updatedMovedPlayer);
         await sendPrivateMessage(
@@ -661,8 +548,7 @@ module.exports = (bot, GlobalState) => {
         `🚶 ${displayName} вышел!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
-      await safeAnswerCallback(ctx,`🚶 ${displayName}, вы вышли!`);
-      // Notify team formation after removing a player and possibly moving one from queue
+      await safeAnswerCallback(ctx, `🚶 ${displayName}, вы вышли!`);
       await notifyTeamFormation(ctx, bot, GlobalState);
     } else {
       const queueIndex = queue.findIndex((p) => p.id === updatedUser.id);
@@ -687,11 +573,10 @@ module.exports = (bot, GlobalState) => {
           `🚶 ${displayName} вышел!`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
-        await safeAnswerCallback(ctx,`🚶 ${displayName}, вы вышли!`);
-        // Notify team formation after removing a player from queue
+        await safeAnswerCallback(ctx, `🚶 ${displayName}, вы вышли!`);
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
-        await safeAnswerCallback(ctx,"⚠️ Вы не в списке!");
+        await safeAnswerCallback(ctx, "⚠️ Вы не в списке!");
       }
     }
   });

@@ -45,7 +45,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (playingTeams && !isMatchFinished) {
-      const message = await ctx.reply("⛔ Уже идет матч! Завершите текущий матч перед началом нового.");
+      const message = await ctx.reply("⛔ Уже идет матч! Завершите текущий матч (fn) перед началом нового.");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 

@@ -1,16 +1,15 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
+const { sendPlayerList, locations } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
-  // Обработчик команды "s ДД.ММ.ГГГГ ЧЧ:ММ [prof|kz]"
-  bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (prof|kz)$/i, async (ctx) => {
+  // Обработчик команды "s ДД.ММ.ГГГГ ЧЧ:ММ [prof|kz|saturn]"
+  bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (prof|kz|saturn)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const isMatchStarted = GlobalState.getStart();
 
     await ctx.deleteMessage().catch(() => {});
 
-    // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
     if (ctx.chat.id > 0) {
       const message = await ctx.reply("Напиши в группу!");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -22,7 +21,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (isTeamsDivided) {
-      const message = await ctx.reply("Игра уже идет!");
+      const message = await ctx.reply("Матч уже стартовал! Запись закрыта.");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -31,7 +30,9 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    const [, datePart, timePart, location] = ctx.message.text.match(/(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (prof|kz)/i);
+    const [, datePart, timePart, location] = ctx.message.text.match(
+      /(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (prof|kz|saturn)/i
+    );
     const [day, month, year] = datePart.split(".").map(Number);
     const [hours, minutes] = timePart.split(":").map(Number);
 
@@ -47,7 +48,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setStart(true);
     GlobalState.setNotificationSent(false);
     GlobalState.setLocation(location.toLowerCase());
-    GlobalState.setMaxPlayers(location.toLowerCase() === "kz" ? 24 : 20);
+    GlobalState.setMaxPlayers(locations[location.toLowerCase()].limit);
     GlobalState.clearMatchResults();
     await sendPlayerList(ctx);
 
@@ -61,14 +62,13 @@ module.exports = (bot, GlobalState) => {
     }
   });
 
-  // Обработчик команды "test [prof|kz]"
-  bot.hears(/^test (prof|kz)$/i, async (ctx) => {
+  // Обработчик команды "test [prof|kz|saturn]"
+  bot.hears(/^test (prof|kz|saturn)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const isMatchStarted = GlobalState.getStart();
     await ctx.deleteMessage().catch(() => {});
 
-    // Проверяем, что команда отправлена в группе (chat.id < 0 для групп)
     if (ctx.chat.id > 0) {
       const message = await ctx.reply("Напиши в группу!");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -89,10 +89,9 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    const [, location] = ctx.message.text.match(/test (prof|kz)/i);
+    const [, location] = ctx.message.text.match(/test (prof|kz|saturn)/i);
 
-    // Устанавливаем фиксированную дату 21.03.2026 19:00
-    const collectionDate = new Date(2026, 2, 21, 19, 0); // Месяц 2, так как отсчет с 0 (март)
+    const collectionDate = new Date(2026, 2, 21, 19, 0);
 
     GlobalState.setCollectionDate(collectionDate);
     GlobalState.setPlayers([]);
@@ -100,7 +99,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setStart(true);
     GlobalState.setNotificationSent(false);
     GlobalState.setLocation(location.toLowerCase());
-    GlobalState.setMaxPlayers(location.toLowerCase() === "kz" ? 24 : 20);
+    GlobalState.setMaxPlayers(locations[location.toLowerCase()].limit);
     GlobalState.clearMatchResults();
     await sendPlayerList(ctx);
 
@@ -113,7 +112,10 @@ module.exports = (bot, GlobalState) => {
       }
     }
 
-    const message = await ctx.reply(`✅ Тестовый матч запущен на 21.03.2026 19:00 (${location.toLowerCase() === "kz" ? "Красное Знамя" : "Профилакторий"})!`);
+    const loc = locations[location.toLowerCase()];
+    const message = await ctx.reply(
+      `✅ Тестовый матч запущен на 21.03.2026 19:00 (${loc.name})!`
+    );
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };

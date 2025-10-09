@@ -1,7 +1,7 @@
 const GlobalState = (() => {
   const ADMIN_ID = process.env.ADMIN_ID.split(',').map(id => Number(id.trim()));
   const GROUP_ID = Number(process.env.ID);
-  const IMAGE_URL = process.env.IMAGE_URL;
+
 
   let consecutiveGames = {};
   let isMatchStarted = false;
@@ -77,8 +77,6 @@ const GlobalState = (() => {
     setListMessageId: (id) => listMessageId = id,
     getListMessageChatId: () => listMessageChatId,
     setListMessageChatId: (chatId) => listMessageChatId = chatId,
-    getIMAGE_URL: () => IMAGE_URL,
-    setIMAGE_URL: (url) => IMAGE_URL = url,
     getTeams: () => teams,
     setTeams: (newTeams) => teams = newTeams,
     getLastTeamCount: () => lastTeamCount,

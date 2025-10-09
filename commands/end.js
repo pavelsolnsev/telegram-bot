@@ -1,6 +1,7 @@
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const savePlayersToDatabase = require("../database/savePlayers");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
+const { locations } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -87,34 +88,33 @@ module.exports = (bot, GlobalState) => {
       const teamsBase = GlobalState.getTeamsBase();
       const allPlayers = allTeams.flat();
 
-      // Находим лучшего игрока (MVP) по новым критериям
+      const currentLocationKey = GlobalState.getLocation();
+      const loc = locations[currentLocationKey] || locations.prof;
+
+
+      // Находим лучшего игрока (MVP)
       const mvpCandidates = allPlayers.reduce((best, player) => {
         if (!best.length) return [player];
         const topPlayer = best[0];
 
-        // 1. Сравниваем по количеству голов
         if (player.goals > topPlayer.goals) return [player];
         if (player.goals < topPlayer.goals) return best;
 
-        // 2. Если голы равны, сравниваем по очкам (3 за победу, 1 за ничью, 0 за поражение)
         const playerPoints = player.wins * 3 + player.draws;
         const topPlayerPoints = topPlayer.wins * 3 + topPlayer.draws;
 
         if (playerPoints > topPlayerPoints) return [player];
         if (playerPoints < topPlayerPoints) return best;
 
-        // 3. Если очки равны, сравниваем по рейтингу
         if (player.rating > topPlayer.rating) return [player];
         if (player.rating === topPlayer.rating) return [...best, player];
 
         return best;
       }, []);
 
-      // Выбираем случайного игрока из кандидатов с одинаковой статистикой
       const mvpPlayer =
         mvpCandidates[Math.floor(Math.random() * mvpCandidates.length)];
 
-      // Сохраняем игроков в базу данных
       try {
         await savePlayersToDatabase(allPlayers);
         GlobalState.appendToPlayersHistory(allPlayers);
@@ -140,7 +140,7 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
-      // Отправляем сообщение с таблицей в группу
+      // Формируем сообщение с итогами и локацией
       if (listMessageChatId && allTeams.length > 0) {
         const collectionDate = GlobalState.getCollectionDate();
         let formattedDate = "";
@@ -151,9 +151,9 @@ module.exports = (bot, GlobalState) => {
           formattedDate = ` ${day}.${month}.${year}`;
         }
 
-        const matchTitle = `Итоги матча${formattedDate}`;
+        // Добавляем локацию в заголовок
+        const matchTitle = `Итоги матча${formattedDate} • ${loc.name}`;
 
-        // Формируем сообщение с командами, передавая MVP
         const teamsMessage = buildTeamsMessage(
           teamsBase,
           matchTitle,
@@ -162,19 +162,20 @@ module.exports = (bot, GlobalState) => {
           mvpPlayer,
           false
         );
+
         const paymentReminder =
-          `<b>💰 Напоминаем об оплате участия: 400 ₽</b>\n` +
-          `- <b>Перевод Т-Банк</b> (Павел С.):\n` +
+          `<b>💰 Напоминаем об оплате участия: ${loc.sum} ₽</b>\n` +
+          `- <b>Перевод СБЕРБАНК</b> (Павел С.):\n` +
           `  📱 <a href="tel:89166986185"><code>89166986185</code></a>\n` +
-          `  🔗 <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие</a>\n` +
+          `  🔗 <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие</a>\n` +
           `  ❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n`;
 
         const vkLinkMessage =
           `${teamsMessage}\n\n` +
           `<b>📸 Смотрите фото и видео матча!</b>\n` +
-          `Список игроков можно посмотреть здесь <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
-          `Все материалы доступны в нашей группе: <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n` +
-          `Чтобы просмотреть список сыгранных матчей, отправьте команду «результаты» в личные сообщения <a href="http://t.me/football_ramen_bot">бота</a>.\n\n` +
+          `Список игроков: <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
+          `Группа ВКонтакте: <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n` +
+          `Чтобы просмотреть историю матчей, напишите «результаты» в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n` +
           paymentReminder;
 
         try {
@@ -200,7 +201,7 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
-      // Сбрасываем состояние, включая matchHistory и consecutiveGames
+      // Сбрасываем состояние
       GlobalState.setPlayers([]);
       GlobalState.setQueue([]);
       GlobalState.setCollectionDate(null);
@@ -221,17 +222,12 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setMatchHistory({});
       GlobalState.setConsecutiveGames({});
       GlobalState.setIsTableAllowed(false);
-      // Отправляем подтверждение
+
       const message = await ctx.reply("✅ Сбор успешно завершён!");
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } catch (error) {
-      console.error(
-        "Необработанная ошибка в обработчике команды e!:",
-        error.message
-      );
-      const message = await ctx.reply(
-        "⚠️ Произошла ошибка при обработке команды."
-      );
+      console.error("Необработанная ошибка в обработчике команды e!:", error.message);
+      const message = await ctx.reply("⚠️ Произошла ошибка при обработке команды.");
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });

@@ -1,53 +1,53 @@
 const { GlobalState } = require("../store");
 const { deleteMessageAfterDelay } = require("./deleteMessageAfterDelay");
 const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { locations } = require("../utils/sendPlayerList");
 
-// Функция для проверки времени и отправки уведомления о матче
 async function checkTimeAndNotify(bot) {
-  let collectionDate = GlobalState.getCollectionDate(); // Получаем дату и время матча
-  let notificationSent = GlobalState.getNotificationSent(); // Проверяем, было ли уже отправлено уведомление
-  let isMatchStarted = GlobalState.getStart(); // Проверяем, начат ли матч
-  const players = GlobalState.getPlayers(); // Получаем список игроков
-  const groupChatId = GlobalState.getGroupId(); // ID группы
+  let collectionDate = GlobalState.getCollectionDate();
+  let notificationSent = GlobalState.getNotificationSent();
+  let isMatchStarted = GlobalState.getStart();
+  const players = GlobalState.getPlayers();
+  const groupChatId = GlobalState.getGroupId();
 
-  // Если матч не начат, нет даты или уведомление уже отправлено — ничего не делаем
   if (!isMatchStarted || !collectionDate || notificationSent) return;
 
-  const now = new Date(); // Текущее время
-  const timeDiff = collectionDate - now; // Разница во времени между сейчас и матчем
+  const now = new Date();
+  const timeDiff = collectionDate - now;
 
-  // Если время матча уже прошло, останавливаем матч
   if (timeDiff <= 0) {
-    GlobalState.setStart(false); // Останавливаем матч
     return;
   }
 
-  const THREE_HOURS_MS = 3 * 60 * 60 * 1000; // Время в миллисекундах (3 часа)
+  const currentLocationKey = GlobalState.getLocation();
+  const loc = locations[currentLocationKey] || locations.prof;
+
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
   if (timeDiff <= THREE_HOURS_MS) {
-    // Формируем сокращённый текст дополнительной информации
     const additionalInfo =
       `\n📌 <b>Важно:</b>\n` +
-      `• В 19:00 формируются составы. После этого записаться или выйти нельзя.\n` +
+      `• Cоставы формируются за 2 часа до матча. После этого записаться или выйти нельзя.\n` +
       `• Неявка без предупреждения (за 3 часа): первое — предупреждение, повторно — ограничение участия.\n` +
       `Спасибо за ответственный подход!`;
 
-    // Проверяем, существует ли группа
     try {
-      await bot.telegram.getChat(groupChatId); // Проверяем доступность группы
-      // Отправляем напоминание в группу
+      await bot.telegram.getChat(groupChatId);
       const message = await bot.telegram.sendMessage(
         groupChatId,
         `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
+          `📍 <b>Локация:</b> ${loc.name} \n` +
           `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",
             day: "numeric",
             month: "long",
-          })}\n` +
-          `💸 <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие (400 ₽)</a>\n` +
-          `✅ Приходите за 15 минут!\n\n` +
-          `📢 Следите за фото и трансляциями в <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
-          `🏅 Рейтинг игроков: <a href="https://football.pavelsolntsev.ru">тут</a>\n` +
+          })}\n\n` +
+          `✅ <b>Что нужно сделать:</b>\n` +
+          `  • Подготовить экипировку\n` +
+          `  • Оплатить участие (${loc.sum} ₽)\n` +
+          `  • Прибыть за 15 минут до начала\n\n` +
+          `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
+          `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
           additionalInfo,
         {
           parse_mode: "HTML",
@@ -67,12 +67,12 @@ async function checkTimeAndNotify(bot) {
         `Ошибка при отправке сообщения в группу ${groupChatId}:`,
         error
       );
-      return; // Прерываем выполнение, если группа недоступна
+      return;
     }
 
-    // Формируем текст для личных сообщений
     const privateMessageText =
       `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
+      `📍 <b>Локация:</b> ${loc.name} \n` +
       `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
         hour: "2-digit",
         minute: "2-digit",
@@ -81,13 +81,12 @@ async function checkTimeAndNotify(bot) {
       })}\n\n` +
       `✅ <b>Что нужно сделать:</b>\n` +
       `  • Подготовить экипировку\n` +
-      `  • <a href="https://www.tbank.ru/cf/7Pt3QaX6dmG">Оплатить участие (400 ₽)</a>\n` +
+      `  • Оплатить участие (${loc.sum} ₽)\n` +
       `  • Прибыть за 15 минут до начала\n\n` +
       `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
       `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
       additionalInfo;
 
-    // Отправляем уведомления в личные сообщения игрокам
     for (const player of players) {
       await sendPrivateMessage(bot, player.id, privateMessageText, {
         parse_mode: "HTML",
@@ -98,7 +97,7 @@ async function checkTimeAndNotify(bot) {
       });
     }
 
-    GlobalState.setNotificationSent(true); // Помечаем, что уведомление отправлено
+    GlobalState.setNotificationSent(true);
   }
 }
 
