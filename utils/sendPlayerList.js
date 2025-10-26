@@ -23,8 +23,8 @@ const locations = {
     address: `Московская область, г. Раменское, ул. Народное Имение, 6А (Стадион Сатурн - спорт зал)`,
     link: `https://yandex.ru/maps/-/CLBZ4H~9`,
     route: `https://yandex.ru/maps/?mode=routes&rtext=~55.578216,38.226238&rtt=auto`,
-    limit: 15,
-    sum: 500
+    limit: 10,
+    sum: 600
   },
 };
 
@@ -61,12 +61,10 @@ const sendPlayerList = async (ctx, chatId = null) => {
   const loc = locations[location] || locations.prof;
   formattedList += `🏟 <b>Адрес:</b> <a href="${loc.link}">${loc.address}</a>\n`;
   formattedList += `📍 <b>Маршрут:</b> <a href="${loc.route}">Построить маршрут</a>\n`;
-
   formattedList += `💰 <b>Стоимость: ${loc.sum} ₽</b> (аренда поля, съёмка, манишки, мячи, аптечка, музыка, вода)\n`;
   formattedList += `💸 <b>Оплата:</b>\n`;
   formattedList += `- <b>Перевод СБЕРБАНК</b> (Павел С.):\n`;
   formattedList += `  📱 <a href="tel:89166986185"><code>89166986185</code></a>\n`;
-  formattedList += `  💳 <code>2202208330170011</code>\n`;
   formattedList += `  🔗 <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие</a>\n`;
   formattedList += `  ❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n`;
   formattedList += `- <b>Наличные:</b> На месте\n`;
