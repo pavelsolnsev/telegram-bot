@@ -1,14 +1,90 @@
 {
-	"cSpell.words": [
-		"игре",
-		"игроков",
-		"которые",
-		"Массив",
-		"окружения",
-		"переменных",
-		"Создаем",
-		"умолчанию",
-		"участвуют",
-		"хранения"
-	]
+  "workbench.colorTheme": "Material Theme High Contrast",
+  "workbench.iconTheme": "material-icon-theme",
+  "terminal.integrated.defaultProfile.windows": "Git Bash",
+  "editor.mouseWheelZoom": true,
+  "files.autoSave": "afterDelay",
+  "vscodeGoogleTranslate.preferredLanguage": "English",
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "entity.name.tag",
+        "settings": {
+          "foreground": "#89DDFF"
+        }
+      }
+    ]
+  },
+  "highlight-matching-tag.styles": {
+    "opening": {
+      "name": {
+        "highlight": "rgba(255, 255, 255, 0.1)",
+        "underline": "#fff"
+      }
+    }
+  },
+  "git.useEditorAsCommitInput": false,
+  "workbench.startupEditor": "newUntitledFile",
+  "editor.smoothScrolling": true,
+  "editor.fontSize": 15,
+  "editor.minimap.enabled": false,
+  "editor.glyphMargin": false,
+  "editor.parameterHints.enabled": false,
+  "editor.hover.enabled": false,
+  "terminal.integrated.fontSize": 15,
+  "editor.renderWhitespace": "none",
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.lineHeight": 23,
+  "explorer.confirmDelete": false,
+  "security.workspace.trust.enabled": false,
+  "editor.insertSpaces": false,
+  "editor.linkedEditing": true,
+  "workbench.tree.indent": 4,
+  "editor.tabSize": 2,
+  "redhat.telemetry.enabled": true,
+  "htmltagwrap.tag": "li",
+  "htmltagwrap.autoDeselectClosingTag": true,
+  "cSpell.language": "en,ru",
+  "git.ignoreRebaseWarning": true,
+  "[html]": {
+    "editor.defaultFormatter": "mohd-akram.vscode-html-format"
+  },
+  "diffEditor.wordWrap": "on",
+  "editor.wordWrap": "on",
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.activityBar.location": "hidden",
+  "editor.stickyScroll.enabled": false,
+  "tabnine.experimentalAutoImports": true,
+  "git.openRepositoryInParentFolders": "always",
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "window.commandCenter": false,
+  "workbench.layoutControl.enabled": false,
+  "settingsSync.ignoredExtensions": [
+    
+  ],
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
+  "explorer.confirmPasteNative": false,
+  "workbench.preferredHighContrastColorTheme": "Material Theme High Contrast",
+  "workbench.preferredDarkColorTheme": "Material Theme High Contrast"
 }

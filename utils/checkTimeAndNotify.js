@@ -14,41 +14,68 @@ async function checkTimeAndNotify(bot) {
 
   const now = new Date();
   const timeDiff = collectionDate - now;
-
-  if (timeDiff <= 0) {
-    return;
-  }
+  if (timeDiff <= 0) return;
 
   const currentLocationKey = GlobalState.getLocation();
   const loc = locations[currentLocationKey] || locations.prof;
 
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
   if (timeDiff <= THREE_HOURS_MS) {
-    const additionalInfo =
-      `\n📌 <b>Важно:</b>\n` +
-      `• Cоставы формируются за 2 часа до матча. После этого записаться или выйти нельзя.\n` +
-      `• Неявка без предупреждения (за 3 часа): первое — предупреждение, повторно — ограничение участия.\n` +
-      `Спасибо за ответственный подход!`;
+    let groupMessageText;
+    let privateMessageText;
+
+    if (currentLocationKey === "tr") {
+      const commonText =
+        `🏆 <b>⚡ Турнир РФОИ ⚡</b>\n\n` +
+        `⏰ <b>Начало через 3 часа!</b>\n\n` +
+        `📍 <b>Локация:</b> Красное Знамя\n` +
+        `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "numeric",
+          month: "long",
+        })}\n\n` +
+        `✅ <b>Что нужно сделать:</b>\n` +
+        `  • Прибыть за 15 минут до начала\n` +
+        '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n';
+
+      groupMessageText = commonText;
+      privateMessageText = commonText;
+    } else {
+      // ===== Обычное уведомление =====
+      const additionalInfo =
+        `\n📌 <b>Важно:</b>\n` +
+        `• Cоставы формируются за 2 часа до матча. После этого записаться или выйти нельзя.\n` +
+        `• Неявка без предупреждения (за 3 часа): первое — предупреждение, повторно — ограничение участия.\n` +
+        `Спасибо за ответственный подход!`;
+
+      const baseText =
+        `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
+        `📍 <b>Локация:</b> ${loc.name} \n` +
+        `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+          day: "numeric",
+          month: "long",
+        })}\n\n` +
+        `✅ <b>Что нужно сделать:</b>\n` +
+        `  • Подготовить экипировку\n` +
+        `  • <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие (${loc.sum} ₽)</a>\n` +
+        `  • Прибыть за 15 минут до начала\n` +
+        '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
+        additionalInfo;
+
+      groupMessageText = baseText;
+      privateMessageText = baseText;
+    }
 
     try {
       await bot.telegram.getChat(groupChatId);
       const message = await bot.telegram.sendMessage(
         groupChatId,
-        `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
-          `📍 <b>Локация:</b> ${loc.name} \n` +
-          `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
-            hour: "2-digit",
-            minute: "2-digit",
-            day: "numeric",
-            month: "long",
-          })}\n\n` +
-          `✅ <b>Что нужно сделать:</b>\n` +
-          `  • Подготовить экипировку\n` +
-          `  • <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие (${loc.sum} ₽)</a>\n` +
-          `  • Прибыть за 15 минут до начала\n\n` +
-          `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
-          `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
-          additionalInfo,
+        groupMessageText,
         {
           parse_mode: "HTML",
           link_preview_options: {
@@ -57,6 +84,7 @@ async function checkTimeAndNotify(bot) {
           },
         }
       );
+
       deleteMessageAfterDelay(
         { telegram: bot.telegram, chat: { id: groupChatId } },
         message.message_id,
@@ -69,23 +97,6 @@ async function checkTimeAndNotify(bot) {
       );
       return;
     }
-
-    const privateMessageText =
-      `⏰ <b>Матч начнётся через 3 часа!</b>\n\n` +
-      `📍 <b>Локация:</b> ${loc.name} \n` +
-      `📅 <b>Когда:</b> ${collectionDate.toLocaleString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-        day: "numeric",
-        month: "long",
-      })}\n\n` +
-      `✅ <b>Что нужно сделать:</b>\n` +
-      `  • Подготовить экипировку\n` +
-      `  • Оплатить участие (${loc.sum} ₽)\n` +
-      `  • Прибыть за 15 минут до начала\n\n` +
-      `📢 <b>Напоминание:</b> После матча смотрите снимки и трансляции в нашей <a href="https://vk.com/ramafootball">группе VK</a>!\n` +
-      `🏅 <b>Рейтинг:</b> Посмотреть рейтинг игроков можно тут: <a href="https://football.pavelsolntsev.ru">https://football.pavelsolntsev.ru/</a>\n` +
-      additionalInfo;
 
     for (const player of players) {
       await sendPrivateMessage(bot, player.id, privateMessageText, {

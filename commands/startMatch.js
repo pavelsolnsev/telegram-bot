@@ -2,8 +2,8 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList, locations } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
-  // Обработчик команды "s ДД.ММ.ГГГГ ЧЧ:ММ [prof|kz|saturn]"
-  bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (prof|kz|saturn)$/i, async (ctx) => {
+  // Обработчик команды "s ДД.ММ.ГГГГ ЧЧ:ММ [prof|kz|saturn|tr]"
+  bot.hears(/^s \d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (prof|kz|saturn|tr)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const isMatchStarted = GlobalState.getStart();
@@ -31,7 +31,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     const [, datePart, timePart, location] = ctx.message.text.match(
-      /(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (prof|kz|saturn)/i
+      /(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (prof|kz|saturn|tr)/i
     );
     const [day, month, year] = datePart.split(".").map(Number);
     const [hours, minutes] = timePart.split(":").map(Number);
@@ -62,8 +62,8 @@ module.exports = (bot, GlobalState) => {
     }
   });
 
-  // Обработчик команды "test [prof|kz|saturn]"
-  bot.hears(/^test (prof|kz|saturn)$/i, async (ctx) => {
+  // Обработчик команды "test [prof|kz|saturn|tr]"
+  bot.hears(/^test (prof|kz|saturn|tr)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isTeamsDivided = GlobalState.getDivided();
     const isMatchStarted = GlobalState.getStart();
@@ -89,7 +89,7 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    const [, location] = ctx.message.text.match(/test (prof|kz|saturn)/i);
+    const [, location] = ctx.message.text.match(/test (prof|kz|saturn|tr)/i);
 
     const collectionDate = new Date(2026, 2, 21, 19, 0);
 

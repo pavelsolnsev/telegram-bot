@@ -1,7 +1,8 @@
 const GlobalState = (() => {
-  const ADMIN_ID = process.env.ADMIN_ID.split(',').map(id => Number(id.trim()));
+  const ADMIN_ID = process.env.ADMIN_ID.split(",").map((id) =>
+    Number(id.trim())
+  );
   const GROUP_ID = Number(process.env.ID);
-
 
   let consecutiveGames = {};
   let isMatchStarted = false;
@@ -32,55 +33,63 @@ const GlobalState = (() => {
   let matchResults = [];
   let lastResultMessage = null;
   let isTableAllowed = false;
+  let referee = "Карен";
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
-    setConsecutiveGames: (obj) => consecutiveGames = obj,
+    setConsecutiveGames: (obj) => (consecutiveGames = obj),
     getTeamCount: () => teamCount,
-    setTeamCount: (count) => teamCount = count,
+    setTeamCount: (count) => (teamCount = count),
     getAdminId: () => ADMIN_ID,
     getGroupId: () => GROUP_ID,
     getStart: () => isMatchStarted,
-    setStart: (status) => isMatchStarted = status,
+    setStart: (status) => (isMatchStarted = status),
     getIsMatchFinished: () => isMatchFinished,
-    setIsMatchFinished: (status) => isMatchFinished = status,
+    setIsMatchFinished: (status) => (isMatchFinished = status),
     getDivided: () => isTeamsDivided,
-    setDivided: (status) => isTeamsDivided = status,
+    setDivided: (status) => (isTeamsDivided = status),
     getIsStatsInitialized: () => isStatsInitialized,
-    setIsStatsInitialized: (status) => isStatsInitialized = status,
+    setIsStatsInitialized: (status) => (isStatsInitialized = status),
     getTeamsBase: () => teamsBase,
-    setTeamsBase: (teams) => teamsBase = teams,
+    setTeamsBase: (teams) => (teamsBase = teams),
     getIsTableAllowed: () => isTableAllowed,
-    setIsTableAllowed: (status) => isTableAllowed = status,
+    setIsTableAllowed: (status) => (isTableAllowed = status),
+
+    getReferee: () => referee,
+    setReferee: (name) => (referee = name),
+    resetReferee: () => (referee = "Карен"),
+
     getMaxPlayers: () => MAX_PLAYERS,
-    setMaxPlayers: (number) => MAX_PLAYERS = number,
+    setMaxPlayers: (number) => (MAX_PLAYERS = number),
     getPlayers: () => players,
-    setPlayers: (array) => players = array,
+    setPlayers: (array) => (players = array),
     getQueue: () => queue,
-    setQueue: (array) => queue = array,
+    setQueue: (array) => (queue = array),
     getMatchResults: () => matchResults,
     addMatchResult: (result) => matchResults.push(result),
-    clearMatchResults: () => { matchResults = []; },
+    clearMatchResults: () => {
+      matchResults = [];
+    },
     getLastResultMessageId: () => lastResultMessage,
     setLastResultMessageId: (chatId, messageId) => {
       lastResultMessage = { chatId, messageId };
     },
     getIsEndCommandAllowed: () => isEndCommandAllowed,
-    setIsEndCommandAllowed: (status) => isEndCommandAllowed = status,
+    setIsEndCommandAllowed: (status) => (isEndCommandAllowed = status),
     getIsTeamCommandAllowed: () => isTeamCommandAllowed,
-    setIsTeamCommandAllowed: (status) => isTeamCommandAllowed = status,
+    setIsTeamCommandAllowed: (status) => (isTeamCommandAllowed = status),
     getCollectionDate: () => collectionDate,
-    setCollectionDate: (date) => collectionDate = date,
+    setCollectionDate: (date) => (collectionDate = date),
     getNotificationSent: () => notificationSent,
-    setNotificationSent: (status) => notificationSent = status,
+    setNotificationSent: (status) => (notificationSent = status),
     getListMessageId: () => listMessageId,
-    setListMessageId: (id) => listMessageId = id,
+    setListMessageId: (id) => (listMessageId = id),
     getListMessageChatId: () => listMessageChatId,
-    setListMessageChatId: (chatId) => listMessageChatId = chatId,
+    setListMessageChatId: (chatId) => (listMessageChatId = chatId),
     getTeams: () => teams,
-    setTeams: (newTeams) => teams = newTeams,
+    setTeams: (newTeams) => (teams = newTeams),
     getLastTeamCount: () => lastTeamCount,
-    setLastTeamCount: (num) => lastTeamCount = num,
+    setLastTeamCount: (num) => (lastTeamCount = num),
     setLastTeamsMessageId: (chatId, messageId) => {
       lastTeamsMessage = { chatId, messageId };
     },
@@ -94,12 +103,14 @@ const GlobalState = (() => {
     },
     getPlayingTeamsMessageId: () => playingTeamsMessageId,
     getTeamStats: () => teamStats,
-    setTeamStats: (stats) => teamStats = stats,
+    setTeamStats: (stats) => (teamStats = stats),
     getAllPlayersHistory: () => allPlayersHistory,
-    setAllPlayersHistory: (players) => allPlayersHistory = players,
+    setAllPlayersHistory: (players) => (allPlayersHistory = players),
     appendToPlayersHistory: (newPlayers) => {
-      newPlayers.forEach(newPlayer => {
-        const existingPlayer = allPlayersHistory.find(p => p.id === newPlayer.id);
+      newPlayers.forEach((newPlayer) => {
+        const existingPlayer = allPlayersHistory.find(
+          (p) => p.id === newPlayer.id
+        );
         if (existingPlayer) {
           existingPlayer.goals += newPlayer.goals;
           existingPlayer.gamesPlayed += newPlayer.gamesPlayed;
@@ -113,9 +124,9 @@ const GlobalState = (() => {
       });
     },
     getMatchHistory: () => matchHistory,
-    setMatchHistory: (history) => matchHistory = history,
+    setMatchHistory: (history) => (matchHistory = history),
     getLocation: () => location,
-    setLocation: (loc) => location = loc,
+    setLocation: (loc) => (location = loc),
     pushMatchHistory: (state) => {
       matchHistoryStack.push(state);
     },
@@ -124,7 +135,7 @@ const GlobalState = (() => {
     },
     clearMatchHistory: () => {
       matchHistoryStack = [];
-    }
+    },
   };
 
   return Object.freeze(Store);

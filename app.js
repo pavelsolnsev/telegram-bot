@@ -16,10 +16,12 @@ const { checkTimeAndNotify } = require("./utils/checkTimeAndNotify");
 //     sendLogToTelegram(bot, ADMIN_ID, message); // Отправляем в Телеграм
 // };
 
-// проверка id пользователя 
+// проверка id пользователя
 bot.hears(/^id$/i, async (ctx) => {
   const userId = ctx.from.id;
-  const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name || "Без имени";
+  const username = ctx.from.username
+    ? `@${ctx.from.username}`
+    : ctx.from.first_name || "Без имени";
   await ctx.reply(`Ваш ID: ${userId}\nИмя: ${username}`);
 });
 
@@ -33,6 +35,7 @@ bot.hears(/^gr$/i, async (ctx) => {
 require("./commands/startMatch")(bot, GlobalState); // Команда s для начала матча
 require("./commands/remove")(bot, GlobalState); // Команда r для удаления игроков из списка игроков
 require("./commands/pay")(bot, GlobalState); // Команда p для оплаты
+require("./commands/judgeChange")(bot, GlobalState); // Команда для смены судьи
 require("./commands/team")(bot, GlobalState); // деление команд
 require("./commands/change")(bot, GlobalState); // замена игрока
 require("./commands/play")(bot, GlobalState); // начать матч
@@ -55,5 +58,3 @@ setInterval(() => checkTimeAndNotify(bot), 60000); // Передаем объе�
 
 // Логирование успешного запуска бота
 console.log("Бот запущен!");
-
-

@@ -140,6 +140,8 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
+      
+
       // Формируем сообщение с итогами и локацией
       if (listMessageChatId && allTeams.length > 0) {
         const collectionDate = GlobalState.getCollectionDate();
@@ -172,11 +174,10 @@ module.exports = (bot, GlobalState) => {
 
         const vkLinkMessage =
           `${teamsMessage}\n\n` +
-          `<b>📸 Смотрите фото и видео матча!</b>\n` +
-          `Список игроков: <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n` +
-          `Группа ВКонтакте: <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n` +
-          `Чтобы просмотреть историю матчей, напишите «результаты» в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n` +
-          paymentReminder;
+          '🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
+          '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
+          `Чтобы просмотреть историю матчей, напишите <b>«результаты»</b> в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n` +
+          (currentLocationKey === "tr" ? "" : paymentReminder);
 
         try {
           const sentMessage = await ctx.telegram.sendMessage(
@@ -222,6 +223,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setMatchHistory({});
       GlobalState.setConsecutiveGames({});
       GlobalState.setIsTableAllowed(false);
+      GlobalState.setReferee('Карен');
 
       const message = await ctx.reply("✅ Сбор успешно завершён!");
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
