@@ -38,6 +38,7 @@ async function checkTimeAndNotify(bot) {
         `✅ <b>Что нужно сделать:</b>\n` +
         `  • Прибыть за 15 минут до начала\n` +
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
+        '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
         '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n';
 
       groupMessageText = commonText;
@@ -64,6 +65,7 @@ async function checkTimeAndNotify(bot) {
         `  • <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие (${loc.sum} ₽)</a>\n` +
         `  • Прибыть за 15 минут до начала\n` +
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
+        '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
         '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
         additionalInfo;
 
