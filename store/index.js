@@ -33,7 +33,7 @@ const GlobalState = (() => {
   let matchResults = [];
   let lastResultMessage = null;
   let isTableAllowed = false;
-  let referee = "Карен";
+  let referee = "Не назначен";
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
@@ -57,7 +57,7 @@ const GlobalState = (() => {
 
     getReferee: () => referee,
     setReferee: (name) => (referee = name),
-    resetReferee: () => (referee = "Карен"),
+    resetReferee: () => (referee = "Не назначен"),
 
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => (MAX_PLAYERS = number),

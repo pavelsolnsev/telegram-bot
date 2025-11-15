@@ -2,7 +2,6 @@ const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { sendPlayerList } = require("../utils/sendPlayerList");
 
 module.exports = (bot, GlobalState) => {
-  // Если в store ещё нет геттеров/сеттеров для судьи — создаём
   if (!GlobalState.getReferee) {
     let referee = "Карен";
     GlobalState.getReferee = () => referee;
@@ -13,7 +12,7 @@ module.exports = (bot, GlobalState) => {
   // Команда "судья <имя>"
   bot.hears(/^ref\s*(.*)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
-    const isAdmin = ADMIN_ID.includes(ctx.from.id);g
+    const isAdmin = ADMIN_ID.includes(ctx.from.id);
     const currentLocation = GlobalState.getLocation();
 
     await ctx.deleteMessage().catch(() => {});
@@ -51,3 +50,4 @@ module.exports = (bot, GlobalState) => {
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 };
+

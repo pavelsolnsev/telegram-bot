@@ -12,14 +12,14 @@ const buildTeamsMessage = (teamsBase, title = "Составы команд", tea
   teamsWithStats.sort((a, b) => b.points - a.points || (b.stats.goalsScored - b.stats.goalsConceded) - (a.stats.goalsScored - a.stats.goalsConceded));
 
   let message = `🏆 <b>${title}</b>\n\n<pre>`;
-  message += "М  Команда|И|В|Н|П|ЗМ|ПМ|РМ|О\n";
-  message += "--+-------+--+-+-+-+-+--+-+-+\n";
+  message += "М  Ком|И|В|Н|П|ЗМ|ПМ|РМ|О\n";
+  message += "--+---+--+-+-+-+-+--+-+-+\n";
 
   teamsWithStats.forEach((teamData, position) => {
     const { stats, points, originalIndex } = teamData;
     const teamColor = teamColors[originalIndex] || "⚽";
     const place = (position + 1).toString().padStart(2, " ");
-    const teamName = `${teamColor}`.padEnd(7, " ");
+    const teamName = `${teamColor}`.padEnd(3, " ");
     const goalDifference = stats.goalsScored - stats.goalsConceded;
 
     message += `${place} ${teamName}|${stats.games}|${stats.wins}|${stats.draws}|${stats.losses}|${stats.goalsScored.toString().padStart(2, " ")}|${stats.goalsConceded.toString().padStart(2, " ")}|${goalDifference.toString().padStart(2, " ")}|${points}\n`;
