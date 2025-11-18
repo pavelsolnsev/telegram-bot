@@ -4,6 +4,7 @@ const { sendPrivateMessage } = require("../message/sendPrivateMessage");
 const { safeTelegramCall } = require("../utils/telegramUtils");
 const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 const getPlayerStats = require("../database/getPlayerStats");
+const getPlayerByName = require("../database/getPlayerByName");
 
 // Функция для проверки наличия эмодзи или Unicode-символов
 const containsEmojiOrUnicode = (text) => {
@@ -398,6 +399,117 @@ module.exports = (bot, GlobalState) => {
         const message = await safeTelegramCall(ctx, "sendMessage", [
           ctx.chat.id,
           "⚠️ Все тестовые игроки уже добавлены или нет места!",
+        ]);
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+    } else if (ctx.message.text.startsWith("+add ")) {
+      await ctx.deleteMessage().catch(() => {});
+      if (!ADMIN_ID.includes(ctx.from.id)) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⛔ У вас нет прав для этой команды!",
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      if (!isMatchStarted) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Матч не начат!",
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      if (isTeamsDivided) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
+          { parse_mode: "HTML" },
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+
+      // Извлекаем имя игрока из команды
+      const playerName = ctx.message.text.substring(5).trim(); // "+add " = 5 символов
+      
+      if (!playerName) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Укажите имя игрока! Использование: +add <имя>",
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+
+      // Проверка на эмодзи и Unicode-символы
+      if (containsEmojiOrUnicode(playerName)) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Недопустимые символы в имени игрока.",
+        ]);
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+
+      try {
+        // Получаем или создаем игрока по имени
+        const playerData = await getPlayerByName(playerName);
+        
+        const newPlayer = {
+          id: playerData.id,
+          name: playerData.name || playerData.username,
+          username: playerData.username || playerData.name,
+          goals: 0,
+          gamesPlayed: 0,
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          rating: 0,
+        };
+
+        // Получаем статистику игрока из базы данных
+        const [updatedPlayer] = await getPlayerStats([newPlayer]);
+        
+        // Обновляем username, если он был изменен в базе данных
+        updatedPlayer.username = updatedPlayer.username || updatedPlayer.name || playerName;
+        updatedPlayer.name = updatedPlayer.name || updatedPlayer.username || playerName;
+        
+        // Проверяем, не добавлен ли уже игрок
+        const isInList =
+          players.some((p) => p.id === updatedPlayer.id) ||
+          queue.some((p) => p.id === updatedPlayer.id);
+        
+        if (isInList) {
+          const displayName = updatedPlayer.username || updatedPlayer.name;
+          const message = await safeTelegramCall(ctx, "sendMessage", [
+            ctx.chat.id,
+            `⚠️ Игрок ${displayName} уже в списке!`,
+          ]);
+          return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+
+        const displayName = updatedPlayer.username || updatedPlayer.name;
+
+        // Добавляем игрока в список или очередь
+        if (players.length < MAX_PLAYERS) {
+          players.push(updatedPlayer);
+          const message = await safeTelegramCall(ctx, "sendMessage", [
+            ctx.chat.id,
+            `✅ Игрок ${displayName} добавлен в основной состав!`,
+          ]);
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        } else {
+          queue.push(updatedPlayer);
+          const message = await safeTelegramCall(ctx, "sendMessage", [
+            ctx.chat.id,
+            `✅ Игрок ${displayName} добавлен в очередь!`,
+          ]);
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+
+        await sendPlayerList(ctx);
+        await notifyTeamFormation(ctx, bot, GlobalState);
+      } catch (error) {
+        console.error("Ошибка при добавлении игрока по имени:", error);
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "❌ Ошибка при добавлении игрока. Попробуйте позже.",
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
