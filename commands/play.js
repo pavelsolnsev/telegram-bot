@@ -126,7 +126,9 @@ module.exports = (bot, GlobalState) => {
       reply_markup: Markup.inlineKeyboard([
         ...team1Buttons,
         [Markup.button.callback("—", "noop")],
-        ...team2Buttons
+        ...team2Buttons,
+        [], // Пустая строка для разделения
+        [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
       ]).reply_markup,
     });
 

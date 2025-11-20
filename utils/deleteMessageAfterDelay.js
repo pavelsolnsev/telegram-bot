@@ -1,8 +1,15 @@
+const { safeTelegramCall } = require("./telegramUtils");
+
 // Функция для удаления сообщения через заданную задержку
 const deleteMessageAfterDelay = (ctx, messageId, delay = 4000) => {
   setTimeout(() => {
     // Пытаемся удалить сообщение, если оно еще существует
-    ctx.telegram.deleteMessage(ctx.chat.id, messageId).catch(() => {});
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    if (chatId && messageId) {
+      safeTelegramCall(ctx, "deleteMessage", [chatId, messageId]).catch(() => {
+        // Игнорируем ошибки, если сообщение уже удалено
+      });
+    }
   }, delay);
 };
 

@@ -32,6 +32,8 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
       reply_markup: Markup.inlineKeyboard([
         ...createTeamButtons(playingTeams.team1, playingTeams.teamIndex1),
         ...createTeamButtons(playingTeams.team2, playingTeams.teamIndex2),
+        [], // Пустая строка для разделения
+        [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
       ]).reply_markup,
     },
   ]);
