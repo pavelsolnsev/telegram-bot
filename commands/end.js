@@ -213,7 +213,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setTeams([]);
       GlobalState.setTeamStats({});
       GlobalState.setPlayingTeams(null);
-      GlobalState.setPlayingTeamsMessageId(null);
+      GlobalState.setPlayingTeamsMessageId(null, null);
       GlobalState.setLastTeamCount(null);
       GlobalState.setLastTeamsMessageId(null);
       GlobalState.setDivided(false);

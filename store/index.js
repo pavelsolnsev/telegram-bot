@@ -99,7 +99,11 @@ const GlobalState = (() => {
     },
     getPlayingTeams: () => playingTeams,
     setPlayingTeamsMessageId: (chatId, messageId) => {
-      playingTeamsMessageId = { chatId, messageId };
+      if (chatId === null && messageId === null) {
+        playingTeamsMessageId = null;
+      } else {
+        playingTeamsMessageId = { chatId, messageId };
+      }
     },
     getPlayingTeamsMessageId: () => playingTeamsMessageId,
     getTeamStats: () => teamStats,

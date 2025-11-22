@@ -17,7 +17,7 @@ describe('GlobalState', () => {
     GlobalState.setIsEndCommandAllowed(true);
     GlobalState.setIsTeamCommandAllowed(true);
     GlobalState.setPlayingTeams(null);
-    GlobalState.setPlayingTeamsMessageId(null);
+    GlobalState.setPlayingTeamsMessageId(null, null);
     GlobalState.clearMatchResults();
   });
 
