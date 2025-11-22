@@ -331,28 +331,101 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     GlobalState.setMatchHistory(matchHistory);
   }
 
+  // Вычисляем количество игр и отдыхов для каждой команды
+  const totalMatches = matchResultsAfterKsk.length;
+  const teamGamesCount = {}; // Количество игр каждой команды
+  const teamRestCount = {}; // Количество отдыхов каждой команды
+  
+  // Инициализируем счетчики
+  for (let i = 0; i < totalTeams; i++) {
+    teamGamesCount[i] = 0;
+    teamRestCount[i] = 0;
+  }
+
+  // Подсчитываем игры каждой команды из истории матчей
+  for (const result of matchResultsAfterKsk) {
+    if (result.teamIndex1 !== undefined && result.teamIndex2 !== undefined) {
+      teamGamesCount[result.teamIndex1] = (teamGamesCount[result.teamIndex1] || 0) + 1;
+      teamGamesCount[result.teamIndex2] = (teamGamesCount[result.teamIndex2] || 0) + 1;
+    }
+  }
+
+  // Подсчитываем отдыхи (команды, которые не играли в последних матчах)
+  // Команды с consecutiveGames[i] === 0 отдыхали в последнем матче
+  // Но нам нужно более точное вычисление - сколько раз команда отдыхала относительно других
+  for (let i = 0; i < totalTeams; i++) {
+    const games = teamGamesCount[i] || 0;
+    teamRestCount[i] = totalMatches - games;
+  }
+
+  // Вычисляем среднее значение игр и отдыхов для более точного баланса (один раз, не в цикле)
+  const gamesCountValues = Object.values(teamGamesCount);
+  const restCountValues = Object.values(teamRestCount);
+  const avgGames = gamesCountValues.length > 0 
+    ? gamesCountValues.reduce((sum, val) => sum + val, 0) / gamesCountValues.length 
+    : 0;
+  const avgRests = restCountValues.length > 0 
+    ? restCountValues.reduce((sum, val) => sum + val, 0) / restCountValues.length 
+    : 0;
+
   let nextTeamIndex1 = null;
   let nextTeamIndex2 = null;
-  let minGames = Infinity;
+  let bestScore = -Infinity; // Чем выше, тем лучше
 
+  // Функция для вычисления приоритета пары команд
+  const calculatePairScore = (i, j, gamesPlayed) => {
+    let score = 0;
+
+    // Приоритет 1: команда не должна играть более 2 раз подряд
+    if (consecutiveGames[i] >= 2 || consecutiveGames[j] >= 2) {
+      return -Infinity; // Исключаем такие пары
+    }
+
+    // Приоритет 2: минимальное количество игр между этими двумя командами
+    score -= gamesPlayed * 1000;
+
+    // Приоритет 3: баланс отдыхов - команды с меньшим количеством игр
+    // или большим количеством отдыхов получают приоритет
+    const iGames = teamGamesCount[i] || 0;
+    const jGames = teamGamesCount[j] || 0;
+    const iRests = teamRestCount[i] || 0;
+    const jRests = teamRestCount[j] || 0;
+
+    // Бонус за то, что команда играла меньше среднего
+    const iGamesDiff = avgGames - iGames;
+    const jGamesDiff = avgGames - jGames;
+    score += (iGamesDiff + jGamesDiff) * 100;
+
+    // Бонус за то, что команда отдыхала больше среднего
+    const iRestsDiff = iRests - avgRests;
+    const jRestsDiff = jRests - avgRests;
+    score += (iRestsDiff + jRestsDiff) * 100;
+
+    // Приоритет 4: если команда отдыхала в последнем матче (consecutiveGames === 0)
+    // и при этом имеет баланс отдыхов/игр, даем ей небольшой бонус
+    if (consecutiveGames[i] === 0 && iRests >= avgRests) {
+      score += 10;
+    }
+    if (consecutiveGames[j] === 0 && jRests >= avgRests) {
+      score += 10;
+    }
+
+    // Приоритет 5: избегаем ситуаций, когда одна команда играет значительно больше другой
+    const gamesDiff = Math.abs(iGames - jGames);
+    score -= gamesDiff * 50;
+
+    return score;
+  };
+
+  // Ищем лучшую пару
   for (const [i, j] of allMatchups) {
-    if (consecutiveGames[i] >= 2 || consecutiveGames[j] >= 2) continue;
-
     const gamesPlayed = matchHistory[i]?.[j] || 0;
-    if (gamesPlayed < minGames) {
-      minGames = gamesPlayed;
+    const score = calculatePairScore(i, j, gamesPlayed);
+
+    if (score > bestScore) {
+      bestScore = score;
       nextTeamIndex1 = i;
       nextTeamIndex2 = j;
-    } else if (gamesPlayed === minGames) {
-      const iGames = teamStats[`team${i + 1}`]?.games || 0;
-      const jGames = teamStats[`team${j + 1}`]?.games || 0;
-      const currentMinGames =
-        (teamStats[`team${nextTeamIndex1 + 1}`]?.games || 0) +
-        (teamStats[`team${nextTeamIndex2 + 1}`]?.games || 0);
-      if (iGames + jGames < currentMinGames) {
-        nextTeamIndex1 = i;
-        nextTeamIndex2 = j;
-      }
     }
   }
 
