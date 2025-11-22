@@ -136,6 +136,9 @@ const GlobalState = (() => {
     clearMatchHistory: () => {
       matchHistoryStack = [];
     },
+    getMatchHistoryStackLength: () => {
+      return matchHistoryStack.length;
+    },
   };
 
   return Object.freeze(Store);

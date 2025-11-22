@@ -15,11 +15,18 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
     return;
   }
 
+  // Вычисляем номер матча
+  const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+  const matchNumber = matchHistoryLength + 1;
+
   const teamsMessage = buildPlayingTeamsMessage(
     playingTeams.team1,
     playingTeams.team2,
     playingTeams.teamIndex1,
-    playingTeams.teamIndex2
+    playingTeams.teamIndex2,
+    'playing',
+    undefined,
+    matchNumber
   );
 
   await safeTelegramCall(ctx, "editMessageText", [
@@ -34,6 +41,8 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
         ...createTeamButtons(playingTeams.team2, playingTeams.teamIndex2),
         [], // Пустая строка для разделения
         [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
+        [Markup.button.callback("🏁 Закончить матч", "finish_match")],
+        [Markup.button.callback("⚙️ Управление", "management_menu")],
       ]).reply_markup,
     },
   ]);

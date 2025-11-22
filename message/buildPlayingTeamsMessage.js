@@ -1,9 +1,22 @@
 // buildPlayingTeamsMessage.js
 
-const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = []) => {
+const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
   const teamColors = ["🔴", "🔵", "🟢", "🟡"];
   const emoji = { playing: '⚽', finished: '✅' }[status] || '⚽';
-  const title = { playing: "Команды на поле", finished: "🏁 Итог матча 🏁" }[status] || "Команды на поле";
+  let title = { playing: "Команды на поле", finished: "🏁 Итог матча 🏁" }[status] || "Команды на поле";
+  
+  // Добавляем номер матча к заголовку, если он передан
+  if (matchNumber !== null && matchNumber !== undefined) {
+    title = status === 'playing' 
+      ? `⚽️ Команды на поле (Матч №${matchNumber})`
+      : `✅ 🏁 Итог матча №${matchNumber} 🏁`;
+  } else {
+    // Если номер не передан, используем старые заголовки
+    title = status === 'playing' 
+      ? "Команды на поле"
+      : "🏁 Итог матча 🏁";
+  }
+  
   const color1 = teamColors[teamIndex1] || "⚽";
   const color2 = teamColors[teamIndex2] || "⚽";
 
@@ -37,7 +50,9 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     return `${paddedIndex}${paddedName}${goalsMark}`;
   };
 
-  let message = `${emoji} <b>${title}</b>\n\n`;
+  // Добавляем эмодзи только если номер матча не передан (в старых заголовках нет эмодзи)
+  const messagePrefix = (matchNumber === null || matchNumber === undefined) ? `${emoji} ` : '';
+  let message = `${messagePrefix}<b>${title}</b>\n\n`;
 
   // Команда 1
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b>\n<code>`;

@@ -116,8 +116,12 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
+    // Вычисляем номер матча
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
     // Send the playing teams message
-    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams);
+    const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams, matchNumber);
     const team1Buttons = createTeamButtons(team1, teamIndex1);
     const team2Buttons = createTeamButtons(team2, teamIndex2);
 
@@ -129,6 +133,8 @@ module.exports = (bot, GlobalState) => {
         ...team2Buttons,
         [], // Пустая строка для разделения
         [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
+        [Markup.button.callback("🏁 Закончить матч", "finish_match")],
+        [Markup.button.callback("⚙️ Управление", "management_menu")],
       ]).reply_markup,
     });
 

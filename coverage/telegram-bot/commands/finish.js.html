@@ -2069,7 +2069,7 @@ const updateTeamsMessage = <span class="cstat-no" title="statement not covered" 
 &nbsp;
       const notificationMessage = <span class="cstat-no" title="statement not covered" >await safeTelegramCall(ctx, "sendMessage", [</span>
         ctx.chat.id,
-        "⏪ Последний матч отменён, статистика восстановлена!",
+        "",
       ]);
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, notificationMessage.message_id, 6000);</span>
     }
