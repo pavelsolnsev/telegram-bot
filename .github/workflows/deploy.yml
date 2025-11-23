@@ -38,4 +38,7 @@ jobs:
               echo "Restoring .env file..."
               mv .env.backup .env
             fi
+            # Перезапускаем приложение через PM2
+            echo "Restarting application with PM2..."
+            pm2 restart telegram
 
