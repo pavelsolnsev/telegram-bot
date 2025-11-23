@@ -1,4 +1,5 @@
 // ready.js
+const { Markup } = require("telegraf");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 
 module.exports = (bot, GlobalState) => {
@@ -25,7 +26,13 @@ module.exports = (bot, GlobalState) => {
       '<a href="http://t.me/football_ramen_bot">боту</a>.\n\n' +
       "Для просмотра истории сыгранных матчей используйте команду <b>«результаты»</b>.";
 
-    await ctx.telegram.sendMessage(groupId, text, { parse_mode: "HTML" });
+    await ctx.telegram.sendMessage(groupId, text, {
+      parse_mode: "HTML",
+      reply_markup: Markup.inlineKeyboard([
+        [Markup.button.callback("📋 Таблица", "show_table")],
+        [Markup.button.callback("📊 Результаты", "show_results")],
+      ]).reply_markup,
+    });
 
     // Подтверждение в ЛС
     const confirm = await ctx.reply(

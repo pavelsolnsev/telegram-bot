@@ -1,3 +1,4 @@
+const { Markup } = require("telegraf");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const savePlayersToDatabase = require("../database/savePlayers");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
@@ -187,6 +188,9 @@ module.exports = (bot, GlobalState) => {
             {
               parse_mode: "HTML",
               disable_notification: true,
+              reply_markup: Markup.inlineKeyboard([
+                [Markup.button.callback("📊 Результаты", "show_results")],
+              ]).reply_markup,
             }
           );
 

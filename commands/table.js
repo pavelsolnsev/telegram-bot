@@ -1,7 +1,73 @@
+const { Markup } = require("telegraf");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
+const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
+const { safeTelegramCall } = require("../utils/telegramUtils");
 
 module.exports = (bot, GlobalState) => {
+  // Функция для формирования и отправки таблицы
+  const sendTable = async (ctx, userId) => {
+    const isMatchStarted = GlobalState.getStart();
+    const isTeamsDivided = GlobalState.getDivided();
+    const teamsBase = GlobalState.getTeamsBase();
+    const allTeams = GlobalState.getTeams();
+    const teamStats = GlobalState.getTeamStats();
+
+    if (!isMatchStarted) {
+      await sendPrivateMessage(bot, userId, "⚠️ Матч ещё не начат!");
+      return;
+    }
+
+    if (!GlobalState.getIsTableAllowed()) {
+      await sendPrivateMessage(bot, userId, "⚠️ Составы ещё не готовы.");
+      return;
+    }
+
+    if (!isTeamsDivided || teamsBase.length === 0) {
+      await sendPrivateMessage(bot, userId, "⚠️ Команды ещё не сформированы!");
+      return;
+    }
+
+    try {
+      const tableMessage = buildTeamsMessage(
+        teamsBase,
+        "Таблица текущих результатов",
+        teamStats,
+        allTeams
+      );
+
+      await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: "HTML" });
+    } catch (error) {
+      console.error("Ошибка при формировании таблицы:", error);
+      throw error;
+    }
+  };
+
+  // Обработчик кнопки "Таблица"
+  bot.action("show_table", async (ctx) => {
+    const userId = ctx.from.id;
+
+    await safeAnswerCallback(ctx, "📋 Отправляю таблицу в личные сообщения бота");
+
+    try {
+      await sendTable(ctx, userId);
+      await safeAnswerCallback(ctx, "✅ Таблица отправлена в личные сообщения!");
+    } catch (error) {
+      const errorCode = error.response?.error_code;
+      const errorDescription = error.response?.description || "";
+      
+      if (errorCode === 403 || errorDescription.includes("bot was blocked")) {
+        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
+      } else if (errorCode === 400 && (errorDescription.includes("chat not found") || errorDescription.includes("have no access"))) {
+        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
+      } else {
+        console.error("Ошибка при отправке таблицы:", error);
+        await safeAnswerCallback(ctx, "⚠️ Ошибка при отправке. Напишите боту команду 'таблица' в личных сообщениях.");
+      }
+    }
+  });
+
   bot.hears(/^таблица$/i, async (ctx) => {
     await ctx.deleteMessage().catch(() => {});
 
