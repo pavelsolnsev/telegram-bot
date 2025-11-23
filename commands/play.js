@@ -101,7 +101,7 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: "HTML",
             reply_markup: Markup.inlineKeyboard([
-              Markup.button.callback("🎯 Выбрать команды для игры", "select_teams_callback"),
+              Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback"),
             ]).reply_markup,
           }
         ]);
