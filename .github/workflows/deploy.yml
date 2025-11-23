@@ -40,5 +40,9 @@ jobs:
             fi
             # Перезапускаем приложение через PM2
             echo "Restarting application with PM2..."
-            pm2 restart telegram
+            # Загружаем NVM окружение
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            # Используем PM2 из NVM
+            /root/.nvm/versions/node/v18.20.3/bin/pm2 restart telegram
 
