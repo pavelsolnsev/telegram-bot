@@ -25,6 +25,17 @@ jobs:
               git fetch origin
               git checkout -b master origin/master || git checkout master
             fi
+            # Сохраняем .env файл перед обновлением
+            if [ -f .env ]; then
+              echo "Saving .env file..."
+              cp .env .env.backup
+            fi
+            # Обновляем код из GitHub
             git fetch origin
             git reset --hard origin/master
+            # Восстанавливаем .env файл если он был сохранен
+            if [ -f .env.backup ]; then
+              echo "Restoring .env file..."
+              mv .env.backup .env
+            fi
 
