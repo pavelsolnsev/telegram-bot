@@ -41,7 +41,7 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
         ...createTeamButtons(playingTeams.team2, playingTeams.teamIndex2),
         [], // Пустая строка для разделения
         [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("🏁 Закончить матч", "finish_match")],
+        [Markup.button.callback("🏁 Завершить матч", "finish_match")],
         [Markup.button.callback("⚙️ Управление", "management_menu")],
       ]).reply_markup,
     },

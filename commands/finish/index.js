@@ -29,7 +29,7 @@ module.exports = (bot, GlobalState) => {
     await finishMatch(ctx, GlobalState);
   });
 
-  // Обработчик кнопки "🏁 Закончить матч"
+  // Обработчик кнопки "🏁 Завершить матч"
   bot.action("finish_match", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!ADMIN_ID.includes(ctx.from.id)) {

@@ -83,7 +83,7 @@ module.exports = (bot, GlobalState) => {
       const teamsBase = GlobalState.getTeamsBase() || teams.map(team => [...team]);
       const teamStats = GlobalState.getTeamStats() || {};
 
-      const teamsMessageWithoutButton = buildTeamsMessage(
+      const teamsMessageWithButtons = buildTeamsMessage(
         teamsBase,
         "Таблица",
         teamStats,
@@ -97,8 +97,13 @@ module.exports = (bot, GlobalState) => {
           lastTeamsMessage.chatId,
           lastTeamsMessage.messageId,
           null,
-          teamsMessageWithoutButton,
-          { parse_mode: "HTML" }
+          teamsMessageWithButtons,
+          {
+            parse_mode: "HTML",
+            reply_markup: Markup.inlineKeyboard([
+              Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
+            ]).reply_markup,
+          }
         ]);
       } catch (error) {
         // Если контент не изменился — просто игнорируем эту ошибку
@@ -133,7 +138,7 @@ module.exports = (bot, GlobalState) => {
         ...team2Buttons,
         [], // Пустая строка для разделения
         [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("🏁 Закончить матч", "finish_match")],
+        [Markup.button.callback("🏁 Завершить матч", "finish_match")],
         [Markup.button.callback("⚙️ Управление", "management_menu")],
       ]).reply_markup,
     });

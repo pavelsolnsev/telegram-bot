@@ -59,7 +59,7 @@ module.exports = (bot, GlobalState) => {
         {
           parse_mode: "HTML",
           reply_markup: Markup.inlineKeyboard([
-            Markup.button.callback("Перемешать состав", "reshuffle_callback"),
+            Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
           ]).reply_markup,
         },
       ]);

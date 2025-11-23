@@ -1,3 +1,4 @@
+const { Markup } = require("telegraf");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
 const { safeTelegramCall } = require("../utils/telegramUtils");
@@ -151,19 +152,29 @@ const updateTeamsMessage = async (
     false
   );
   const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
+  const inlineKeyboard = Markup.inlineKeyboard([
+    Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
+  ]);
+  
   if (lastTeamsMessage) {
     await safeTelegramCall(ctx, "editMessageText", [
       lastTeamsMessage.chatId,
       lastTeamsMessage.messageId,
       null,
       updatedMessage,
-      { parse_mode: "HTML" },
+      {
+        parse_mode: "HTML",
+        reply_markup: inlineKeyboard.reply_markup,
+      },
     ]);
   } else {
     const sentMessage = await safeTelegramCall(ctx, "sendMessage", [
       ctx.chat.id,
       updatedMessage,
-      { parse_mode: "HTML" },
+      {
+        parse_mode: "HTML",
+        reply_markup: inlineKeyboard.reply_markup,
+      },
     ]);
     GlobalState.setLastTeamsMessageId(ctx.chat.id, sentMessage.message_id);
   }

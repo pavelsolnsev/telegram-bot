@@ -131,7 +131,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: "HTML",
             reply_markup: {
               inline_keyboard: [
-                [{ text: "Перемешать состав", callback_data: "reshuffle_callback" }]
+                [{ text: "🎯 Выбрать команды", callback_data: "select_teams_callback" }]
               ]
             }
           }
@@ -142,7 +142,7 @@ module.exports = (bot, GlobalState) => {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Перемешать состав", callback_data: "reshuffle_callback" }]
+              [{ text: "🎯 Выбрать команды", callback_data: "select_teams_callback" }]
             ]
           }
         });

@@ -5,7 +5,7 @@ const sendTeamsMessage = async (ctx, message) => {
 
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("Перемешать состав", "reshuffle_callback"),
+    Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
   ]);
 
   const sentMessage = await ctx.reply(message, {

@@ -49,7 +49,8 @@ require("./commands/time")(bot, GlobalState); // Команда t для сме�
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
 require("./commands/add")(bot, GlobalState); // Добавление и удаление игроков
-// require("./buttons/reshuffle_callback")(bot, GlobalState);
+require("./buttons/reshuffle_callback")(bot, GlobalState); // Обработчик кнопки перемешивания
+require("./buttons/select_teams_callback")(bot, GlobalState); // Обработчик кнопки выбора команд
 // Запуск бота
 bot.launch();
 
