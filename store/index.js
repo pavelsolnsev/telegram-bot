@@ -34,7 +34,7 @@ const GlobalState = (() => {
   let lastResultMessage = null;
   let isTableAllowed = false;
   let referee = "Не назначен";
-  let matchMessagesByNumber = {}; // Хранит сообщения матчей по номеру: { matchNumber: { chatId, messageId } }
+  let matchMessagesByNumber = {};
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
