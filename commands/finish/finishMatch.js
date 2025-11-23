@@ -467,7 +467,6 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
         ...createTeamButtons(team2Next, nextTeamIndex2),
         [], // Пустая строка для разделения
         [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("🏁 Завершить матч", "finish_match")],
         [Markup.button.callback("⚙️ Управление", "management_menu")],
       ]).reply_markup,
     },

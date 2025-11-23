@@ -101,7 +101,7 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: "HTML",
             reply_markup: Markup.inlineKeyboard([
-              Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
+              Markup.button.callback("🎯 Выбрать команды для игры", "select_teams_callback"),
             ]).reply_markup,
           }
         ]);
@@ -132,15 +132,14 @@ module.exports = (bot, GlobalState) => {
 
     const sentMessage = await ctx.reply(teamsMessage, {
       parse_mode: "HTML",
-      reply_markup: Markup.inlineKeyboard([
-        ...team1Buttons,
-        [Markup.button.callback("—", "noop")],
-        ...team2Buttons,
-        [], // Пустая строка для разделения
-        [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("🏁 Завершить матч", "finish_match")],
-        [Markup.button.callback("⚙️ Управление", "management_menu")],
-      ]).reply_markup,
+        reply_markup: Markup.inlineKeyboard([
+          ...team1Buttons,
+          [Markup.button.callback("—", "noop")],
+          ...team2Buttons,
+          [], // Пустая строка для разделения
+          [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
+          [Markup.button.callback("⚙️ Управление", "management_menu")],
+        ]).reply_markup,
     });
 
     GlobalState.setPlayingTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);

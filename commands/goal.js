@@ -386,6 +386,7 @@ module.exports = (bot, GlobalState) => {
               [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
               [Markup.button.callback(endButtonText, "end_match")],
               [Markup.button.callback("⬅️ Назад", "management_back")],
+              [Markup.button.callback("🏁 Завершить матч", "finish_match")],
             ]).reply_markup,
           },
         ]);
@@ -403,6 +404,7 @@ module.exports = (bot, GlobalState) => {
               [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
               [Markup.button.callback(endButtonText, "end_match")],
               [Markup.button.callback("⬅️ Назад", "management_back")],
+              [Markup.button.callback("🏁 Завершить матч", "finish_match")],
             ]).reply_markup,
           },
         ]);

@@ -153,7 +153,7 @@ const updateTeamsMessage = async (
   );
   const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
   const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
+    Markup.button.callback("🎯 Выбрать команды для игры", "select_teams_callback"),
   ]);
   
   if (lastTeamsMessage) {

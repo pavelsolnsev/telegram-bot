@@ -7,7 +7,7 @@ const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
-  // Обработчик кнопки "🎯 Выбрать команды"
+  // Обработчик кнопки "🎯 Выбрать команды для игры"
   bot.action("select_teams_callback", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
@@ -204,7 +204,7 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: "HTML",
             reply_markup: Markup.inlineKeyboard([
-              Markup.button.callback("🎯 Выбрать команды", "select_teams_callback"),
+              Markup.button.callback("🎯 Выбрать команды для игры", "select_teams_callback"),
             ]).reply_markup,
           }
         ]);
@@ -240,7 +240,6 @@ module.exports = (bot, GlobalState) => {
           ...team2Buttons,
           [], // Пустая строка для разделения
           [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-          [Markup.button.callback("🏁 Завершить матч", "finish_match")],
           [Markup.button.callback("⚙️ Управление", "management_menu")],
         ]).reply_markup,
       },
