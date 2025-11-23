@@ -25,5 +25,6 @@ jobs:
               git fetch origin
               git checkout -b master origin/master || git checkout master
             fi
-            git pull origin master
+            git fetch origin
+            git reset --hard origin/master
 
