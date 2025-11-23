@@ -476,6 +476,8 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     sentMessage.chat.id,
     sentMessage.message_id
   );
+  // Сохраняем сообщение матча по номеру для возможности удаления при отмене
+  GlobalState.setMatchMessageByNumber(nextMatchNumber, sentMessage.chat.id, sentMessage.message_id);
   GlobalState.setPlayingTeams({
     team1: team1Next,
     team2: team2Next,

@@ -43,23 +43,53 @@ const cancelActiveMatch = async (ctx, GlobalState) => {
   }
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+  
+  // Вычисляем номер текущего матча
+  const historyLength = GlobalState.getMatchHistoryStackLength();
+  const currentMatchNumber = historyLength + 1;
+  
   const playingMsg = GlobalState.getPlayingTeamsMessageId();
-  if (playingMsg) {
-    await safeTelegramCall(ctx, "editMessageText", [
-      playingMsg.chatId,
-      playingMsg.messageId,
-      null,
-      buildPlayingTeamsMessage(
-        team1,
-        team2,
-        teamIndex1,
-        teamIndex2,
-        "canceled",
-        undefined,
-        null
-      ),
-      { parse_mode: "HTML" },
-    ]);
+  
+  // Ищем и удаляем старое сообщение этого матча по номеру (если оно отличается от текущего)
+  const oldMatchMessage = GlobalState.getMatchMessageByNumber(currentMatchNumber);
+  if (oldMatchMessage && oldMatchMessage.chatId && oldMatchMessage.messageId) {
+    // Проверяем, не является ли это сообщение текущим активным сообщением
+    const isCurrentMessage = playingMsg && 
+      playingMsg.chatId === oldMatchMessage.chatId && 
+      playingMsg.messageId === oldMatchMessage.messageId;
+    
+    if (!isCurrentMessage) {
+      // Удаляем старое сообщение, если оно отличается от текущего
+      try {
+        const chatId = Number(oldMatchMessage.chatId);
+        const messageId = Number(oldMatchMessage.messageId);
+        await safeTelegramCall(ctx, "deleteMessage", [
+          chatId,
+          messageId,
+        ]);
+      } catch (error) {
+        // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
+        console.log("Не удалось удалить старое сообщение матча:", error.message);
+      }
+    } else {
+    }
+    // Удаляем запись о сообщении из хранилища
+    GlobalState.removeMatchMessageByNumber(currentMatchNumber);
+  }
+  
+  // Удаляем текущее активное сообщение матча
+  if (playingMsg && playingMsg.chatId && playingMsg.messageId) {
+    try {
+      const chatId = Number(playingMsg.chatId);
+      const messageId = Number(playingMsg.messageId);
+      await safeTelegramCall(ctx, "deleteMessage", [
+        chatId,
+        messageId,
+      ]);
+    } catch (error) {
+      // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
+      console.log("Не удалось удалить текущее сообщение матча:", error.message);
+    }
   }
 
   // Удаляем запись о текущем матче
@@ -97,8 +127,41 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
 
   // Удаляем последний матч из результатов
   const results = GlobalState.getMatchResults();
+  let finishedMatchNumber = 0;
   if (results.length > 0) {
+    finishedMatchNumber = results.length; // Номер завершенного матча перед удалением
     results.pop();
+  }
+
+  // Удаляем сообщение завершенного матча, если оно есть
+  if (finishedMatchNumber > 0) {
+    const finishedMatchMessage = GlobalState.getMatchMessageByNumber(finishedMatchNumber);
+    const playingMsg = GlobalState.getPlayingTeamsMessageId();
+    
+    // Проверяем, не является ли сообщение завершенного матча текущим активным сообщением
+    const isSameAsActive = playingMsg && finishedMatchMessage &&
+      playingMsg.chatId === finishedMatchMessage.chatId && 
+      playingMsg.messageId === finishedMatchMessage.messageId;
+    
+    if (finishedMatchMessage && finishedMatchMessage.chatId && finishedMatchMessage.messageId) {
+      try {
+        const chatId = Number(finishedMatchMessage.chatId);
+        const messageId = Number(finishedMatchMessage.messageId);
+        await safeTelegramCall(ctx, "deleteMessage", [
+          chatId,
+          messageId,
+        ]);
+      } catch (error) {
+        console.log("Не удалось удалить сообщение завершенного матча:", error.message);
+      }
+      // Удаляем запись о сообщении из хранилища
+      GlobalState.removeMatchMessageByNumber(finishedMatchNumber);
+    }
+    
+    // Если это то же сообщение, что и активное, также очищаем активное сообщение
+    if (isSameAsActive) {
+      GlobalState.setPlayingTeamsMessageId(null, null);
+    }
   }
 
   // Откатываем состояние
@@ -149,6 +212,8 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
       },
     ]);
     GlobalState.setPlayingTeamsMessageId(sent.chat.id, sent.message_id);
+    // Сохраняем сообщение матча по номеру для возможности удаления при отмене
+    GlobalState.setMatchMessageByNumber(reverseMatchNumber, sent.chat.id, sent.message_id);
   }
 };
 

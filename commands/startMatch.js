@@ -50,6 +50,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setLocation(location.toLowerCase());
     GlobalState.setMaxPlayers(locations[location.toLowerCase()].limit);
     GlobalState.clearMatchResults();
+    GlobalState.clearMatchMessagesByNumber();
     await sendPlayerList(ctx);
 
     const listMessageId = GlobalState.getListMessageId();
@@ -101,6 +102,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setLocation(location.toLowerCase());
     GlobalState.setMaxPlayers(locations[location.toLowerCase()].limit);
     GlobalState.clearMatchResults();
+    GlobalState.clearMatchMessagesByNumber();
     await sendPlayerList(ctx);
 
     const listMessageId = GlobalState.getListMessageId();

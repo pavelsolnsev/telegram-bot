@@ -143,6 +143,8 @@ module.exports = (bot, GlobalState) => {
     });
 
     GlobalState.setPlayingTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
+    // Сохраняем сообщение матча по номеру для возможности удаления при отмене
+    GlobalState.setMatchMessageByNumber(matchNumber, sentMessage.chat.id, sentMessage.message_id);
     GlobalState.setPlayingTeams({
       team1,
       team2,
