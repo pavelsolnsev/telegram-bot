@@ -18,5 +18,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ${{ secrets.VPS_PROJECT_PATH }}
+            if [ ! -d .git ]; then
+              echo "Git repository not found. Initializing..."
+              git init
+              git remote add origin ${{ secrets.GIT_REPO_URL }}
+              git fetch origin
+              git checkout -b master origin/master || git checkout master
+            fi
             git pull origin master
 
