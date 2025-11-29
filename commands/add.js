@@ -346,7 +346,7 @@ module.exports = (bot, GlobalState) => {
 
       const addedPlayers = [];
       const baseTestUserCount = players.length + queue.length;
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 10; i++) {
         const testUserCount = baseTestUserCount + i;
         let testUserName = `Test Player ${testUserCount}`;
         const testUserUsername = `TestPlayer${testUserCount}`;

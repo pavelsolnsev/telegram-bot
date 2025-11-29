@@ -1,12 +1,11 @@
 // ready.js
 const { Markup } = require("telegraf");
 const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../utils/telegramUtils");
 const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage");
+const { safeTelegramCall } = require("../utils/telegramUtils");
 
 // Функция объявления составов (общая логика для команды rdy и кнопки)
-const announceTeams = async (ctx, GlobalState) => {
+const announceTeams = async (ctx, GlobalState, updateMessage = false) => {
   // Разрешаем таблицу
   GlobalState.setIsTableAllowed(true);
 
@@ -25,38 +24,25 @@ const announceTeams = async (ctx, GlobalState) => {
     ]).reply_markup,
   });
 
-  // Обновляем сообщение с командами - убираем кнопку "Объявить составы" и разблокируем "Выбрать команды"
-  const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-  if (lastTeamsMessage) {
-    const teamsBase = GlobalState.getTeamsBase();
-    const teamStats = GlobalState.getTeamStats();
-    const teams = GlobalState.getTeams();
-    const updatedMessage = buildTeamsMessage(
-      teamsBase,
-      "Таблица",
-      teamStats,
-      teams,
-      null,
-      false
-    );
-    
-    await safeTelegramCall(ctx, "editMessageText", [
-      lastTeamsMessage.chatId,
-      lastTeamsMessage.messageId,
-      null,
-      updatedMessage,
-      {
-        parse_mode: "HTML",
-        reply_markup: Markup.inlineKeyboard([
+  // Обновляем только кнопки в сообщении (не изменяя текст таблицы) только если это вызов через кнопку
+  if (updateMessage) {
+    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
+    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
+      // Обновляем только клавиатуру, не трогая текст сообщения
+      await safeTelegramCall(ctx, "editMessageReplyMarkup", [
+        lastTeamsMessage.chatId,
+        lastTeamsMessage.messageId,
+        null,
+        Markup.inlineKeyboard([
           [Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")],
         ]).reply_markup,
-      },
-    ]);
+      ]);
+    }
   }
 };
 
 module.exports = (bot, GlobalState) => {
-  // Команда rdy
+  // Команда rdy - только устанавливает флаг, не обновляет сообщение
   bot.hears(/^rdy$/i, async (ctx) => {
     // Только личные сообщения
     if (ctx.chat.type !== "private") return;
@@ -70,10 +56,10 @@ module.exports = (bot, GlobalState) => {
 
     // Удаляем сообщение-команду
     await ctx.deleteMessage().catch(() => {});
-    await announceTeams(ctx, GlobalState);
+    await announceTeams(ctx, GlobalState, false);
   });
 
-  // Обработчик кнопки "Объявить составы"
+  // Обработчик кнопки "Объявить составы" - обновляет сообщение
   bot.action("announce_teams", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     
@@ -83,6 +69,6 @@ module.exports = (bot, GlobalState) => {
     }
 
     await safeAnswerCallback(ctx, "✅ Объявляю составы...");
-    await announceTeams(ctx, GlobalState);
+    await announceTeams(ctx, GlobalState, true);
   });
 };
