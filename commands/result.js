@@ -26,7 +26,10 @@ module.exports = (bot, GlobalState) => {
     const results = GlobalState.getMatchResults();
 
     if (results.length === 0) {
-      await sendPrivateMessage(bot, userId, "📋 Пока нет сыгранных матчей.");
+      const sent = await sendPrivateMessage(bot, userId, "📋 Пока нет сыгранных матчей.");
+      if (sent && sent.message_id) {
+        deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 30000);
+      }
       return;
     }
 
@@ -115,7 +118,7 @@ module.exports = (bot, GlobalState) => {
 
     if (results.length === 0) {
       const msg = await ctx.reply("📋 Пока нет сыгранных матчей.");
-      deleteMessageAfterDelay(ctx, msg.message_id);
+      deleteMessageAfterDelay(ctx, msg.message_id, 30000);
       return;
     }
 

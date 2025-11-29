@@ -37,7 +37,10 @@ module.exports = (bot, GlobalState) => {
         allTeams
       );
 
-      await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: "HTML" });
+      const sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: "HTML" });
+      if (sent && sent.message_id) {
+        deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
+      }
     } catch (error) {
       console.error("Ошибка при формировании таблицы:", error);
       throw error;
