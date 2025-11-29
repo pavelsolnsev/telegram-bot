@@ -7,17 +7,40 @@ const { createTeamButtons } = require("../buttons/createTeamButtons");
 const { buildTeamsMessage } = require("../message/buildTeamsMessage");
 
 module.exports = (bot, GlobalState) => {
+  // Обработчик заблокированной кнопки "Выбрать команды для матча"
+  bot.action("select_teams_blocked", async (ctx) => {
+    await safeAnswerCallback(ctx, "⚠️ Сначала объявите составы!");
+    const message = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      "⚠️ Сначала нужно объявить составы команд, нажав кнопку <b>«📢 Объявить составы»</b>.",
+      { parse_mode: "HTML" }
+    ]);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+  });
+
   // Обработчик кнопки "🎯 Выбрать команды для матча"
   bot.action("select_teams_callback", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
     const teams = GlobalState.getTeams();
+    const isTableAllowed = GlobalState.getIsTableAllowed();
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ Нет прав!");
       const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⛔ У вас нет прав для этой команды.",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    // Проверяем, объявлены ли составы
+    if (!isTableAllowed) {
+      await safeAnswerCallback(ctx, "⚠️ Сначала объявите составы!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Сначала нужно объявить составы команд, нажав кнопку <b>«📢 Объявить составы»</b>.",
+        { parse_mode: "HTML" }
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -55,6 +78,9 @@ module.exports = (bot, GlobalState) => {
         ),
       ]);
     }
+    
+    // Добавляем кнопку "Отменить"
+    buttons.push([Markup.button.callback("❌ Отменить", "cancel_select_teams")]);
 
     await safeAnswerCallback(ctx, "Выберите первую команду");
 
@@ -103,6 +129,9 @@ module.exports = (bot, GlobalState) => {
         ]);
       }
     }
+    
+    // Добавляем кнопку "Отменить"
+    buttons.push([Markup.button.callback("❌ Отменить", "cancel_select_teams")]);
 
     await safeAnswerCallback(ctx, `Выбрана команда ${firstTeamIndex + 1}, выберите вторую`);
 
@@ -131,6 +160,32 @@ module.exports = (bot, GlobalState) => {
         },
       ]);
       deleteMessageAfterDelay(ctx, menuMessage.message_id, 30000);
+    }
+  });
+
+  // Обработчик кнопки "Отменить" при выборе команд
+  bot.action("cancel_select_teams", async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      return;
+    }
+
+    await safeAnswerCallback(ctx, "❌ Выбор команд отменён");
+    
+    // Удаляем сообщение выбора команд
+    try {
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      const messageId = ctx.callbackQuery?.message?.message_id;
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, "deleteMessage", [
+          chatId,
+          messageId,
+        ]);
+      }
+    } catch (error) {
+      // Игнорируем ошибки удаления
     }
   });
 

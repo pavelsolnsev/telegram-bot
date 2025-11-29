@@ -152,9 +152,20 @@ const updateTeamsMessage = async (
     false
   );
   const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-  const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback"),
-  ]);
+  const isTableAllowed = GlobalState.getIsTableAllowed();
+  
+  const buttons = [];
+  
+  if (isTableAllowed) {
+    // Если составы объявлены - показываем только кнопку выбора команд
+    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")]);
+  } else {
+    // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
+    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_blocked")]);
+    buttons.push([Markup.button.callback("📢 Объявить составы", "announce_teams")]);
+  }
+  
+  const inlineKeyboard = Markup.inlineKeyboard(buttons);
   
   if (lastTeamsMessage) {
     await safeTelegramCall(ctx, "editMessageText", [

@@ -385,8 +385,8 @@ module.exports = (bot, GlobalState) => {
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
               [Markup.button.callback(endButtonText, "end_match")],
-              [Markup.button.callback("⬅️ Назад", "management_back")],
               [Markup.button.callback("🏁 Завершить матч", "finish_match")],
+              [Markup.button.callback("⬅️ Назад", "management_back")],
             ]).reply_markup,
           },
         ]);
@@ -403,8 +403,8 @@ module.exports = (bot, GlobalState) => {
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
               [Markup.button.callback(endButtonText, "end_match")],
-              [Markup.button.callback("⬅️ Назад", "management_back")],
               [Markup.button.callback("🏁 Завершить матч", "finish_match")],
+              [Markup.button.callback("⬅️ Назад", "management_back")],
             ]).reply_markup,
           },
         ]);
@@ -540,7 +540,6 @@ module.exports = (bot, GlobalState) => {
               ...team2Buttons,
               [], // Пустая строка для разделения
               [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-              [Markup.button.callback("🏁 Завершить матч", "finish_match")],
               [Markup.button.callback("⚙️ Управление", "management_menu")],
             ]).reply_markup,
           },

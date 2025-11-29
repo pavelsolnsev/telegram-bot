@@ -95,12 +95,6 @@ const cancelActiveMatch = async (ctx, GlobalState) => {
   // Удаляем запись о текущем матче
   GlobalState.setPlayingTeams(null);
   GlobalState.setPlayingTeamsMessageId(null, null);
-
-  const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
-    chatId,
-    "🚫 Матч отменён!",
-  ]);
-  return deleteMessageAfterDelay(ctx, notificationMessage.message_id, 6000);
 };
 
 // Функция отката завершённого матча
@@ -264,7 +258,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       // или активным (в зависимости от того, что в истории)
       // Кнопка "Продолжить редактировать" должна показывать текущий активный матч
       // Так как активный матч уже есть (playingTeams), показываем его номер
-      stopButtonText = `✅ Продолжить редактировать матч №${currentMatchNumber}${teamMatchInfo}`;
+      stopButtonText = `✅ Редактировать матч №${currentMatchNumber}${teamMatchInfo}`;
     } else if (historyLength > 0) {
       // Если есть история - следующее действие: откатить следующий матч из истории
       // Получаем информацию о матче из последнего элемента matchResults
@@ -286,7 +280,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       // Но сейчас нет активного матча, поэтому показываем, что будет после отката
       const activeMatchAfterPop = historyLength - 1; // После pop это будет активный матч
       if (activeMatchAfterPop > 0) {
-        stopButtonText = `✅ Продолжить редактировать матч №${activeMatchAfterPop}${teamMatchInfo}`;
+        stopButtonText = `✅ Редактировать матч №${activeMatchAfterPop}${teamMatchInfo}`;
       } else {
         stopButtonText = `✅ Остановить`;
       }

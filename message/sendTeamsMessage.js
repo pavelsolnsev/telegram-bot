@@ -2,11 +2,20 @@ const { Markup } = require("telegraf");
 const { GlobalState } = require("../store");
 // Функция отправки сообщения с составами команд
 const sendTeamsMessage = async (ctx, message) => {
+  const isTableAllowed = GlobalState.getIsTableAllowed();
+  
+  const buttons = [];
+  
+  if (isTableAllowed) {
+    // Если составы объявлены - показываем только кнопку выбора команд
+    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")]);
+  } else {
+    // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
+    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_blocked")]);
+    buttons.push([Markup.button.callback("📢 Объявить составы", "announce_teams")]);
+  }
 
-
-  const inlineKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback"),
-  ]);
+  const inlineKeyboard = Markup.inlineKeyboard(buttons);
 
   const sentMessage = await ctx.reply(message, {
     parse_mode: "HTML",

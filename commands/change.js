@@ -6,7 +6,7 @@ module.exports = (bot, GlobalState) => {
   bot.hears(/^c\d\d\d\d$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
-    const playingTeams = GlobalState.getPlayingTeams(); // Проверяем, начат ли матч
+    const playingTeams = GlobalState.getPlayingTeams();
     
     await ctx.deleteMessage().catch(() => {});
     
@@ -34,8 +34,8 @@ module.exports = (bot, GlobalState) => {
     const userInput = ctx.message.text.trim().slice(1); // Убираем "c"
     const team1 = parseInt(userInput[0]) - 1;    // Номер первой команды (0-based)
     const player1 = parseInt(userInput[1]) - 1;  // Позиция игрока в первой команде (0-based)
-    const team2 = parseInt(userInput[2]) - 1;    // Номер второй команды (0-based)
-    const player2 = parseInt(userInput[3]) - 1;  // Позиция игрока во второй команде (0-based)
+    const team2 = parseInt(userInput[2]) - 1;
+    const player2 = parseInt(userInput[3]) - 1;
 
     // Проверка валидности введенных данных
     if (team1 < 0 || team1 >= teams.length || 
@@ -129,11 +129,17 @@ module.exports = (bot, GlobalState) => {
           teamsMessage,
           {
             parse_mode: "HTML",
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: "🎯 Выбрать команды для матча", callback_data: "select_teams_callback" }]
-              ]
-            }
+            reply_markup: (() => {
+              const isTableAllowed = GlobalState.getIsTableAllowed();
+              const buttons = [];
+              if (isTableAllowed) {
+                buttons.push([{ text: "🎯 Выбрать команды для матча", callback_data: "select_teams_callback" }]);
+              } else {
+                buttons.push([{ text: "🎯 Выбрать команды для матча", callback_data: "select_teams_blocked" }]);
+                buttons.push([{ text: "📢 Объявить составы", callback_data: "announce_teams" }]);
+              }
+              return { inline_keyboard: buttons };
+            })(),
           }
         ]);
       } else {

@@ -43,6 +43,33 @@ jobs:
             # Загружаем NVM окружение
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            # Используем PM2 из NVM
-            /root/.nvm/versions/node/v18.20.3/bin/pm2 restart telegram
+            [ -s "$HOME/.bashrc" ] && source "$HOME/.bashrc"
+            # Пробуем разные пути к PM2
+            PM2_CMD=""
+            if command -v pm2 &> /dev/null; then
+              PM2_CMD="pm2"
+            elif [ -f "/root/.nvm/versions/node/v18.20.3/bin/pm2" ]; then
+              PM2_CMD="/root/.nvm/versions/node/v18.20.3/bin/pm2"
+            elif [ -f "$HOME/.nvm/versions/node/v18.20.3/bin/pm2" ]; then
+              PM2_CMD="$HOME/.nvm/versions/node/v18.20.3/bin/pm2"
+            elif [ -f "$HOME/.npm-global/bin/pm2" ]; then
+              PM2_CMD="$HOME/.npm-global/bin/pm2"
+            elif [ -f "/usr/local/bin/pm2" ]; then
+              PM2_CMD="/usr/local/bin/pm2"
+            elif [ -f "/usr/bin/pm2" ]; then
+              PM2_CMD="/usr/bin/pm2"
+            else
+              # Пробуем найти PM2 через find в типичных местах
+              PM2_FOUND=$(find $HOME/.nvm -name pm2 2>/dev/null | head -1)
+              if [ -n "$PM2_FOUND" ] && [ -f "$PM2_FOUND" ]; then
+                PM2_CMD="$PM2_FOUND"
+              fi
+            fi
+            if [ -n "$PM2_CMD" ]; then
+              echo "Using PM2 at: $PM2_CMD"
+              $PM2_CMD restart telegram
+            else
+              echo "PM2 not found, trying with npx..."
+              npx pm2 restart telegram || echo "Failed to restart PM2"
+            fi
 

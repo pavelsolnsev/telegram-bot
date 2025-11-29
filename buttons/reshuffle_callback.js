@@ -58,9 +58,17 @@ module.exports = (bot, GlobalState) => {
         teamsMessage,
         {
           parse_mode: "HTML",
-          reply_markup: Markup.inlineKeyboard([
-            Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback"),
-          ]).reply_markup,
+          reply_markup: (() => {
+            const isTableAllowed = GlobalState.getIsTableAllowed();
+            const buttons = [];
+            if (isTableAllowed) {
+              buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")]);
+            } else {
+              buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_blocked")]);
+              buttons.push([Markup.button.callback("📢 Объявить составы", "announce_teams")]);
+            }
+            return Markup.inlineKeyboard(buttons).reply_markup;
+          })(),
         },
       ]);
     } catch (error) {
