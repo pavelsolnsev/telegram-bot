@@ -27,6 +27,7 @@ const GlobalState = (() => {
   let allPlayersHistory = [];
   let listMessageChatId = null;
   let matchHistory = {};
+  let lastMatchIndex = {}; // Индекс последнего матча между парами команд
   let location = null;
   let teamCount = 0;
   let matchHistoryStack = [];
@@ -130,6 +131,8 @@ const GlobalState = (() => {
     },
     getMatchHistory: () => matchHistory,
     setMatchHistory: (history) => (matchHistory = history),
+    getLastMatchIndex: () => lastMatchIndex,
+    setLastMatchIndex: (index) => (lastMatchIndex = index),
     getLocation: () => location,
     setLocation: (loc) => (location = loc),
     pushMatchHistory: (state) => {

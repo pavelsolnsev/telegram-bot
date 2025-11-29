@@ -162,6 +162,9 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
   GlobalState.setTeams(previousState.teams);
   GlobalState.setTeamStats(previousState.teamStats);
   GlobalState.setMatchHistory(previousState.matchHistory);
+  if (previousState.lastMatchIndex) {
+    GlobalState.setLastMatchIndex(previousState.lastMatchIndex);
+  }
   GlobalState.setConsecutiveGames(previousState.consecutiveGames);
   GlobalState.setPlayingTeams(previousState.playingTeams);
   GlobalState.setIsMatchFinished(false);

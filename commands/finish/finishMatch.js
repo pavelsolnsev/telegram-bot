@@ -28,6 +28,7 @@ const finishMatch = async (ctx, GlobalState) => {
     teams: JSON.parse(JSON.stringify(GlobalState.getTeams())),
     teamStats: JSON.parse(JSON.stringify(GlobalState.getTeamStats())),
     matchHistory: JSON.parse(JSON.stringify(GlobalState.getMatchHistory())),
+    lastMatchIndex: JSON.parse(JSON.stringify(GlobalState.getLastMatchIndex())),
     consecutiveGames: JSON.parse(
       JSON.stringify(GlobalState.getConsecutiveGames())
     ),
@@ -286,6 +287,7 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   const previousTeamCount = GlobalState.getTeamCount();
   if (previousTeamCount !== totalTeams) {
     GlobalState.setMatchHistory({});
+    GlobalState.setLastMatchIndex({});
     GlobalState.setTeamCount(totalTeams);
     GlobalState.setConsecutiveGames({});
   }
@@ -294,14 +296,24 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     team.map((player) => ({ ...player, goals: 0 }));
 
   let matchHistory = GlobalState.getMatchHistory();
+  let lastMatchIndex = GlobalState.getLastMatchIndex();
+  
+  // Инициализируем структуры
   for (let i = 0; i < totalTeams; i++) {
     if (!matchHistory[i]) matchHistory[i] = {};
+    if (!lastMatchIndex[i]) lastMatchIndex[i] = {};
   }
 
+  // Обновляем количество игр между командами
   matchHistory[teamIndex1][teamIndex2] =
     (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
   matchHistory[teamIndex2][teamIndex1] =
     (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
+  
+  // Обновляем индекс последнего матча между этими командами
+  const currentMatchIndex = matchResultsAfterKsk.length;
+  lastMatchIndex[teamIndex1][teamIndex2] = currentMatchIndex;
+  lastMatchIndex[teamIndex2][teamIndex1] = currentMatchIndex;
 
   let consecutiveGames = GlobalState.getConsecutiveGames() || {};
   consecutiveGames[teamIndex1] = (consecutiveGames[teamIndex1] || 0) + 1;
@@ -327,8 +339,13 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     )
   ) {
     matchHistory = {};
-    for (let i = 0; i < totalTeams; i++) matchHistory[i] = {};
+    lastMatchIndex = {};
+    for (let i = 0; i < totalTeams; i++) {
+      matchHistory[i] = {};
+      lastMatchIndex[i] = {};
+    }
     GlobalState.setMatchHistory(matchHistory);
+    GlobalState.setLastMatchIndex(lastMatchIndex);
   }
 
   // Вычисляем количество игр и отдыхов для каждой команды
@@ -381,10 +398,22 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
       return -Infinity; // Исключаем такие пары
     }
 
-    // Приоритет 2: минимальное количество игр между этими двумя командами
-    score -= gamesPlayed * 1000;
+    // Приоритет 2 (ГЛАВНЫЙ): максимизируем расстояние от последнего матча между этими командами
+    // Чем больше прошло матчей с последней встречи, тем выше приоритет
+    const lastMatch = lastMatchIndex[i]?.[j];
+    if (lastMatch !== undefined && lastMatch !== null) {
+      const distanceFromLastMatch = totalMatches - lastMatch;
+      // Максимизируем расстояние - чем больше расстояние, тем выше приоритет
+      score += distanceFromLastMatch * 2000;
+    } else {
+      // Если команды еще не играли друг с другом, даем максимальный приоритет
+      score += 100000;
+    }
 
-    // Приоритет 3: баланс отдыхов - команды с меньшим количеством игр
+    // Приоритет 3: минимальное количество игр между этими двумя командами (вторичный фактор)
+    score -= gamesPlayed * 100;
+
+    // Приоритет 4: баланс отдыхов - команды с меньшим количеством игр
     // или большим количеством отдыхов получают приоритет
     const iGames = teamGamesCount[i] || 0;
     const jGames = teamGamesCount[j] || 0;
@@ -394,14 +423,14 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     // Бонус за то, что команда играла меньше среднего
     const iGamesDiff = avgGames - iGames;
     const jGamesDiff = avgGames - jGames;
-    score += (iGamesDiff + jGamesDiff) * 100;
+    score += (iGamesDiff + jGamesDiff) * 50;
 
     // Бонус за то, что команда отдыхала больше среднего
     const iRestsDiff = iRests - avgRests;
     const jRestsDiff = jRests - avgRests;
-    score += (iRestsDiff + jRestsDiff) * 100;
+    score += (iRestsDiff + jRestsDiff) * 50;
 
-    // Приоритет 4: если команда отдыхала в последнем матче (consecutiveGames === 0)
+    // Приоритет 5: если команда отдыхала в последнем матче (consecutiveGames === 0)
     // и при этом имеет баланс отдыхов/игр, даем ей небольшой бонус
     if (consecutiveGames[i] === 0 && iRests >= avgRests) {
       score += 10;
@@ -410,9 +439,9 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
       score += 10;
     }
 
-    // Приоритет 5: избегаем ситуаций, когда одна команда играет значительно больше другой
+    // Приоритет 6: избегаем ситуаций, когда одна команда играет значительно больше другой
     const gamesDiff = Math.abs(iGames - jGames);
-    score -= gamesDiff * 50;
+    score -= gamesDiff * 25;
 
     return score;
   };
@@ -428,6 +457,9 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
       nextTeamIndex2 = j;
     }
   }
+  
+  // Сохраняем обновленные структуры
+  GlobalState.setLastMatchIndex(lastMatchIndex);
 
   if (nextTeamIndex1 === null || nextTeamIndex2 === null) {
     const msg = await ctx.reply(
