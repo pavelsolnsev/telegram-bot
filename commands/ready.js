@@ -34,9 +34,24 @@ const announceTeams = async (ctx, GlobalState) => {
       lastTeamsMessage.chatId,
       lastTeamsMessage.messageId,
       null,
-      Markup.inlineKeyboard([
-        [Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")],
-      ]).reply_markup,
+        Markup.inlineKeyboard((() => {
+          const isTableAllowed = GlobalState.getIsTableAllowed();
+          const playingTeams = GlobalState.getPlayingTeams();
+          const buttons = [];
+          if (isTableAllowed) {
+            // Если составы объявлены - показываем кнопку выбора команд
+            buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")]);
+          } else {
+            // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
+            buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_blocked")]);
+            buttons.push([Markup.button.callback("📢 Объявить составы", "announce_teams")]);
+          }
+          // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
+          if (!playingTeams) {
+            buttons.push([Markup.button.callback("🔄 Сменить игрока", "change_player_callback")]);
+          }
+          return buttons;
+        })()).reply_markup,
     ]);
   }
 };
