@@ -53,6 +53,8 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setLastTeamCount(numTeams);
     GlobalState.setDivided(true);
     GlobalState.setIsEndCommandAllowed(false);
+    // Сбрасываем флаг, так как составы изменились и их нужно снова объявить
+    GlobalState.setIsTableAllowed(false);
     await sendTeamsMessage(ctx, teamsMessage);
   });
 };

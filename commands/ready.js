@@ -5,7 +5,7 @@ const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 const { safeTelegramCall } = require("../utils/telegramUtils");
 
 // Функция объявления составов (общая логика для команды rdy и кнопки)
-const announceTeams = async (ctx, GlobalState, updateMessage = false) => {
+const announceTeams = async (ctx, GlobalState) => {
   // Разрешаем таблицу
   GlobalState.setIsTableAllowed(true);
 
@@ -24,20 +24,20 @@ const announceTeams = async (ctx, GlobalState, updateMessage = false) => {
     ]).reply_markup,
   });
 
-  // Обновляем только кнопки в сообщении (не изменяя текст таблицы) только если это вызов через кнопку
-  if (updateMessage) {
-    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-    if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
-      // Обновляем только клавиатуру, не трогая текст сообщения
-      await safeTelegramCall(ctx, "editMessageReplyMarkup", [
-        lastTeamsMessage.chatId,
-        lastTeamsMessage.messageId,
-        null,
-        Markup.inlineKeyboard([
-          [Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")],
-        ]).reply_markup,
-      ]);
-    }
+  // Обновляем только кнопки в сообщении (не изменяя текст таблицы)
+  // Это делается и для команды rdy, и для кнопки announce_teams
+  const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
+  if (lastTeamsMessage && lastTeamsMessage.chatId && lastTeamsMessage.messageId) {
+    // Обновляем только клавиатуру, не трогая текст сообщения
+    // Удаляем кнопку "Объявить составы" и делаем доступной кнопку "Выбрать команды"
+    await safeTelegramCall(ctx, "editMessageReplyMarkup", [
+      lastTeamsMessage.chatId,
+      lastTeamsMessage.messageId,
+      null,
+      Markup.inlineKeyboard([
+        [Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")],
+      ]).reply_markup,
+    ]);
   }
 };
 
@@ -56,10 +56,10 @@ module.exports = (bot, GlobalState) => {
 
     // Удаляем сообщение-команду
     await ctx.deleteMessage().catch(() => {});
-    await announceTeams(ctx, GlobalState, false);
+    await announceTeams(ctx, GlobalState);
   });
 
-  // Обработчик кнопки "Объявить составы" - обновляет сообщение
+  // Обработчик кнопки "Объявить составы"
   bot.action("announce_teams", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     
@@ -69,6 +69,6 @@ module.exports = (bot, GlobalState) => {
     }
 
     await safeAnswerCallback(ctx, "✅ Объявляю составы...");
-    await announceTeams(ctx, GlobalState, true);
+    await announceTeams(ctx, GlobalState);
   });
 };

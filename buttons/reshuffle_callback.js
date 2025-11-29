@@ -9,6 +9,8 @@ const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
 module.exports = (bot, GlobalState) => {
   bot.action("reshuffle_callback", async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
+    const playingTeams = GlobalState.getPlayingTeams();
+    const isTeamCommandAllowed = GlobalState.getIsTeamCommandAllowed();
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, "sendMessage", [
@@ -18,8 +20,34 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
+    // Проверка, разрешена ли команда tm (та же проверка, что и в команде tm)
+    if (!isTeamCommandAllowed) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда tm запрещена, пока матчи между командами не завершён (используйте e!).",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    // Проверка, начат ли матч между командами (та же проверка, что и в команде tm)
+    if (playingTeams) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нельзя менять составы команд во время матча!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
     const numTeams = GlobalState.getLastTeamCount();
     let players = [...GlobalState.getPlayers()];
+
+    if (!players || players.length === 0) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Нет игроков для создания команд!",
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
 
     if (players.length < numTeams) {
       const message = await safeTelegramCall(ctx, "sendMessage", [

@@ -12,6 +12,7 @@ module.exports = (bot, GlobalState) => {
     const isStatsInitialized = GlobalState.getIsStatsInitialized();
     const isMatchFinished = GlobalState.getIsMatchFinished();
     const playingTeams = GlobalState.getPlayingTeams();
+    const isTableAllowed = GlobalState.getIsTableAllowed();
     const teamIndex1 = parseInt(ctx.match[1], 10) - 1;
     const teamIndex2 = parseInt(ctx.match[2], 10) - 1;
     const teams = GlobalState.getTeams();
@@ -29,6 +30,24 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
+    // Проверяем, объявлены ли составы (та же проверка, что и в кнопке select_teams_callback)
+    if (!isTableAllowed) {
+      const message = await ctx.reply("⚠️ Сначала нужно объявить составы команд, нажав кнопку «📢 Объявить составы».");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    // Если активный матч существует - показываем предупреждение (та же проверка, что и в кнопке)
+    if (playingTeams) {
+      const message = await ctx.reply("⛔ Идёт активный матч! Завершите текущий матч перед выбором новых команд.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    // Проверяем, что команды сформированы (та же проверка, что и в кнопке)
+    if (!teams || teams.length < 2) {
+      const message = await ctx.reply("⚠️ Команды ещё не сформированы! Используйте команду tm для создания команд.");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
     if (!teams[teamIndex1] || !teams[teamIndex2]) {
       const message = await ctx.reply("⛔ Команды не найдены!");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -41,11 +60,6 @@ module.exports = (bot, GlobalState) => {
 
     if (ctx.chat.id < 0) {
       const message = await ctx.reply("Напиши мне в ЛС.");
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    }
-
-    if (playingTeams && !isMatchFinished) {
-      const message = await ctx.reply("⛔ Уже идет матч! Завершите текущий матч (fn) перед началом нового.");
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
