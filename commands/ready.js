@@ -83,7 +83,76 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
+    // Показываем кнопки подтверждения/отклонения
+    const text =
+      "Составы команд готовы! Чтобы их просмотреть, отправьте команду <b>«таблица»</b> в личные сообщения " +
+      '<a href="http://t.me/football_ramen_bot">боту</a>.\n\n' +
+      "Для просмотра истории сыгранных матчей используйте команду <b>«результаты»</b>.";
+
+    await safeAnswerCallback(ctx, "Подтвердите отправку уведомления");
+    
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    
+    // Отправляем сообщение с предпросмотром и кнопками подтверждения
+    const previewMessage = await safeTelegramCall(ctx, "sendMessage", [
+      chatId,
+      `📢 <b>Предпросмотр уведомления:</b>\n\n${text}\n\n<b>Отправить это уведомление в группу?</b>`,
+      {
+        parse_mode: "HTML",
+        reply_markup: Markup.inlineKeyboard([
+          [Markup.button.callback("✅ Подтвердить", "announce_teams_confirm")],
+          [Markup.button.callback("❌ Отклонить", "announce_teams_cancel")],
+        ]).reply_markup,
+      },
+    ]);
+    deleteMessageAfterDelay(ctx, previewMessage.message_id, 60000);
+  });
+
+  // Обработчик подтверждения объявления составов
+  bot.action("announce_teams_confirm", async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      return;
+    }
+
     await safeAnswerCallback(ctx, "✅ Объявляю составы...");
+    
+    // Удаляем сообщение с подтверждением
+    try {
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      const messageId = ctx.callbackQuery?.message?.message_id;
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, "deleteMessage", [chatId, messageId]);
+      }
+    } catch (error) {
+      // Игнорируем ошибки удаления
+    }
+    
     await announceTeams(ctx, GlobalState);
+  });
+
+  // Обработчик отклонения объявления составов
+  bot.action("announce_teams_cancel", async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      return;
+    }
+
+    await safeAnswerCallback(ctx, "❌ Отправка уведомления отменена");
+    
+    // Удаляем сообщение с подтверждением
+    try {
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      const messageId = ctx.callbackQuery?.message?.message_id;
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, "deleteMessage", [chatId, messageId]);
+      }
+    } catch (error) {
+      // Игнорируем ошибки удаления
+    }
   });
 };

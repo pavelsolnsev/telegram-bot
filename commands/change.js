@@ -41,8 +41,7 @@ module.exports = (bot, GlobalState) => {
 
     // Обновляем текущие команды в глобальном состоянии
     GlobalState.setTeams(updatedTeams);
-    // Сбрасываем флаг, так как составы изменились и их нужно снова объявить
-    GlobalState.setIsTableAllowed(false);
+    // Флаг isTableAllowed не сбрасываем - после объявления составов они остаются объявленными даже при замене игроков
 
     // Получаем базовые команды и статистику
     let teamsBase = GlobalState.getTeamsBase();
