@@ -86,12 +86,22 @@ module.exports = (bot, GlobalState) => {
     // Сохраняем обновленную статистику
     GlobalState.setTeamStats(teamStats);
 
+    // Определяем, показывать ли иконки рейтинга
+    // Показываем иконки только если команды еще не выбраны И матчи еще не начались И матч не завершен
+    const playingTeams = GlobalState.getPlayingTeams();
+    const isMatchFinished = GlobalState.getIsMatchFinished();
+    const isStatsInitialized = GlobalState.getIsStatsInitialized();
+    const showRatings = !playingTeams && !isStatsInitialized && !isMatchFinished;
+    const teamsForDisplay = !playingTeams && !isStatsInitialized && !isMatchFinished ? teamsBase : updatedTeams;
+
     // Формируем сообщение с обновленными составами
     const teamsMessage = buildTeamsMessage(
       teamsBase,
       "Составы команд (после замены)",
       teamStats,
-      updatedTeams
+      teamsForDisplay,
+      null,
+      showRatings
     );
 
     // Получаем ID последнего сообщения о командах

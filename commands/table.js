@@ -13,6 +13,9 @@ module.exports = (bot, GlobalState) => {
     const teamsBase = GlobalState.getTeamsBase();
     const allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
+    const playingTeams = GlobalState.getPlayingTeams();
+    const isMatchFinished = GlobalState.getIsMatchFinished();
+    const isStatsInitialized = GlobalState.getIsStatsInitialized();
 
     if (!isMatchStarted) {
       await sendPrivateMessage(bot, userId, "⚠️ Матч ещё не начат!");
@@ -30,11 +33,18 @@ module.exports = (bot, GlobalState) => {
     }
 
     try {
+      // Показываем иконки только если команды еще не выбраны И матчи еще не начались И матч не завершен
+      // После начала матчей или завершения - всегда показываем без иконок
+      const showRatings = !playingTeams && !isStatsInitialized && !isMatchFinished;
+      const teamsForDisplay = !playingTeams && !isStatsInitialized && !isMatchFinished ? teamsBase : allTeams;
+
       const tableMessage = buildTeamsMessage(
         teamsBase,
         "Таблица текущих результатов",
         teamStats,
-        allTeams
+        teamsForDisplay,
+        null,
+        showRatings
       );
 
       const sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: "HTML" });
@@ -79,6 +89,9 @@ module.exports = (bot, GlobalState) => {
     const teamsBase = GlobalState.getTeamsBase();
     const allTeams = GlobalState.getTeams();
     const teamStats = GlobalState.getTeamStats();
+    const playingTeams = GlobalState.getPlayingTeams();
+    const isMatchFinished = GlobalState.getIsMatchFinished();
+    const isStatsInitialized = GlobalState.getIsStatsInitialized();
 
 
     if (ctx.chat.id < 0) {
@@ -104,11 +117,18 @@ module.exports = (bot, GlobalState) => {
 
     try {
       // Формируем сообщение с таблицей в реальном времени
+      // Показываем иконки только если команды еще не выбраны И матчи еще не начались И матч не завершен
+      // После начала матчей или завершения - всегда показываем без иконок
+      const showRatings = !playingTeams && !isStatsInitialized && !isMatchFinished;
+      const teamsForDisplay = !playingTeams && !isStatsInitialized && !isMatchFinished ? teamsBase : allTeams;
+
       const tableMessage = buildTeamsMessage(
         teamsBase,
         "Таблица текущих результатов",
         teamStats,
-        allTeams
+        teamsForDisplay,
+        null,
+        showRatings
       );
 
       // Отправляем сообщение
