@@ -140,6 +140,11 @@ const notifyTeamFormation = async (ctx, bot, GlobalState) => {
 
 module.exports = (bot, GlobalState) => {
   bot.on("text", async (ctx) => {
+    // Пропускаем команду reset - она обрабатывается отдельным обработчиком
+    if (/^reset$/i.test(ctx.message.text)) {
+      return;
+    }
+
     const players = GlobalState.getPlayers();
     const queue = GlobalState.getQueue();
     const ADMIN_ID = GlobalState.getAdminId();

@@ -48,6 +48,7 @@ require("./commands/ready")(bot, GlobalState);
 require("./commands/time")(bot, GlobalState); // Команда t для смены даты
 require("./commands/end")(bot, GlobalState); // Команда e! для отмены матча
 require("./commands/limit")(bot, GlobalState); // Команда l для изменения лимита игроков
+require("./commands/reset")(bot, GlobalState); // Обнуление статистики игроков в БД
 require("./commands/add")(bot, GlobalState); // Добавление и удаление игроков
 require("./buttons/reshuffle_callback")(bot, GlobalState); // Обработчик кнопки перемешивания
 require("./buttons/select_teams_callback")(bot, GlobalState); // Обработчик кнопки выбора команд
