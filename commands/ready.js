@@ -80,6 +80,16 @@ module.exports = (bot, GlobalState) => {
     
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⛔ У вас нет прав для этой команды.",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
@@ -114,6 +124,16 @@ module.exports = (bot, GlobalState) => {
     
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⛔ У вас нет прав для этой команды.",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
@@ -139,10 +159,30 @@ module.exports = (bot, GlobalState) => {
     
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⛔ У вас нет прав для этой команды.",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
     await safeAnswerCallback(ctx, "❌ Отправка уведомления отменена");
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    if (chatId) {
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        chatId,
+        "❌ Отправка уведомления отменена",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+    }
     
     // Удаляем сообщение с подтверждением
     try {

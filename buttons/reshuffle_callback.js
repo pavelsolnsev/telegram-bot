@@ -108,10 +108,13 @@ module.exports = (bot, GlobalState) => {
       ]);
     } catch (error) {
       console.error("Ошибка при обновлении сообщения:", error);
-      await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, "sendMessage", [
         ctx.chat.id,
         "⚠️ Произошла ошибка при обновлении сообщения!",
       ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
     }
   });
 };

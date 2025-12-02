@@ -290,11 +290,25 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ Нет прав!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет прав!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     if (!teams[firstTeamIndex]) {
       await safeAnswerCallback(ctx, "⛔ Команда не найдена!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда не найдена!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -353,11 +367,25 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ Нет прав!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет прав!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     if (!teams[firstTeamIndex] || !teams[firstTeamIndex][firstPlayerIndex]) {
       await safeAnswerCallback(ctx, "⛔ Игрок не найден!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Игрок не найден!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -421,11 +449,25 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ Нет прав!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет прав!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     if (!teams[secondTeamIndex]) {
       await safeAnswerCallback(ctx, "⛔ Команда не найдена!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Команда не найдена!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -487,6 +529,13 @@ module.exports = (bot, GlobalState) => {
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ Нет прав!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет прав!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -507,10 +556,24 @@ module.exports = (bot, GlobalState) => {
     
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ У вас нет прав для этой команды.",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     await safeAnswerCallback(ctx, "❌ Замена игрока отменена");
+    const message = await safeTelegramCall(ctx, "sendMessage", [
+      ctx.chat.id,
+      "❌ Замена игрока отменена",
+    ]);
+    if (message) {
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
     
     // Удаляем сообщение выбора
     try {

@@ -40,6 +40,16 @@ module.exports = (bot, GlobalState) => {
     const isMatchStarted = GlobalState.getStart();
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⚠️ Матч не начат!",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
@@ -73,11 +83,31 @@ module.exports = (bot, GlobalState) => {
     // Проверка условий
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⚠️ Матч не начат!",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
     if (!playingTeams) {
       await safeAnswerCallback(ctx, "⛔ Нет активного матча для продолжения!");
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          chatId,
+          "⛔ Нет активного матча для продолжения!",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
       return;
     }
 
@@ -147,7 +177,7 @@ module.exports = (bot, GlobalState) => {
       });
     }
 
-    await safeAnswerCallback(ctx, "❌ Переход к следующему матчу отменен");
+    await safeAnswerCallback(ctx);
   });
 
   // Команда end - выполняет один шаг, затем предлагает продолжить

@@ -348,11 +348,25 @@ module.exports = (bot, GlobalState) => {
     // Проверка условий
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     if (!playingTeams) {
       await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -428,11 +442,25 @@ module.exports = (bot, GlobalState) => {
     // Проверка условий
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
     if (!playingTeams) {
       await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -471,7 +499,7 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, "❌ Выберите игрока для отмены гола");
+      await safeAnswerCallback(ctx);
     } catch (error) {
       // Если не удалось отредактировать сообщение, отправляем новое
       if (chatId) {
@@ -484,7 +512,7 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, "❌ Выберите игрока для отмены гола");
+      await safeAnswerCallback(ctx);
     }
   });
 
@@ -501,6 +529,13 @@ module.exports = (bot, GlobalState) => {
 
     if (!playingTeams) {
       await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⛔ Нет активного матча!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 

@@ -18,17 +18,47 @@ module.exports = (bot, GlobalState) => {
     const isStatsInitialized = GlobalState.getIsStatsInitialized();
 
     if (!isMatchStarted) {
-      await sendPrivateMessage(bot, userId, "⚠️ Матч ещё не начат!");
+      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Матч ещё не начат!");
+      if (sentMessage && sentMessage.message_id) {
+        // Удаляем сообщение через 6 секунд
+        setTimeout(async () => {
+          try {
+            await bot.telegram.deleteMessage(userId, sentMessage.message_id);
+          } catch (error) {
+            // Игнорируем ошибки удаления
+          }
+        }, 6000);
+      }
       return;
     }
 
     if (!GlobalState.getIsTableAllowed()) {
-      await sendPrivateMessage(bot, userId, "⚠️ Составы ещё не готовы.");
+      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Составы ещё не готовы.");
+      if (sentMessage && sentMessage.message_id) {
+        // Удаляем сообщение через 6 секунд
+        setTimeout(async () => {
+          try {
+            await bot.telegram.deleteMessage(userId, sentMessage.message_id);
+          } catch (error) {
+            // Игнорируем ошибки удаления
+          }
+        }, 6000);
+      }
       return;
     }
 
     if (!isTeamsDivided || teamsBase.length === 0) {
-      await sendPrivateMessage(bot, userId, "⚠️ Команды ещё не сформированы!");
+      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Команды ещё не сформированы!");
+      if (sentMessage && sentMessage.message_id) {
+        // Удаляем сообщение через 6 секунд
+        setTimeout(async () => {
+          try {
+            await bot.telegram.deleteMessage(userId, sentMessage.message_id);
+          } catch (error) {
+            // Игнорируем ошибки удаления
+          }
+        }, 6000);
+      }
       return;
     }
 

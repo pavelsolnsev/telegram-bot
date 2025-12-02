@@ -31,11 +31,13 @@ module.exports = (bot, GlobalState) => {
     let players = [...GlobalState.getPlayers()];
 
     if (!players || players.length === 0) {
-      return ctx.reply("⚠️ Нет игроков для создания команд!");
+      const message = await ctx.reply("⚠️ Нет игроков для создания команд!");
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (players.length < numTeams) {
-      return ctx.reply(`⚠️ Недостаточно игроков для ${numTeams} команд! Требуется минимум ${numTeams} игрока, а сейчас: ${players.length}.`);
+      const message = await ctx.reply(`⚠️ Недостаточно игроков для ${numTeams} команд! Требуется минимум ${numTeams} игрока, а сейчас: ${players.length}.`);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id < 0) {

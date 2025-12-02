@@ -542,6 +542,13 @@ module.exports = (bot, GlobalState) => {
 
     if (isInList) {
       await safeAnswerCallback(ctx, "⚠️ Вы уже записаны!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Вы уже записаны!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -600,6 +607,13 @@ module.exports = (bot, GlobalState) => {
 
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      const message = await safeTelegramCall(ctx, "sendMessage", [
+        ctx.chat.id,
+        "⚠️ Матч не начат!",
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
       return;
     }
 
@@ -689,6 +703,13 @@ module.exports = (bot, GlobalState) => {
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
         await safeAnswerCallback(ctx, "⚠️ Вы не в списке!");
+        const message = await safeTelegramCall(ctx, "sendMessage", [
+          ctx.chat.id,
+          "⚠️ Вы не в списке!",
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
       }
     }
   });
