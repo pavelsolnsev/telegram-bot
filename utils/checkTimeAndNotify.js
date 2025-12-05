@@ -14,13 +14,18 @@ async function checkTimeAndNotify(bot) {
 
   const now = new Date();
   const timeDiff = collectionDate - now;
+  
+  // Если время уже наступило, выходим
   if (timeDiff <= 0) return;
 
   const currentLocationKey = GlobalState.getLocation();
   const loc = locations[currentLocationKey] || locations.prof;
 
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-  if (timeDiff <= THREE_HOURS_MS) {
+  
+  // Проверяем, что до начала осталось 3 часа или меньше, но время еще не наступило
+  // Важно: timeDiff должен быть > 0 и <= THREE_HOURS_MS
+  if (timeDiff > 0 && timeDiff <= THREE_HOURS_MS) {
     let groupMessageText;
     let privateMessageText;
 
@@ -92,25 +97,29 @@ async function checkTimeAndNotify(bot) {
         message.message_id,
         THREE_HOURS_MS
       );
+
+      // Отправляем личные сообщения игрокам
+      for (const player of players) {
+        await sendPrivateMessage(bot, player.id, privateMessageText, {
+          parse_mode: "HTML",
+          link_preview_options: {
+            url: "https://vk.com/ramafootball",
+            prefer_large_media: true,
+          },
+        });
+      }
+
+      // Устанавливаем флаг только после успешной отправки всех сообщений
+      GlobalState.setNotificationSent(true);
     } catch (error) {
       console.error(
         `Ошибка при отправке сообщения в группу ${groupChatId}:`,
         error
       );
+      // Устанавливаем флаг даже при ошибке, чтобы не пытаться отправлять бесконечно
+      GlobalState.setNotificationSent(true);
       return;
     }
-
-    for (const player of players) {
-      await sendPrivateMessage(bot, player.id, privateMessageText, {
-        parse_mode: "HTML",
-        link_preview_options: {
-          url: "https://vk.com/ramafootball",
-          prefer_large_media: true,
-        },
-      });
-    }
-
-    GlobalState.setNotificationSent(true);
   }
 }
 
