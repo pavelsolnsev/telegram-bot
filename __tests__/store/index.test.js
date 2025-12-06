@@ -239,7 +239,7 @@ describe('GlobalState', () => {
     test('должен сбросить судью на дефолтное значение', () => {
       GlobalState.setReferee('Другой');
       GlobalState.resetReferee();
-      expect(GlobalState.getReferee()).toBe('Карен');
+      expect(GlobalState.getReferee()).toBe('Не назначен');
     });
   });
 

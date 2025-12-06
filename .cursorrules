@@ -1,0 +1,47 @@
+# Project Development Rules
+
+## Test-Driven Development (TDD) Workflow
+
+**IMPORTANT: Before implementing any new feature or code addition, you MUST follow this workflow:**
+
+1. **Write tests first** - Create or update test files before writing the implementation code
+2. **Write minimal code** - Implement only what is necessary to make the tests pass
+3. **Refactor if needed** - Improve code quality while keeping tests green
+
+### Rules:
+
+- **NEVER** write production code without corresponding tests
+- **ALWAYS** write tests before implementing new features
+- **ALWAYS** write tests before fixing bugs (write a failing test that reproduces the bug first)
+- **ALWAYS** ensure all tests pass before considering a feature complete
+- When adding new functionality, create test files in the `__tests__` directory following the existing structure
+- Test files should cover:
+  - Happy path scenarios
+  - Edge cases
+  - Error handling
+  - Boundary conditions
+
+### Test Structure:
+
+- Use Jest as the testing framework
+- Follow the existing test patterns in `__tests__` directory
+- Mock external dependencies (database, Telegram API, etc.)
+- Use descriptive test names that explain what is being tested
+- Group related tests using `describe` blocks
+
+### Code Quality:
+
+- All code must pass linting checks
+- All tests must pass before committing
+- Maintain test coverage for critical functionality
+- Handle errors gracefully with proper try-catch blocks
+- Use async/await properly with error handling
+
+### When modifying existing code:
+
+- If tests don't exist for the code you're modifying, create them first
+- Update existing tests if the behavior changes
+- Ensure backward compatibility or document breaking changes
+
+**Remember: Tests are not optional - they are a requirement for any code change.**
+

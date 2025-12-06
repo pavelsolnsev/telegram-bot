@@ -98,15 +98,24 @@ async function checkTimeAndNotify(bot) {
         THREE_HOURS_MS
       );
 
-      // Отправляем личные сообщения игрокам
+      // Отправляем личные сообщения игрокам (ошибки здесь не критичны)
       for (const player of players) {
-        await sendPrivateMessage(bot, player.id, privateMessageText, {
-          parse_mode: "HTML",
-          link_preview_options: {
-            url: "https://vk.com/ramafootball",
-            prefer_large_media: true,
-          },
-        });
+        try {
+          await sendPrivateMessage(bot, player.id, privateMessageText, {
+            parse_mode: "HTML",
+            link_preview_options: {
+              url: "https://vk.com/ramafootball",
+              prefer_large_media: true,
+            },
+          });
+        } catch (playerError) {
+          // Игнорируем ошибки при отправке личных сообщений
+          // Групповое сообщение уже отправлено, это не критично
+          console.error(
+            `Ошибка при отправке личного сообщения игроку ${player.id}:`,
+            playerError
+          );
+        }
       }
 
       // Устанавливаем флаг только после успешной отправки всех сообщений

@@ -55,8 +55,8 @@ describe('buildTeamsMessage', () => {
 
       const message = buildTeamsMessage(mockTeams, 'Составы команд', teamStats, mockTeams);
 
-      expect(message).toContain('М  Команда|И|В|Н|П|ЗМ|ПМ|РМ|О');
-      expect(message).toContain('--+-------+--+-+-+-+-+--+-+-+');
+      expect(message).toContain('М  Ком|И|В|Н|П|ЗМ|ПМ|РМ|О');
+      expect(message).toContain('--+---+--+-+-+-+-+--+-+-+');
     });
 
     test('должен рассчитать очки корректно (3 за победу, 1 за ничью)', () => {
