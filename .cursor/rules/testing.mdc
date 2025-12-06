@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# Testing Standards
+
+## Test Structure:
+
+- Use Jest as the testing framework
+- Follow the existing test patterns in `__tests__` directory
+- Mock external dependencies (database, Telegram API, etc.)
+- Use descriptive test names that explain what is being tested
+- Group related tests using `describe` blocks
+
+## Test Coverage Requirements:
+
+Test files should cover:
+- Happy path scenarios
+- Edge cases
+- Error handling
+- Boundary conditions
+
+## Test Execution:
+
+- All tests must pass before committing
+- Maintain test coverage for critical functionality
+- Run `npm test` to execute all tests
+- Run `npm run test:watch` for development
+- Run `npm run test:coverage` to check coverage

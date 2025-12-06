@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+
+# Test-Driven Development (TDD) Workflow
+
+**IMPORTANT: Before implementing any new feature or code addition, you MUST follow this workflow:**
+
+1. **Write tests first** - Create or update test files before writing the implementation code
+2. **Write minimal code** - Implement only what is necessary to make the tests pass
+3. **Refactor if needed** - Improve code quality while keeping tests green
+
+## Core TDD Rules:
+
+- **NEVER** write production code without corresponding tests
+- **ALWAYS** write tests before implementing new features
+- **ALWAYS** write tests before fixing bugs (write a failing test that reproduces the bug first)
+- **ALWAYS** ensure all tests pass before considering a feature complete
+- When adding new functionality, create test files in the `__tests__` directory following the existing structure
+
+## When modifying existing code:
+
+- If tests don't exist for the code you're modifying, create them first
+- Update existing tests if the behavior changes
+- Ensure backward compatibility or document breaking changes
+
+**Remember: Tests are not optional - they are a requirement for any code change.**

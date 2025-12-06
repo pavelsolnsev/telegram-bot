@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+
+# Code Quality Standards
+
+## Linting:
+
+- All code must pass linting checks (ESLint)
+- Run `npm run lint` to check for linting errors
+- Run `npm run lint:fix` to automatically fix fixable issues
+- Fix all linting errors before committing code
+
+## Error Handling:
+
+- Handle errors gracefully with proper try-catch blocks
+- Use async/await properly with error handling
+- Never leave unhandled promise rejections
+- Provide meaningful error messages
+
+## Code Standards:
+
+- All tests must pass before committing
+- Maintain test coverage for critical functionality
+- Follow existing code patterns and conventions
+- Write clean, readable, and maintainable code
