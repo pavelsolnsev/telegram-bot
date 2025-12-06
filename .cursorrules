@@ -31,7 +31,9 @@
 
 ### Code Quality:
 
-- All code must pass linting checks
+- All code must pass linting checks (ESLint)
+  - Run `npm run lint` to check for linting errors
+  - Run `npm run lint:fix` to automatically fix fixable issues
 - All tests must pass before committing
 - Maintain test coverage for critical functionality
 - Handle errors gracefully with proper try-catch blocks

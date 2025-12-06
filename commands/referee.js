@@ -1,12 +1,12 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { sendPlayerList } = require('../utils/sendPlayerList');
 
 module.exports = (bot, GlobalState) => {
   if (!GlobalState.getReferee) {
-    let referee = "Карен";
+    let referee = 'Карен';
     GlobalState.getReferee = () => referee;
     GlobalState.setReferee = (name) => referee = name;
-    GlobalState.resetReferee = () => referee = "Карен";
+    GlobalState.resetReferee = () => referee = 'Карен';
   }
 
   // Команда "судья <имя>"
@@ -19,13 +19,13 @@ module.exports = (bot, GlobalState) => {
 
     // Проверка на права
     if (!isAdmin) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Проверка на категорию
-    if (currentLocation !== "tr") {
-      const message = await ctx.reply("⚠️ Команда доступна только в режиме турнира!");
+    if (currentLocation !== 'tr') {
+      const message = await ctx.reply('⚠️ Команда доступна только в режиме турнира!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 

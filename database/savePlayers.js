@@ -1,4 +1,4 @@
-const db = require("./database");
+const db = require('./database');
 
 async function savePlayersToDatabase(players) {
   try {
@@ -12,7 +12,7 @@ async function savePlayersToDatabase(players) {
         wins: rawWins,
         draws: rawDraws,
         losses: rawLosses,
-        rating: rawRating
+        rating: rawRating,
       } = player;
 
       if (!rawId) {
@@ -34,15 +34,15 @@ async function savePlayersToDatabase(players) {
     }).filter(Boolean); // Убираем null значения
 
     if (values.length === 0) {
-      console.log("Нет валидных игроков для сохранения.");
+      console.log('Нет валидных игроков для сохранения.');
       return;
     }
 
     // Получаем текущие рейтинги для всех игроков одним запросом
     const playerIds = values.map(v => v[0]);
     const [currentRatings] = await db.query(
-      "SELECT id, rating FROM players WHERE id IN (?)",
-      [playerIds]
+      'SELECT id, rating FROM players WHERE id IN (?)',
+      [playerIds],
     );
     const ratingMap = new Map(currentRatings.map(row => [row.id, Number(row.rating) || 0]));
 
@@ -68,9 +68,9 @@ async function savePlayersToDatabase(players) {
     `;
 
     await db.query(query, [insertValues]);
-    console.log("Данные игроков успешно сохранены в базу данных!");
+    console.log('Данные игроков успешно сохранены в базу данных!');
   } catch (error) {
-    console.error("Ошибка при сохранении данных в базу данных:", error);
+    console.error('Ошибка при сохранении данных в базу данных:', error);
     throw error;
   }
 }

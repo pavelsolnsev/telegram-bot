@@ -1,9 +1,9 @@
-const { deleteMessageAfterDelay } = require("../../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../../utils/telegramUtils");
+const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../../utils/telegramUtils');
 
-jest.mock("../../utils/telegramUtils");
+jest.mock('../../utils/telegramUtils');
 
-describe("deleteMessageAfterDelay", () => {
+describe('deleteMessageAfterDelay', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -14,7 +14,7 @@ describe("deleteMessageAfterDelay", () => {
     jest.useRealTimers();
   });
 
-  test("должен удалить сообщение после задержки", () => {
+  test('должен удалить сообщение после задержки', () => {
     const mockCtx = {
       chat: { id: 123 },
     };
@@ -29,12 +29,12 @@ describe("deleteMessageAfterDelay", () => {
 
     expect(safeTelegramCall).toHaveBeenCalledWith(
       mockCtx,
-      "deleteMessage",
-      [123, 456]
+      'deleteMessage',
+      [123, 456],
     );
   });
 
-  test("должен использовать chatId из callbackQuery если доступен", () => {
+  test('должен использовать chatId из callbackQuery если доступен', () => {
     const mockCtx = {
       callbackQuery: {
         message: {
@@ -51,12 +51,12 @@ describe("deleteMessageAfterDelay", () => {
 
     expect(safeTelegramCall).toHaveBeenCalledWith(
       mockCtx,
-      "deleteMessage",
-      [789, 456]
+      'deleteMessage',
+      [789, 456],
     );
   });
 
-  test("должен использовать дефолтную задержку 4000ms", () => {
+  test('должен использовать дефолтную задержку 4000ms', () => {
     const mockCtx = {
       chat: { id: 123 },
     };
@@ -69,7 +69,7 @@ describe("deleteMessageAfterDelay", () => {
     expect(safeTelegramCall).toHaveBeenCalled();
   });
 
-  test("не должен удалять сообщение если нет chatId", () => {
+  test('не должен удалять сообщение если нет chatId', () => {
     const mockCtx = {};
     const messageId = 456;
 
@@ -80,7 +80,7 @@ describe("deleteMessageAfterDelay", () => {
     expect(safeTelegramCall).not.toHaveBeenCalled();
   });
 
-  test("не должен удалять сообщение если нет messageId", () => {
+  test('не должен удалять сообщение если нет messageId', () => {
     const mockCtx = {
       chat: { id: 123 },
     };
@@ -92,13 +92,13 @@ describe("deleteMessageAfterDelay", () => {
     expect(safeTelegramCall).not.toHaveBeenCalled();
   });
 
-  test("должен игнорировать ошибки при удалении", () => {
+  test('должен игнорировать ошибки при удалении', () => {
     const mockCtx = {
       chat: { id: 123 },
     };
     const messageId = 456;
 
-    safeTelegramCall.mockRejectedValue(new Error("Message not found"));
+    safeTelegramCall.mockRejectedValue(new Error('Message not found'));
 
     deleteMessageAfterDelay(mockCtx, messageId, 1000);
 

@@ -1,13 +1,13 @@
-const { checkTimeAndNotify } = require("../../utils/checkTimeAndNotify");
-const { GlobalState } = require("../../store");
-const { sendPrivateMessage } = require("../../message/sendPrivateMessage");
-const { deleteMessageAfterDelay } = require("../../utils/deleteMessageAfterDelay");
+const { checkTimeAndNotify } = require('../../utils/checkTimeAndNotify');
+const { GlobalState } = require('../../store');
+const { sendPrivateMessage } = require('../../message/sendPrivateMessage');
+const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
 
 // Мокаем зависимости
-jest.mock("../../message/sendPrivateMessage");
-jest.mock("../../utils/deleteMessageAfterDelay");
+jest.mock('../../message/sendPrivateMessage');
+jest.mock('../../utils/deleteMessageAfterDelay');
 
-describe("checkTimeAndNotify", () => {
+describe('checkTimeAndNotify', () => {
   let mockBot;
   const GROUP_CHAT_ID = 789;
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
@@ -43,8 +43,8 @@ describe("checkTimeAndNotify", () => {
     jest.useRealTimers();
   });
 
-  describe("Ранние выходы (не должно отправлять уведомление)", () => {
-    test("не должен отправлять, если матч не начат", async () => {
+  describe('Ранние выходы (не должно отправлять уведомление)', () => {
+    test('не должен отправлять, если матч не начат', async () => {
       GlobalState.setStart(false);
       GlobalState.setCollectionDate(new Date(Date.now() + THREE_HOURS_MS));
 
@@ -54,7 +54,7 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("не должен отправлять, если нет даты сбора", async () => {
+    test('не должен отправлять, если нет даты сбора', async () => {
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(null);
 
@@ -64,7 +64,7 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("не должен отправлять, если уведомление уже отправлено", async () => {
+    test('не должен отправлять, если уведомление уже отправлено', async () => {
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(new Date(Date.now() + THREE_HOURS_MS));
       GlobalState.setNotificationSent(true);
@@ -75,7 +75,7 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("не должен отправлять, если время уже прошло", async () => {
+    test('не должен отправлять, если время уже прошло', async () => {
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(new Date(Date.now() - 1000)); // Прошло 1 секунду назад
 
@@ -85,10 +85,10 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("не должен отправлять, если до начала больше 3 часов", async () => {
+    test('не должен отправлять, если до начала больше 3 часов', async () => {
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(
-        new Date(Date.now() + THREE_HOURS_MS + 60000)
+        new Date(Date.now() + THREE_HOURS_MS + 60000),
       ); // 3 часа 1 минута
 
       await checkTimeAndNotify(mockBot);
@@ -98,16 +98,16 @@ describe("checkTimeAndNotify", () => {
     });
   });
 
-  describe("Успешная отправка уведомления", () => {
-    test("должен отправить уведомление, если до начала ровно 3 часа", async () => {
+  describe('Успешная отправка уведомления', () => {
+    test('должен отправить уведомление, если до начала ровно 3 часа', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([
-        { id: 1001, name: "Игрок 1" },
-        { id: 1002, name: "Игрок 2" },
+        { id: 1001, name: 'Игрок 1' },
+        { id: 1002, name: 'Игрок 2' },
       ]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -123,12 +123,12 @@ describe("checkTimeAndNotify", () => {
       expect(GlobalState.getNotificationSent()).toBe(true);
     });
 
-    test("должен отправить уведомление, если до начала меньше 3 часов", async () => {
+    test('должен отправить уведомление, если до начала меньше 3 часов', async () => {
       const collectionDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 часа
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
-      GlobalState.setPlayers([{ id: 1001, name: "Игрок 1" }]);
-      GlobalState.setLocation("prof");
+      GlobalState.setPlayers([{ id: 1001, name: 'Игрок 1' }]);
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -143,12 +143,12 @@ describe("checkTimeAndNotify", () => {
       expect(GlobalState.getNotificationSent()).toBe(true);
     });
 
-    test("должен отправить уведомление для обычной локации (prof)", async () => {
+    test('должен отправить уведомление для обычной локации (prof)', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
-      GlobalState.setPlayers([{ id: 1001, name: "Игрок 1" }]);
-      GlobalState.setLocation("prof");
+      GlobalState.setPlayers([{ id: 1001, name: 'Игрок 1' }]);
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -159,17 +159,17 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("Матч начнётся через 3 часа!");
-      expect(sentMessage[1]).toContain("Профилакторий");
-      expect(sentMessage[1]).toContain("Оплатить участие");
+      expect(sentMessage[1]).toContain('Матч начнётся через 3 часа!');
+      expect(sentMessage[1]).toContain('Профилакторий');
+      expect(sentMessage[1]).toContain('Оплатить участие');
     });
 
-    test("должен отправить уведомление для турнира (tr)", async () => {
+    test('должен отправить уведомление для турнира (tr)', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
-      GlobalState.setPlayers([{ id: 1001, name: "Игрок 1" }]);
-      GlobalState.setLocation("tr");
+      GlobalState.setPlayers([{ id: 1001, name: 'Игрок 1' }]);
+      GlobalState.setLocation('tr');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -180,22 +180,22 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("Турнир РФОИ");
-      expect(sentMessage[1]).toContain("Начало через 3 часа!");
-      expect(sentMessage[1]).toContain("Красное Знамя");
-      expect(sentMessage[1]).not.toContain("Оплатить участие");
+      expect(sentMessage[1]).toContain('Турнир РФОИ');
+      expect(sentMessage[1]).toContain('Начало через 3 часа!');
+      expect(sentMessage[1]).toContain('Красное Знамя');
+      expect(sentMessage[1]).not.toContain('Оплатить участие');
     });
 
-    test("должен отправить личные сообщения всем игрокам", async () => {
+    test('должен отправить личные сообщения всем игрокам', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([
-        { id: 1001, name: "Игрок 1" },
-        { id: 1002, name: "Игрок 2" },
-        { id: 1003, name: "Игрок 3" },
+        { id: 1001, name: 'Игрок 1' },
+        { id: 1002, name: 'Игрок 2' },
+        { id: 1003, name: 'Игрок 3' },
       ]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -209,29 +209,29 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).toHaveBeenCalledWith(
         mockBot,
         1001,
-        expect.stringContaining("Матч начнётся через 3 часа!"),
-        expect.any(Object)
+        expect.stringContaining('Матч начнётся через 3 часа!'),
+        expect.any(Object),
       );
       expect(sendPrivateMessage).toHaveBeenCalledWith(
         mockBot,
         1002,
-        expect.stringContaining("Матч начнётся через 3 часа!"),
-        expect.any(Object)
+        expect.stringContaining('Матч начнётся через 3 часа!'),
+        expect.any(Object),
       );
       expect(sendPrivateMessage).toHaveBeenCalledWith(
         mockBot,
         1003,
-        expect.stringContaining("Матч начнётся через 3 часа!"),
-        expect.any(Object)
+        expect.stringContaining('Матч начнётся через 3 часа!'),
+        expect.any(Object),
       );
     });
 
-    test("должен вызвать deleteMessageAfterDelay с правильными параметрами", async () => {
+    test('должен вызвать deleteMessageAfterDelay с правильными параметрами', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -248,16 +248,16 @@ describe("checkTimeAndNotify", () => {
           chat: { id: GROUP_CHAT_ID },
         }),
         123,
-        THREE_HOURS_MS
+        THREE_HOURS_MS,
       );
     });
 
-    test("должен отправить сообщение с правильными опциями", async () => {
+    test('должен отправить сообщение с правильными опциями', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -269,24 +269,24 @@ describe("checkTimeAndNotify", () => {
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
       expect(sentMessage[2]).toEqual({
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         link_preview_options: {
-          url: "https://vk.com/ramafootball",
+          url: 'https://vk.com/ramafootball',
           prefer_large_media: true,
         },
       });
     });
   });
 
-  describe("Обработка ошибок", () => {
-    test("должен установить флаг notificationSent при ошибке отправки в группу", async () => {
+  describe('Обработка ошибок', () => {
+    test('должен установить флаг notificationSent при ошибке отправки в группу', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
-      const error = new Error("Ошибка отправки");
+      const error = new Error('Ошибка отправки');
       mockBot.telegram.getChat.mockRejectedValue(error);
 
       await checkTimeAndNotify(mockBot);
@@ -296,14 +296,14 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("должен установить флаг notificationSent при ошибке sendMessage", async () => {
+    test('должен установить флаг notificationSent при ошибке sendMessage', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
-      const error = new Error("Ошибка отправки");
+      const error = new Error('Ошибка отправки');
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockRejectedValue(error);
 
@@ -313,15 +313,15 @@ describe("checkTimeAndNotify", () => {
       expect(sendPrivateMessage).not.toHaveBeenCalled();
     });
 
-    test("должен обработать ошибку при отправке личного сообщения и установить флаг", async () => {
+    test('должен обработать ошибку при отправке личного сообщения и установить флаг', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([
-        { id: 1001, name: "Игрок 1" },
-        { id: 1002, name: "Игрок 2" },
+        { id: 1001, name: 'Игрок 1' },
+        { id: 1002, name: 'Игрок 2' },
       ]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -332,7 +332,7 @@ describe("checkTimeAndNotify", () => {
       // Первое личное сообщение успешно, второе с ошибкой
       sendPrivateMessage
         .mockResolvedValueOnce({ message_id: 1 })
-        .mockRejectedValueOnce(new Error("Ошибка отправки"));
+        .mockRejectedValueOnce(new Error('Ошибка отправки'));
 
       await checkTimeAndNotify(mockBot);
 
@@ -342,13 +342,13 @@ describe("checkTimeAndNotify", () => {
     });
   });
 
-  describe("Проверка граничных случаев", () => {
-    test("должен работать с пустым списком игроков", async () => {
+  describe('Проверка граничных случаев', () => {
+    test('должен работать с пустым списком игроков', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -363,12 +363,12 @@ describe("checkTimeAndNotify", () => {
       expect(GlobalState.getNotificationSent()).toBe(true);
     });
 
-    test("должен работать с неизвестной локацией (использует prof по умолчанию)", async () => {
+    test('должен работать с неизвестной локацией (использует prof по умолчанию)', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("unknown_location");
+      GlobalState.setLocation('unknown_location');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -379,10 +379,10 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("Профилакторий");
+      expect(sentMessage[1]).toContain('Профилакторий');
     });
 
-    test("должен работать, если локация не установлена (null)", async () => {
+    test('должен работать, если локация не установлена (null)', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
@@ -398,15 +398,15 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("Профилакторий");
+      expect(sentMessage[1]).toContain('Профилакторий');
     });
 
-    test("не должен отправлять, если timeDiff равен 0", async () => {
+    test('не должен отправлять, если timeDiff равен 0', async () => {
       const collectionDate = new Date(Date.now());
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       await checkTimeAndNotify(mockBot);
 
@@ -414,12 +414,12 @@ describe("checkTimeAndNotify", () => {
       expect(GlobalState.getNotificationSent()).toBe(false);
     });
 
-    test("не должен отправлять, если timeDiff чуть больше 3 часов", async () => {
+    test('не должен отправлять, если timeDiff чуть больше 3 часов', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS + 1);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       await checkTimeAndNotify(mockBot);
 
@@ -428,15 +428,15 @@ describe("checkTimeAndNotify", () => {
     });
   });
 
-  describe("Проверка содержимого сообщений", () => {
-    test("должен содержать правильную дату в сообщении", async () => {
+  describe('Проверка содержимого сообщений', () => {
+    test('должен содержать правильную дату в сообщении', async () => {
       const collectionDate = new Date(2024, 11, 25, 20, 0); // 25 декабря 2024, 20:00
       jest.setSystemTime(new Date(2024, 11, 25, 17, 0)); // 17:00
 
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -447,16 +447,16 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("25 декабря");
-      expect(sentMessage[1]).toContain("20:00");
+      expect(sentMessage[1]).toContain('25 декабря');
+      expect(sentMessage[1]).toContain('20:00');
     });
 
-    test("должен содержать все необходимые ссылки", async () => {
+    test('должен содержать все необходимые ссылки', async () => {
       const collectionDate = new Date(Date.now() + THREE_HOURS_MS);
       GlobalState.setStart(true);
       GlobalState.setCollectionDate(collectionDate);
       GlobalState.setPlayers([]);
-      GlobalState.setLocation("prof");
+      GlobalState.setLocation('prof');
 
       mockBot.telegram.getChat.mockResolvedValue({ id: GROUP_CHAT_ID });
       mockBot.telegram.sendMessage.mockResolvedValue({
@@ -467,8 +467,8 @@ describe("checkTimeAndNotify", () => {
       await checkTimeAndNotify(mockBot);
 
       const sentMessage = mockBot.telegram.sendMessage.mock.calls[0];
-      expect(sentMessage[1]).toContain("football.pavelsolntsev.ru");
-      expect(sentMessage[1]).toContain("vk.com/ramafootball");
+      expect(sentMessage[1]).toContain('football.pavelsolntsev.ru');
+      expect(sentMessage[1]).toContain('vk.com/ramafootball');
     });
   });
 });

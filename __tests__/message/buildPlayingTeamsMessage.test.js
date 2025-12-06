@@ -52,7 +52,7 @@ describe('buildPlayingTeamsMessage', () => {
 
       expect(message1).toContain('Команда 1');
       expect(message1).toContain('Команда 2');
-      
+
       expect(message2).toContain('Команда 3');
       expect(message2).toContain('Команда 4');
     });
@@ -63,7 +63,7 @@ describe('buildPlayingTeamsMessage', () => {
 
       expect(message012).toContain('🔴');
       expect(message012).toContain('🔵');
-      
+
       expect(message23).toContain('🟢');
       expect(message23).toContain('🟡');
     });

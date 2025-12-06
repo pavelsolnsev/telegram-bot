@@ -1,7 +1,7 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { divideIntoTeams } = require("../utils/divideIntoTeams");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage");
-const { sendTeamsMessage } = require("../message/sendTeamsMessage");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { divideIntoTeams } = require('../utils/divideIntoTeams');
+const { buildTeamsMessage } = require('../message/buildTeamsMessage');
+const { sendTeamsMessage } = require('../message/sendTeamsMessage');
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^tm(2|3|4)$/i, async (ctx) => {
@@ -12,26 +12,26 @@ module.exports = (bot, GlobalState) => {
 
     // Проверка на админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const msg = await ctx.reply("⛔ Нет прав!");
+      const msg = await ctx.reply('⛔ Нет прав!');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     if (!isTeamCommandAllowed) {
-      const msg = await ctx.reply("⛔ Команда tm запрещена, пока матчи между командами не завершён (используйте e!).");
+      const msg = await ctx.reply('⛔ Команда tm запрещена, пока матчи между командами не завершён (используйте e!).');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     // Проверка, начат ли матч между командами
     if (playingTeams) {
-      const msg = await ctx.reply("⛔ Нельзя менять составы команд во время матча!");
+      const msg = await ctx.reply('⛔ Нельзя менять составы команд во время матча!');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     const numTeams = parseInt(ctx.match[1], 10);
-    let players = [...GlobalState.getPlayers()];
+    const players = [...GlobalState.getPlayers()];
 
     if (!players || players.length === 0) {
-      const message = await ctx.reply("⚠️ Нет игроков для создания команд!");
+      const message = await ctx.reply('⚠️ Нет игроков для создания команд!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -41,14 +41,14 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     // Распределяем игроков по рейтингу
     const teams = divideIntoTeams(players, numTeams);
     const teamStats = GlobalState.getTeamStats();
-    const teamsMessage = buildTeamsMessage(teams, "Таблица", teamStats, teams);
+    const teamsMessage = buildTeamsMessage(teams, 'Таблица', teamStats, teams);
 
     GlobalState.setTeams(teams);
     GlobalState.setTeamsBase(teams);

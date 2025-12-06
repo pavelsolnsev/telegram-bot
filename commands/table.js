@@ -1,9 +1,7 @@
-const { Markup } = require("telegraf");
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage");
-const { sendPrivateMessage } = require("../message/sendPrivateMessage");
-const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
-const { safeTelegramCall } = require("../utils/telegramUtils");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { buildTeamsMessage } = require('../message/buildTeamsMessage');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage');
+const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 
 module.exports = (bot, GlobalState) => {
   // Функция для формирования и отправки таблицы
@@ -18,7 +16,7 @@ module.exports = (bot, GlobalState) => {
     const isStatsInitialized = GlobalState.getIsStatsInitialized();
 
     if (!isMatchStarted) {
-      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Матч ещё не начат!");
+      const sentMessage = await sendPrivateMessage(bot, userId, '⚠️ Матч ещё не начат!');
       if (sentMessage && sentMessage.message_id) {
         // Удаляем сообщение через 6 секунд
         setTimeout(async () => {
@@ -33,7 +31,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!GlobalState.getIsTableAllowed()) {
-      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Составы ещё не готовы.");
+      const sentMessage = await sendPrivateMessage(bot, userId, '⚠️ Составы ещё не готовы.');
       if (sentMessage && sentMessage.message_id) {
         // Удаляем сообщение через 6 секунд
         setTimeout(async () => {
@@ -48,7 +46,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!isTeamsDivided || teamsBase.length === 0) {
-      const sentMessage = await sendPrivateMessage(bot, userId, "⚠️ Команды ещё не сформированы!");
+      const sentMessage = await sendPrivateMessage(bot, userId, '⚠️ Команды ещё не сформированы!');
       if (sentMessage && sentMessage.message_id) {
         // Удаляем сообщение через 6 секунд
         setTimeout(async () => {
@@ -70,42 +68,42 @@ module.exports = (bot, GlobalState) => {
 
       const tableMessage = buildTeamsMessage(
         teamsBase,
-        "Таблица текущих результатов",
+        'Таблица текущих результатов',
         teamStats,
         teamsForDisplay,
         null,
-        showRatings
+        showRatings,
       );
 
-      const sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: "HTML" });
+      const sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: 'HTML' });
       if (sent && sent.message_id) {
         deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
       }
     } catch (error) {
-      console.error("Ошибка при формировании таблицы:", error);
+      console.error('Ошибка при формировании таблицы:', error);
       throw error;
     }
   };
 
   // Обработчик кнопки "Таблица"
-  bot.action("show_table", async (ctx) => {
+  bot.action('show_table', async (ctx) => {
     const userId = ctx.from.id;
 
-    await safeAnswerCallback(ctx, "📋 Отправляю таблицу в личные сообщения бота");
+    await safeAnswerCallback(ctx, '📋 Отправляю таблицу в личные сообщения бота');
 
     try {
       await sendTable(ctx, userId);
-      await safeAnswerCallback(ctx, "✅ Таблица отправлена в личные сообщения!");
+      await safeAnswerCallback(ctx, '✅ Таблица отправлена в личные сообщения!');
     } catch (error) {
       const errorCode = error.response?.error_code;
-      const errorDescription = error.response?.description || "";
-      
-      if (errorCode === 403 || errorDescription.includes("bot was blocked")) {
-        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
-      } else if (errorCode === 400 && (errorDescription.includes("chat not found") || errorDescription.includes("have no access"))) {
-        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
+      const errorDescription = error.response?.description || '';
+
+      if (errorCode === 403 || errorDescription.includes('bot was blocked')) {
+        await safeAnswerCallback(ctx, '⚠️ Начните диалог с ботом в личных сообщениях или нажми /start');
+      } else if (errorCode === 400 && (errorDescription.includes('chat not found') || errorDescription.includes('have no access'))) {
+        await safeAnswerCallback(ctx, '⚠️ Начните диалог с ботом в личных сообщениях или нажми /start');
       } else {
-        console.error("Ошибка при отправке таблицы:", error);
+        console.error('Ошибка при отправке таблицы:', error);
         await safeAnswerCallback(ctx, "⚠️ Ошибка при отправке. Напишите боту команду 'таблица' в личных сообщениях.");
       }
     }
@@ -125,23 +123,23 @@ module.exports = (bot, GlobalState) => {
 
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     // Проверка условий
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч ещё не начат!");
+      const message = await ctx.reply('⚠️ Матч ещё не начат!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!GlobalState.getIsTableAllowed()) {
-      const msg = await ctx.reply("⚠️ Составы ещё не готовы.");
+      const msg = await ctx.reply('⚠️ Составы ещё не готовы.');
       return deleteMessageAfterDelay(ctx, msg.message_id, 6000);
     }
 
     if (!isTeamsDivided || teamsBase.length === 0) {
-      const message = await ctx.reply("⚠️ Команды ещё не сформированы!");
+      const message = await ctx.reply('⚠️ Команды ещё не сформированы!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -154,20 +152,20 @@ module.exports = (bot, GlobalState) => {
 
       const tableMessage = buildTeamsMessage(
         teamsBase,
-        "Таблица текущих результатов",
+        'Таблица текущих результатов',
         teamStats,
         teamsForDisplay,
         null,
-        showRatings
+        showRatings,
       );
 
       // Отправляем сообщение
-      const sentMessage = await ctx.reply(tableMessage, { parse_mode: "HTML" });
+      const sentMessage = await ctx.reply(tableMessage, { parse_mode: 'HTML' });
 
       deleteMessageAfterDelay(ctx, sentMessage.message_id, 120000);
     } catch (error) {
-      console.error("Ошибка при формировании таблицы:", error);
-      const message = await ctx.reply("⚠️ Не удалось сформировать таблицу.");
+      console.error('Ошибка при формировании таблицы:', error);
+      const message = await ctx.reply('⚠️ Не удалось сформировать таблицу.');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });

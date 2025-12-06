@@ -5,13 +5,13 @@ const safeTelegramCall = async (ctx, method, payload, retries = 3) => {
     try {
       return await ctx.telegram[method](...payload);
     } catch (error) {
-      const description = error?.response?.description || "";
+      const description = error?.response?.description || '';
       // Игнорируем ошибки, если сообщение не изменилось или не найдено
       if (
-        description.includes("message is not modified") ||
-        description.includes("message to edit not found") ||
-        description.includes("message to delete not found") ||
-        description.includes("Bad Request: message to delete not found")
+        description.includes('message is not modified') ||
+        description.includes('message to edit not found') ||
+        description.includes('message to delete not found') ||
+        description.includes('Bad Request: message to delete not found')
       ) {
         return null;
       }

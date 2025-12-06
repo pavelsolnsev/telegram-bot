@@ -1,5 +1,5 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { sendPlayerList } = require('../utils/sendPlayerList');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "p<номер игрока>" (помечает игрока как оплатившего)
@@ -10,30 +10,30 @@ module.exports = (bot, GlobalState) => {
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await ctx.reply('⚠️ Матч не начат!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     const playerNumber = Number(ctx.message.text.match(/^p(\d+)$/i)[1]);
 
     if (playerNumber <= 0 || playerNumber > players.length) {
-      const message = await ctx.reply("⚠️ Неверный номер игрока!");
+      const message = await ctx.reply('⚠️ Неверный номер игрока!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const playerIndex = playerNumber - 1;
     const player = players[playerIndex];
-    let displayName = player.username ? `${player.name} (${player.username})` : player.name;
+    const displayName = player.username ? `${player.name} (${player.username})` : player.name;
 
     if (!player.paid) {
       player.paid = true;
@@ -56,31 +56,31 @@ module.exports = (bot, GlobalState) => {
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await ctx.reply('⚠️ Матч не начат!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const playerNumber = Number(ctx.message.text.match(/^u(\d+)$/i)[1]);
 
     if (playerNumber <= 0 || playerNumber > players.length) {
-      const message = await ctx.reply("⚠️ Неверный номер игрока!");
+      const message = await ctx.reply('⚠️ Неверный номер игрока!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const playerIndex = playerNumber - 1;
     const player = players[playerIndex];
-    let displayName = player.username ? `${player.name} (${player.username})` : player.name;
-    
+    const displayName = player.username ? `${player.name} (${player.username})` : player.name;
+
     if (player.paid) {
       player.paid = false;
       GlobalState.setPlayers(players); // Обновляем список игроков

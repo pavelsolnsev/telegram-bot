@@ -1,15 +1,15 @@
-const { Markup } = require("telegraf");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage");
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../utils/telegramUtils");
+const { Markup } = require('telegraf');
+const { buildTeamsMessage } = require('../message/buildTeamsMessage');
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../utils/telegramUtils');
 
 // Проверка прав администратора
 const checkAdminRights = async (ctx, ADMIN_ID) => {
   await ctx.deleteMessage().catch(() => {});
   if (!ADMIN_ID.includes(ctx.from.id)) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      "⛔ У вас нет прав для этой команды.",
+      '⛔ У вас нет прав для этой команды.',
     ]);
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
     return false;
@@ -20,9 +20,9 @@ const checkAdminRights = async (ctx, ADMIN_ID) => {
 // Проверка, начат ли матч
 const checkMatchStarted = async (ctx, isMatchStarted) => {
   if (!isMatchStarted) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      "⚠️ Матч не начат!",
+      '⚠️ Матч не начат!',
     ]);
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
     return false;
@@ -34,17 +34,17 @@ const checkMatchStarted = async (ctx, isMatchStarted) => {
 const getMatchResult = (team1, team2) => {
   const team1Goals = team1.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
   const team2Goals = team2.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
   return team1Goals > team2Goals
-    ? "team1"
+    ? 'team1'
     : team1Goals < team2Goals
-    ? "team2"
-    : "draw";
+      ? 'team2'
+      : 'draw';
 };
 
 // Обновление статистики команды
@@ -54,7 +54,7 @@ const updateTeamStats = (
   isWin,
   isDraw,
   goalsScored,
-  goalsConceded
+  goalsConceded,
 ) => {
   if (!teamStats[teamKey]) {
     teamStats[teamKey] = {
@@ -97,7 +97,7 @@ const updatePlayerStats = (
   allTeamsBase,
   teamIndex,
   teamGoals,
-  opponentGoals
+  opponentGoals,
 ) => {
   return team.map((player, index) => {
     const goals = Number(player.goals) || 0;
@@ -141,54 +141,54 @@ const updateTeamsMessage = async (
   ctx,
   GlobalState,
   allTeamsBase,
-  teamStats
+  teamStats,
 ) => {
   const updatedMessage = buildTeamsMessage(
     allTeamsBase,
-    "Таблица",
+    'Таблица',
     teamStats,
     GlobalState.getTeams(),
     null,
-    false
+    false,
   );
   const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
   const isTableAllowed = GlobalState.getIsTableAllowed();
   const playingTeams = GlobalState.getPlayingTeams();
-  
+
   const buttons = [];
-  
+
   if (isTableAllowed) {
     // Если составы объявлены - показываем кнопку выбора команд
-    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_callback")]);
+    buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_callback')]);
   } else {
     // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
-    buttons.push([Markup.button.callback("🎯 Выбрать команды для матча", "select_teams_blocked")]);
-    buttons.push([Markup.button.callback("📢 Объявить составы", "announce_teams")]);
+    buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_blocked')]);
+    buttons.push([Markup.button.callback('📢 Объявить составы', 'announce_teams')]);
   }
   // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
   if (!playingTeams) {
-    buttons.push([Markup.button.callback("🔄 Сменить игрока", "change_player_callback")]);
+    buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
   }
-  
+
   const inlineKeyboard = Markup.inlineKeyboard(buttons);
-  
+
   if (lastTeamsMessage) {
-    await safeTelegramCall(ctx, "editMessageText", [
+    await safeTelegramCall(ctx, 'editMessageText', [
       lastTeamsMessage.chatId,
       lastTeamsMessage.messageId,
       null,
       updatedMessage,
       {
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         reply_markup: inlineKeyboard.reply_markup,
       },
     ]);
   } else {
-    const sentMessage = await safeTelegramCall(ctx, "sendMessage", [
+    const sentMessage = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
       updatedMessage,
       {
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         reply_markup: inlineKeyboard.reply_markup,
       },
     ]);

@@ -1,10 +1,10 @@
-const { Markup } = require("telegraf");
-const { updatePlayingTeamsMessage } = require("../message/updatePlayingTeamsMessage");
-const { buildPlayingTeamsMessage } = require("../message/buildPlayingTeamsMessage");
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../utils/telegramUtils");
-const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
-const { createTeamButtons } = require("../buttons/createTeamButtons");
+const { Markup } = require('telegraf');
+const { updatePlayingTeamsMessage } = require('../message/updatePlayingTeamsMessage');
+const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessage');
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../utils/telegramUtils');
+const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
+const { createTeamButtons } = require('../buttons/createTeamButtons');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
@@ -15,17 +15,17 @@ module.exports = (bot, GlobalState) => {
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ У вас нет прав для этой команды.",
+        '⛔ У вас нет прав для этой команды.',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -35,32 +35,32 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    let team =
+    const team =
       teamIndex === playingTeams.teamIndex1
         ? playingTeams.team1
         : teamIndex === playingTeams.teamIndex2
-        ? playingTeams.team2
-        : null;
+          ? playingTeams.team2
+          : null;
 
     if (!team) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Команда не найдена!",
+        '⛔ Команда не найдена!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Игрок не найден!",
+        '⛔ Игрок не найден!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -69,7 +69,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
     ]);
@@ -84,17 +84,17 @@ module.exports = (bot, GlobalState) => {
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ У вас нет прав для этой команды.",
+        '⛔ У вас нет прав для этой команды.',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -104,32 +104,32 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    let team =
+    const team =
       teamIndex === playingTeams.teamIndex1
         ? playingTeams.team1
         : teamIndex === playingTeams.teamIndex2
-        ? playingTeams.team2
-        : null;
+          ? playingTeams.team2
+          : null;
 
     if (!team) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Команда не найдена!",
+        '⛔ Команда не найдена!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Игрок не найден!",
+        '⛔ Игрок не найден!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -137,7 +137,7 @@ module.exports = (bot, GlobalState) => {
     if (team[playerIndex].goals && team[playerIndex].goals > 0) {
       team[playerIndex].goals -= 1;
     } else {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         `⚠️ У ${team[playerIndex].name} уже 0 голов.`,
       ]);
@@ -147,7 +147,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
       `⚽ Гол удалён у ${team[playerIndex].name}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
     ]);
@@ -161,27 +161,27 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ У вас нет прав для этой команды.",
+        '⛔ У вас нет прав для этой команды.',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!playingTeams) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -189,27 +189,27 @@ module.exports = (bot, GlobalState) => {
 
     const teamIndex = parseInt(ctx.match[1], 10);
     const playerIndex = parseInt(ctx.match[2], 10);
-    
-    let team =
+
+    const team =
       teamIndex === playingTeams.teamIndex1
         ? playingTeams.team1
         : teamIndex === playingTeams.teamIndex2
-        ? playingTeams.team2
-        : null;
+          ? playingTeams.team2
+          : null;
 
     if (!team) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Команда не найдена!",
+        '⛔ Команда не найдена!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Игрок не найден!",
+        '⛔ Игрок не найден!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -218,7 +218,7 @@ module.exports = (bot, GlobalState) => {
     if (team[playerIndex].goals && team[playerIndex].goals > 0) {
       team[playerIndex].goals -= 1;
     } else {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         `⚠️ У ${team[playerIndex].name || team[playerIndex].username} уже 0 голов.`,
       ]);
@@ -229,7 +229,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
       `⚽ Гол удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
     ]);
@@ -243,18 +243,18 @@ module.exports = (bot, GlobalState) => {
     const isMatchStarted = GlobalState.getStart();
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ У вас нет прав для этой команды.",
+        '⛔ У вас нет прав для этой команды.',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -265,34 +265,34 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!playingTeams) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    let team =
+    const team =
       teamIndex === playingTeams.teamIndex1
         ? playingTeams.team1
         : teamIndex === playingTeams.teamIndex2
-        ? playingTeams.team2
-        : null;
+          ? playingTeams.team2
+          : null;
 
     if (!team) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Команда не найдена!",
+        '⛔ Команда не найдена!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!team[playerIndex]) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Игрок не найден!",
+        '⛔ Игрок не найден!',
       ]);
       await safeAnswerCallback(ctx);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -303,7 +303,7 @@ module.exports = (bot, GlobalState) => {
 
     await updatePlayingTeamsMessage(ctx);
 
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
       `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
     ]);
@@ -320,8 +320,8 @@ module.exports = (bot, GlobalState) => {
         buttons.push(
           Markup.button.callback(
             `${teamColor} ${index + 1}. ${displayName} ⚽${player.goals}`,
-            `cancel_goal_${teamIndex}_${index}`
-          )
+            `cancel_goal_${teamIndex}_${index}`,
+          ),
         );
       }
     });
@@ -334,23 +334,23 @@ module.exports = (bot, GlobalState) => {
   };
 
   // Обработчик кнопки "Управление"
-  bot.action("management_menu", async (ctx) => {
+  bot.action('management_menu', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
 
     // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     // Проверка условий
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -359,10 +359,10 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!playingTeams) {
-      await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -371,80 +371,80 @@ module.exports = (bot, GlobalState) => {
     }
 
     // Показываем меню управления
-    const menuMessage = "⚙️ <b>Меню управления</b>\n\nВыберите действие:";
+    const menuMessage = '⚙️ <b>Меню управления</b>\n\nВыберите действие:';
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     const messageId = ctx.callbackQuery?.message?.message_id;
-    
+
     // Определяем текст кнопки в зависимости от состояния
     const isMatchFinished = GlobalState.getIsMatchFinished();
-    let endButtonText = "";
-    
+    let endButtonText = '';
+
     if (isMatchFinished) {
-      endButtonText = "⏪ Вернуться в прошлый матч";
+      endButtonText = '⏪ Вернуться в прошлый матч';
     } else if (playingTeams) {
-      endButtonText = "🚫 Отменить текущий матч";
+      endButtonText = '🚫 Отменить текущий матч';
     } else {
-      endButtonText = "⏪ Управление матчами";
+      endButtonText = '⏪ Управление матчами';
     }
-    
+
     try {
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "editMessageText", [
+        await safeTelegramCall(ctx, 'editMessageText', [
           chatId,
           messageId,
           null,
           menuMessage,
           {
-            parse_mode: "HTML",
+            parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
-              [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
-              [Markup.button.callback(endButtonText, "end_match")],
-              [Markup.button.callback("🏁 Завершить матч", "finish_match")],
-              [Markup.button.callback("⬅️ Назад", "management_back")],
+              [Markup.button.callback('❌ Отменить гол', 'cancel_goal_menu')],
+              [Markup.button.callback(endButtonText, 'end_match')],
+              [Markup.button.callback('🏁 Завершить матч', 'finish_match')],
+              [Markup.button.callback('⬅️ Назад', 'management_back')],
             ]).reply_markup,
           },
         ]);
       }
-      await safeAnswerCallback(ctx, "⚙️ Меню управления");
+      await safeAnswerCallback(ctx, '⚙️ Меню управления');
     } catch (error) {
       // Если не удалось отредактировать сообщение, отправляем новое
       if (chatId) {
-        await safeTelegramCall(ctx, "sendMessage", [
+        await safeTelegramCall(ctx, 'sendMessage', [
           chatId,
           menuMessage,
           {
-            parse_mode: "HTML",
+            parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
-              [Markup.button.callback("❌ Отменить гол", "cancel_goal_menu")],
-              [Markup.button.callback(endButtonText, "end_match")],
-              [Markup.button.callback("🏁 Завершить матч", "finish_match")],
-              [Markup.button.callback("⬅️ Назад", "management_back")],
+              [Markup.button.callback('❌ Отменить гол', 'cancel_goal_menu')],
+              [Markup.button.callback(endButtonText, 'end_match')],
+              [Markup.button.callback('🏁 Завершить матч', 'finish_match')],
+              [Markup.button.callback('⬅️ Назад', 'management_back')],
             ]).reply_markup,
           },
         ]);
       }
-      await safeAnswerCallback(ctx, "⚙️ Меню управления");
+      await safeAnswerCallback(ctx, '⚙️ Меню управления');
     }
   });
 
   // Обработчик кнопки "Отменить гол" - показывает список игроков
-  bot.action("cancel_goal_menu", async (ctx) => {
+  bot.action('cancel_goal_menu', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
 
     // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     // Проверка условий
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -453,10 +453,10 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!playingTeams) {
-      await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -465,9 +465,9 @@ module.exports = (bot, GlobalState) => {
     }
 
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-    const teamColors = ["🔴", "🔵", "🟢", "🟡"];
-    const color1 = teamColors[teamIndex1] || "⚽";
-    const color2 = teamColors[teamIndex2] || "⚽";
+    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
+    const color1 = teamColors[teamIndex1] || '⚽';
+    const color2 = teamColors[teamIndex2] || '⚽';
 
     // Создаем кнопки для игроков с голами
     const team1Buttons = createCancelGoalButtons(team1, teamIndex1, color1);
@@ -475,26 +475,26 @@ module.exports = (bot, GlobalState) => {
 
     // Объединяем кнопки
     const allButtons = [...team1Buttons, ...team2Buttons];
-    
+
     // Добавляем кнопку "Назад"
     if (allButtons.length === 0) {
-      allButtons.push([Markup.button.callback("⚠️ Нет игроков с голами", "noop")]);
+      allButtons.push([Markup.button.callback('⚠️ Нет игроков с голами', 'noop')]);
     }
-    allButtons.push([Markup.button.callback("⬅️ Назад к управлению", "management_menu")]);
+    allButtons.push([Markup.button.callback('⬅️ Назад к управлению', 'management_menu')]);
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     const messageId = ctx.callbackQuery?.message?.message_id;
-    const cancelGoalMessage = "❌ <b>Отменить гол</b>\n\nВыберите игрока:";
+    const cancelGoalMessage = '❌ <b>Отменить гол</b>\n\nВыберите игрока:';
 
     try {
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "editMessageText", [
+        await safeTelegramCall(ctx, 'editMessageText', [
           chatId,
           messageId,
           null,
           cancelGoalMessage,
           {
-            parse_mode: "HTML",
+            parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
           },
         ]);
@@ -503,11 +503,11 @@ module.exports = (bot, GlobalState) => {
     } catch (error) {
       // Если не удалось отредактировать сообщение, отправляем новое
       if (chatId) {
-        await safeTelegramCall(ctx, "sendMessage", [
+        await safeTelegramCall(ctx, 'sendMessage', [
           chatId,
           cancelGoalMessage,
           {
-            parse_mode: "HTML",
+            parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
           },
         ]);
@@ -518,20 +518,20 @@ module.exports = (bot, GlobalState) => {
 
 
   // Обработчик кнопки "Назад" - возвращает к основному меню
-  bot.action("management_back", async (ctx) => {
+  bot.action('management_back', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     if (!playingTeams) {
-      await safeAnswerCallback(ctx, "⛔ Нет активного матча!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⛔ Нет активного матча!",
+        '⛔ Нет активного матча!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -554,7 +554,7 @@ module.exports = (bot, GlobalState) => {
       'playing',
       undefined,
       matchNumber,
-      "playing"
+      'playing',
     );
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
@@ -562,27 +562,27 @@ module.exports = (bot, GlobalState) => {
 
     try {
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "editMessageText", [
+        await safeTelegramCall(ctx, 'editMessageText', [
           chatId,
           messageId,
           null,
           teamsMessage,
           {
-            parse_mode: "HTML",
+            parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               ...team1Buttons,
-              [Markup.button.callback("—", "noop")],
+              [Markup.button.callback('—', 'noop')],
               ...team2Buttons,
               [], // Пустая строка для разделения
-              [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-              [Markup.button.callback("⚙️ Управление", "management_menu")],
+              [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+              [Markup.button.callback('⚙️ Управление', 'management_menu')],
             ]).reply_markup,
           },
         ]);
       }
-      await safeAnswerCallback(ctx, "⬅️ Возврат к основному меню");
+      await safeAnswerCallback(ctx, '⬅️ Возврат к основному меню');
     } catch (error) {
-      await safeAnswerCallback(ctx, "⬅️ Возврат к основному меню");
+      await safeAnswerCallback(ctx, '⬅️ Возврат к основному меню');
     }
   });
 };

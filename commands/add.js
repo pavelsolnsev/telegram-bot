@@ -1,10 +1,10 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
-const { sendPrivateMessage } = require("../message/sendPrivateMessage");
-const { safeTelegramCall } = require("../utils/telegramUtils");
-const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
-const getPlayerStats = require("../database/getPlayerStats");
-const getPlayerByName = require("../database/getPlayerByName");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { sendPlayerList } = require('../utils/sendPlayerList');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage');
+const { safeTelegramCall } = require('../utils/telegramUtils');
+const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
+const getPlayerStats = require('../database/getPlayerStats');
+const getPlayerByName = require('../database/getPlayerByName');
 
 // Функция для проверки наличия эмодзи или Unicode-символов
 const containsEmojiOrUnicode = (text) => {
@@ -21,34 +21,34 @@ const validateAndCreateUser = async (ctx, GlobalState) => {
   let isMember = false;
   try {
     const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
-    isMember = ["member", "administrator", "creator"].includes(chatMember.status);
+    isMember = ['member', 'administrator', 'creator'].includes(chatMember.status);
   } catch (error) {
-    console.error("Ошибка проверки членства в группе:", error);
+    console.error('Ошибка проверки членства в группе:', error);
   }
 
   if (!isMember) {
-    return { error: "⚠️ Чтобы записаться, вступите в группу!" };
+    return { error: '⚠️ Чтобы записаться, вступите в группу!' };
   }
 
   // Формирование объекта user с учётом проверки username и name
-  let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(" ");
-  let userUsername = ctx.from.username ? `${ctx.from.username}` : null;
+  let userName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ');
+  const userUsername = ctx.from.username ? `${ctx.from.username}` : null;
 
   // Проверка имени пользователя на эмодзи и Unicode-символы
   let nameToCheck = userUsername;
-  let displayType = "username";
+  let displayType = 'username';
 
   if (!nameToCheck) {
     nameToCheck = userName;
-    displayType = "name";
+    displayType = 'name';
   }
 
   if (!nameToCheck) {
-    return { error: `⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.` };
+    return { error: '⚠️ У вас не указан ник. Пожалуйста, установите нормальный ник в Telegram.' };
   }
 
   if (containsEmojiOrUnicode(nameToCheck)) {
-    return { error: `⚠️ Недопустимые символы в ${displayType === "username" ? "username" : "имени"}.` };
+    return { error: `⚠️ Недопустимые символы в ${displayType === 'username' ? 'username' : 'имени'}.` };
   }
 
   // Если username валиден, проверяем name и при необходимости заменяем его
@@ -86,52 +86,52 @@ const notifyTeamFormation = async (ctx, bot, GlobalState) => {
 
   const count = players.length;
 
-  if (location === "zalkz") {
+  if (location === 'zalkz') {
     if (count === 16) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         groupId,
-        "🏆 Собрано 2 команды (16 игроков)",
+        '🏆 Собрано 2 команды (16 игроков)',
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 60000);
     } else if (count === 24) {
       const queueLength = queue.length;
       if (queueLength < 6) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           groupId,
           `🏆 3 команды (24 игрока) собрались! Для открытия 4-й команды нужно еще минимум ${6 - queueLength} в очереди.`,
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 60000);
       } else {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           groupId,
-          `🏆 3 команды собрались и очередь уже полна для 4-й! Готовимся к 4 командам.`,
+          '🏆 3 команды собрались и очередь уже полна для 4-й! Готовимся к 4 командам.',
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 60000);
       }
     } else if (count === 32) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         groupId,
-        "🏆 Собрано 4 команды (32 игрока)",
+        '🏆 Собрано 4 команды (32 игрока)',
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 60000);
     }
   } else {
     if (count === 10) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         groupId,
-        "🏆 Собрано 2 команды (10 игроков)!",
+        '🏆 Собрано 2 команды (10 игроков)!',
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 60000);
     } else if (count === 15) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         groupId,
-        "🏆 Собрано 3 команды (15 игроков)!",
+        '🏆 Собрано 3 команды (15 игроков)!',
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 60000);
     } else if (count === 20) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         groupId,
-        "🏆 Собрано 4 команды (20 игроков)!",
+        '🏆 Собрано 4 команды (20 игроков)!',
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 60000);
     }
@@ -139,7 +139,7 @@ const notifyTeamFormation = async (ctx, bot, GlobalState) => {
 };
 
 module.exports = (bot, GlobalState) => {
-  bot.on("text", async (ctx) => {
+  bot.on('text', async (ctx) => {
     // Пропускаем команду reset - она обрабатывается отдельным обработчиком
     if (/^reset$/i.test(ctx.message.text)) {
       return;
@@ -148,14 +148,14 @@ module.exports = (bot, GlobalState) => {
     const players = GlobalState.getPlayers();
     const queue = GlobalState.getQueue();
     const ADMIN_ID = GlobalState.getAdminId();
-    let isMatchStarted = GlobalState.getStart();
-    let MAX_PLAYERS = GlobalState.getMaxPlayers();
+    const isMatchStarted = GlobalState.getStart();
+    const MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
 
     const validationResult = await validateAndCreateUser(ctx, GlobalState);
     if (validationResult.error) {
       await ctx.deleteMessage().catch(() => {});
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         validationResult.error,
       ]);
@@ -164,21 +164,21 @@ module.exports = (bot, GlobalState) => {
 
     const { user: updatedUser, isAdmin, displayName } = validationResult;
 
-    if (ctx.message.text === "+") {
+    if (ctx.message.text === '+') {
       await ctx.deleteMessage().catch(() => {});
 
       if (!isMatchStarted) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (isTeamsDivided) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-          { parse_mode: "HTML" },
+          '⚽ <b>Матч уже стартовал!</b> Запись закрыта.',
+          { parse_mode: 'HTML' },
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -186,9 +186,9 @@ module.exports = (bot, GlobalState) => {
         players.some((p) => p.id === updatedUser.id) ||
         queue.some((p) => p.id === updatedUser.id);
       if (isInList) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Вы уже записаны!",
+          '⚠️ Вы уже записаны!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -203,7 +203,7 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➕ Игрок ${displayName} записался в основной состав`
+              `➕ Игрок ${displayName} записался в основной состав`,
             );
           }
         }
@@ -218,32 +218,32 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➕ Игрок ${displayName} записался в очередь`
+              `➕ Игрок ${displayName} записался в очередь`,
             );
           }
         }
       }
       await sendPlayerList(ctx);
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         `✅ ${displayName} добавлен!`,
       ]);
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
       await notifyTeamFormation(ctx, bot, GlobalState);
-    } else if (ctx.message.text === "-") {
+    } else if (ctx.message.text === '-') {
       await ctx.deleteMessage().catch(() => {});
       if (!isMatchStarted) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (isTeamsDivided) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-          { parse_mode: "HTML" },
+          '⚽ <b>Матч уже стартовал!</b> Запись закрыта.',
+          { parse_mode: 'HTML' },
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -259,7 +259,7 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➖ Игрок ${displayName} вышел из основного состава`
+              `➖ Игрок ${displayName} вышел из основного состава`,
             );
           }
         }
@@ -277,7 +277,7 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             updatedMovedPlayer.id,
-            "🎉 Вы в основном составе!"
+            '🎉 Вы в основном составе!',
           );
           if (!ADMIN_ID.includes(updatedMovedPlayer.id)) {
             for (const adminId of ADMIN_ID) {
@@ -288,13 +288,13 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
+                `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`,
               );
             }
           }
         }
         await sendPlayerList(ctx);
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
           `🚶 ${displayName} вышел!`,
         ]);
@@ -313,38 +313,38 @@ module.exports = (bot, GlobalState) => {
               await sendPrivateMessage(
                 bot,
                 adminId,
-                `➖ Игрок ${displayName} вышел из очереди`
+                `➖ Игрок ${displayName} вышел из очереди`,
               );
             }
           }
           await sendPlayerList(ctx);
-          const message = await safeTelegramCall(ctx, "sendMessage", [
+          const message = await safeTelegramCall(ctx, 'sendMessage', [
             ctx.chat.id,
             `🚶 ${displayName} вышел!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
           await notifyTeamFormation(ctx, bot, GlobalState);
         } else {
-          const message = await safeTelegramCall(ctx, "sendMessage", [
+          const message = await safeTelegramCall(ctx, 'sendMessage', [
             ctx.chat.id,
-            "⚠️ Вы не в списке!",
+            '⚠️ Вы не в списке!',
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
       }
-    } else if (ctx.message.text === "+1test") {
+    } else if (ctx.message.text === '+1test') {
       await ctx.deleteMessage().catch(() => {});
       if (!ADMIN_ID.includes(ctx.from.id)) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⛔ У вас нет прав для этой команды!",
+          '⛔ У вас нет прав для этой команды!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (!isMatchStarted) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -392,8 +392,8 @@ module.exports = (bot, GlobalState) => {
       }
 
       if (addedPlayers.length > 0) {
-        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join("\n")}`;
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const messageText = `✅ Добавлены тестовые игроки:\n${addedPlayers.join('\n')}`;
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
           messageText,
         ]);
@@ -401,53 +401,53 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Все тестовые игроки уже добавлены или нет места!",
+          '⚠️ Все тестовые игроки уже добавлены или нет места!',
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
-    } else if (ctx.message.text.startsWith("+add ")) {
+    } else if (ctx.message.text.startsWith('+add ')) {
       await ctx.deleteMessage().catch(() => {});
       if (!ADMIN_ID.includes(ctx.from.id)) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⛔ У вас нет прав для этой команды!",
+          '⛔ У вас нет прав для этой команды!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (!isMatchStarted) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
       if (isTeamsDivided) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚽ <b>Матч уже стартовал!</b> Запись закрыта.",
-          { parse_mode: "HTML" },
+          '⚽ <b>Матч уже стартовал!</b> Запись закрыта.',
+          { parse_mode: 'HTML' },
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       // Извлекаем имя игрока из команды
       const playerName = ctx.message.text.substring(5).trim(); // "+add " = 5 символов
-      
+
       if (!playerName) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Укажите имя игрока! Использование: +add <имя>",
+          '⚠️ Укажите имя игрока! Использование: +add <имя>',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       // Проверка на эмодзи и Unicode-символы
       if (containsEmojiOrUnicode(playerName)) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Недопустимые символы в имени игрока.",
+          '⚠️ Недопустимые символы в имени игрока.',
         ]);
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -455,7 +455,7 @@ module.exports = (bot, GlobalState) => {
       try {
         // Получаем или создаем игрока по имени
         const playerData = await getPlayerByName(playerName);
-        
+
         const newPlayer = {
           id: playerData.id,
           name: playerData.name || playerData.username,
@@ -470,19 +470,19 @@ module.exports = (bot, GlobalState) => {
 
         // Получаем статистику игрока из базы данных
         const [updatedPlayer] = await getPlayerStats([newPlayer]);
-        
+
         // Обновляем username, если он был изменен в базе данных
         updatedPlayer.username = updatedPlayer.username || updatedPlayer.name || playerName;
         updatedPlayer.name = updatedPlayer.name || updatedPlayer.username || playerName;
-        
+
         // Проверяем, не добавлен ли уже игрок
         const isInList =
           players.some((p) => p.id === updatedPlayer.id) ||
           queue.some((p) => p.id === updatedPlayer.id);
-        
+
         if (isInList) {
           const displayName = updatedPlayer.username || updatedPlayer.name;
-          const message = await safeTelegramCall(ctx, "sendMessage", [
+          const message = await safeTelegramCall(ctx, 'sendMessage', [
             ctx.chat.id,
             `⚠️ Игрок ${displayName} уже в списке!`,
           ]);
@@ -494,14 +494,14 @@ module.exports = (bot, GlobalState) => {
         // Добавляем игрока в список или очередь
         if (players.length < MAX_PLAYERS) {
           players.push(updatedPlayer);
-          const message = await safeTelegramCall(ctx, "sendMessage", [
+          const message = await safeTelegramCall(ctx, 'sendMessage', [
             ctx.chat.id,
             `✅ Игрок ${displayName} добавлен в основной состав!`,
           ]);
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
           queue.push(updatedPlayer);
-          const message = await safeTelegramCall(ctx, "sendMessage", [
+          const message = await safeTelegramCall(ctx, 'sendMessage', [
             ctx.chat.id,
             `✅ Игрок ${displayName} добавлен в очередь!`,
           ]);
@@ -511,20 +511,20 @@ module.exports = (bot, GlobalState) => {
         await sendPlayerList(ctx);
         await notifyTeamFormation(ctx, bot, GlobalState);
       } catch (error) {
-        console.error("Ошибка при добавлении игрока по имени:", error);
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        console.error('Ошибка при добавлении игрока по имени:', error);
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "❌ Ошибка при добавлении игрока. Попробуйте позже.",
+          '❌ Ошибка при добавлении игрока. Попробуйте позже.',
         ]);
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
     }
   });
 
-  bot.action("join_match", async (ctx) => {
-    let players = GlobalState.getPlayers();
-    let queue = GlobalState.getQueue();
-    let MAX_PLAYERS = GlobalState.getMaxPlayers();
+  bot.action('join_match', async (ctx) => {
+    const players = GlobalState.getPlayers();
+    const queue = GlobalState.getQueue();
+    const MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
 
@@ -537,7 +537,7 @@ module.exports = (bot, GlobalState) => {
     const { user: updatedUser, isAdmin, displayName } = validationResult;
 
     if (isTeamsDivided) {
-      await safeAnswerCallback(ctx, "⚽ Матч уже стартовал! Запись закрыта.");
+      await safeAnswerCallback(ctx, '⚽ Матч уже стартовал! Запись закрыта.');
       return;
     }
 
@@ -546,10 +546,10 @@ module.exports = (bot, GlobalState) => {
       queue.some((p) => p.id === updatedUser.id);
 
     if (isInList) {
-      await safeAnswerCallback(ctx, "⚠️ Вы уже записаны!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⚠️ Вы уже записаны!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Вы уже записаны!",
+        '⚠️ Вы уже записаны!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -559,7 +559,7 @@ module.exports = (bot, GlobalState) => {
 
     if (players.length < MAX_PLAYERS) {
       players.push(updatedUser);
-      await safeAnswerCallback(ctx, "✅ Вы добавлены в список!");
+      await safeAnswerCallback(ctx, '✅ Вы добавлены в список!');
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -569,13 +569,13 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             adminId,
-            `➕ Игрок ${displayName} записался в основной состав через кнопку`
+            `➕ Игрок ${displayName} записался в основной состав через кнопку`,
           );
         }
       }
     } else {
       queue.push(updatedUser);
-      await safeAnswerCallback(ctx, "✅ Вы добавлены в очередь!");
+      await safeAnswerCallback(ctx, '✅ Вы добавлены в очередь!');
       if (!isAdmin) {
         for (const adminId of ADMIN_ID) {
           if (isNaN(adminId) || adminId <= 0) {
@@ -585,7 +585,7 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             adminId,
-            `➕ Игрок ${displayName} записался в очередь через кнопку`
+            `➕ Игрок ${displayName} записался в очередь через кнопку`,
           );
         }
       }
@@ -595,12 +595,12 @@ module.exports = (bot, GlobalState) => {
     await notifyTeamFormation(ctx, bot, GlobalState);
   });
 
-  bot.action("leave_match", async (ctx) => {
-    let players = GlobalState.getPlayers();
-    let queue = GlobalState.getQueue();
+  bot.action('leave_match', async (ctx) => {
+    const players = GlobalState.getPlayers();
+    const queue = GlobalState.getQueue();
     const isTeamsDivided = GlobalState.getDivided();
     const ADMIN_ID = GlobalState.getAdminId();
-    let isMatchStarted = GlobalState.getStart();
+    const isMatchStarted = GlobalState.getStart();
 
     const validationResult = await validateAndCreateUser(ctx, GlobalState);
     if (validationResult.error) {
@@ -611,10 +611,10 @@ module.exports = (bot, GlobalState) => {
     const { user: updatedUser, isAdmin, displayName } = validationResult;
 
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        "⚠️ Матч не начат!",
+        '⚠️ Матч не начат!',
       ]);
       if (message) {
         deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -623,7 +623,7 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (isTeamsDivided) {
-      await safeAnswerCallback(ctx, "⚽ Матч уже стартовал! Запись закрыта.");
+      await safeAnswerCallback(ctx, '⚽ Матч уже стартовал! Запись закрыта.');
       return;
     }
 
@@ -639,7 +639,7 @@ module.exports = (bot, GlobalState) => {
           await sendPrivateMessage(
             bot,
             adminId,
-            `➖ Игрок ${displayName} вышел из основного состава через кнопку`
+            `➖ Игрок ${displayName} вышел из основного состава через кнопку`,
           );
         }
       }
@@ -657,7 +657,7 @@ module.exports = (bot, GlobalState) => {
         await sendPrivateMessage(
           bot,
           updatedMovedPlayer.id,
-          "🎉 Вы в основном составе!"
+          '🎉 Вы в основном составе!',
         );
         if (!ADMIN_ID.includes(updatedMovedPlayer.id)) {
           for (const adminId of ADMIN_ID) {
@@ -668,13 +668,13 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`
+              `🔄 Игрок ${movedDisplayName} перемещен из очереди в основной состав`,
             );
           }
         }
       }
       await sendPlayerList(ctx);
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         `🚶 ${displayName} вышел!`,
       ]);
@@ -694,12 +694,12 @@ module.exports = (bot, GlobalState) => {
             await sendPrivateMessage(
               bot,
               adminId,
-              `➖ Игрок ${displayName} вышел из очереди через кнопку`
+              `➖ Игрок ${displayName} вышел из очереди через кнопку`,
             );
           }
         }
         await sendPlayerList(ctx);
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
           `🚶 ${displayName} вышел!`,
         ]);
@@ -707,10 +707,10 @@ module.exports = (bot, GlobalState) => {
         await safeAnswerCallback(ctx, `🚶 ${displayName}, вы вышли!`);
         await notifyTeamFormation(ctx, bot, GlobalState);
       } else {
-        await safeAnswerCallback(ctx, "⚠️ Вы не в списке!");
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        await safeAnswerCallback(ctx, '⚠️ Вы не в списке!');
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           ctx.chat.id,
-          "⚠️ Вы не в списке!",
+          '⚠️ Вы не в списке!',
         ]);
         if (message) {
           deleteMessageAfterDelay(ctx, message.message_id, 6000);

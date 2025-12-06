@@ -1,10 +1,10 @@
 // buildPlayingTeamsMessage.js
 
 const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
-  const teamColors = ["🔴", "🔵", "🟢", "🟡"];
+  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
   const emoji = { playing: '⚽', finished: '✅' }[status] || '⚽';
-  let title = { playing: "Команды на поле", finished: "🏁 Итог матча 🏁" }[status] || "Команды на поле";
-  
+  let title = { playing: 'Команды на поле', finished: '🏁 Итог матча 🏁' }[status] || 'Команды на поле';
+
   // Добавляем номер матча к заголовку, если он передан
   if (matchNumber !== null && matchNumber !== undefined) {
     if (status === 'playing') {
@@ -16,15 +16,15 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   } else {
     // Если номер не передан, используем старые заголовки
     if (status === 'playing') {
-      title = "Команды на поле";
+      title = 'Команды на поле';
     } else if (status === 'finished') {
-      title = "🏁 Итог матча 🏁";
+      title = '🏁 Итог матча 🏁';
     }
     // Для неизвестного статуса оставляем дефолтный title из строки выше
   }
-  
-  const color1 = teamColors[teamIndex1] || "⚽";
-  const color2 = teamColors[teamIndex2] || "⚽";
+
+  const color1 = teamColors[teamIndex1] || '⚽';
+  const color2 = teamColors[teamIndex2] || '⚽';
 
   // Выбираем, какие данные брать для отображения
   // для 'playing' — именно переданные team1/team2 (с сброшенными голами),
@@ -38,21 +38,21 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength = 11) => {
-    const cleanName = name.replace(
-      /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu,
-      ""
-    ).trim();
+    // Удаляем эмодзи и специальные символы
+    // eslint-disable-next-line no-misleading-character-class
+    const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+    const cleanName = name.replace(emojiRegex, '').trim();
     const chars = Array.from(cleanName);
     return chars.length <= maxLength
-      ? cleanName.padEnd(maxLength, " ")
-      : chars.slice(0, maxLength - 3).join("") + "...";
+      ? cleanName.padEnd(maxLength, ' ')
+      : chars.slice(0, maxLength - 3).join('') + '...';
   };
 
   // Функция для форматирования строки игрока
   const formatPlayerLine = (index, name, goals) => {
-    const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : "";
-    const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
-    const paddedName = formatPlayerName(name).padEnd(11, " ");
+    const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
+    const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
+    const paddedName = formatPlayerName(name).padEnd(11, ' ');
     return `${paddedIndex}${paddedName}${goalsMark}`;
   };
 
@@ -66,7 +66,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const name = player.username || player.name;
     message += `${formatPlayerLine(idx, name, player.goals)}\n`;
   });
-  message += `</code>\n\n`;
+  message += '</code>\n\n';
 
   // Команда 2
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b>\n<code>`;
@@ -74,7 +74,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const name = player.username || player.name;
     message += `${formatPlayerLine(idx, name, player.goals)}\n`;
   });
-  message += `</code>`;
+  message += '</code>';
 
   // Если матч завершён — добавляем счёт и результат
   if (status === 'finished') {
@@ -84,7 +84,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
       ? `🏆 ${color1} побеждает!`
       : team2Goals > team1Goals
         ? `🏆 ${color2} побеждает!`
-        : "🤝 Ничья!";
+        : '🤝 Ничья!';
     message += `\n\n📊 <b>Счет:</b> ${color1} ${team1Goals}:${team2Goals} ${color2}\n\n${resultText}`;
   }
 

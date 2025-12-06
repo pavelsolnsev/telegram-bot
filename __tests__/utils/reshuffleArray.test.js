@@ -1,7 +1,7 @@
-const { reshuffleArray } = require("../../utils/reshuffleArray");
+const { reshuffleArray } = require('../../utils/reshuffleArray');
 
-describe("reshuffleArray", () => {
-  test("должен перемешать массив", () => {
+describe('reshuffleArray', () => {
+  test('должен перемешать массив', () => {
     const original = [1, 2, 3, 4, 5];
     const shuffled = reshuffleArray(original);
 
@@ -10,7 +10,7 @@ describe("reshuffleArray", () => {
     expect(shuffled.length).toBe(original.length);
   });
 
-  test("не должен изменять исходный массив", () => {
+  test('не должен изменять исходный массив', () => {
     const original = [1, 2, 3, 4, 5];
     const originalCopy = [...original];
     reshuffleArray(original);
@@ -18,21 +18,21 @@ describe("reshuffleArray", () => {
     expect(original).toEqual(originalCopy);
   });
 
-  test("должен работать с пустым массивом", () => {
+  test('должен работать с пустым массивом', () => {
     const result = reshuffleArray([]);
     expect(result).toEqual([]);
   });
 
-  test("должен работать с массивом из одного элемента", () => {
+  test('должен работать с массивом из одного элемента', () => {
     const result = reshuffleArray([1]);
     expect(result).toEqual([1]);
   });
 
-  test("должен работать с массивом объектов", () => {
+  test('должен работать с массивом объектов', () => {
     const original = [
-      { id: 1, name: "A" },
-      { id: 2, name: "B" },
-      { id: 3, name: "C" },
+      { id: 1, name: 'A' },
+      { id: 2, name: 'B' },
+      { id: 3, name: 'C' },
     ];
     const shuffled = reshuffleArray(original);
 
@@ -40,7 +40,7 @@ describe("reshuffleArray", () => {
     expect(shuffled.map((x) => x.id).sort()).toEqual([1, 2, 3]);
   });
 
-  test("должен возвращать новый массив при каждом вызове", () => {
+  test('должен возвращать новый массив при каждом вызове', () => {
     const original = [1, 2, 3, 4, 5];
     const shuffled1 = reshuffleArray(original);
     const shuffled2 = reshuffleArray(original);

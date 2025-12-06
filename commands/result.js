@@ -1,23 +1,22 @@
 
-const { Markup } = require("telegraf");
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../utils/telegramUtils");
-const { safeAnswerCallback } = require("../utils/safeAnswerCallback");
-const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 
 module.exports = (bot, GlobalState) => {
-  const teamColors = ["🔴", "🔵", "🟢", "🟡"];
+  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
   const formatPlayerLine = (idx, { name, goals }) => {
-    const index = String(idx + 1).padStart(2, " ") + ".";
+    const index = String(idx + 1).padStart(2, ' ') + '.';
     const cleanName = name
-      .replace(/([\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}])/gu, '')
+      // eslint-disable-next-line no-misleading-character-class
+      .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu, '')
       .trim();
     const chars = Array.from(cleanName);
     const displayName = chars.length <= 11
       ? cleanName
-      : chars.slice(0, 8).join("") + "...";
-    const goalsMark = goals > 0 ? ` ⚽️${goals}` : "";
+      : chars.slice(0, 8).join('') + '...';
+    const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
     return `${index}${displayName}${goalsMark}`;
   };
 
@@ -26,7 +25,7 @@ module.exports = (bot, GlobalState) => {
     const results = GlobalState.getMatchResults();
 
     if (results.length === 0) {
-      const sent = await sendPrivateMessage(bot, userId, "📋 Пока нет сыгранных матчей.");
+      const sent = await sendPrivateMessage(bot, userId, '📋 Пока нет сыгранных матчей.');
       if (sent && sent.message_id) {
         deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 30000);
       }
@@ -35,71 +34,65 @@ module.exports = (bot, GlobalState) => {
 
     // Собираем текст сообщения
     const sections = results.map((m, i) => {
-      const color1 = teamColors[m.teamIndex1] || "⚽";
-      const color2 = teamColors[m.teamIndex2] || "⚽";
+      const color1 = teamColors[m.teamIndex1] || '⚽';
+      const color2 = teamColors[m.teamIndex2] || '⚽';
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
-      const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join("\n");
-      const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join("\n");
+      const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
+      const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
       const resultText =
         m.score1 > m.score2
           ? `🏆 ${color1} побеждает!`
           : m.score2 > m.score1
-          ? `🏆 ${color2} побеждает!`
-          : "🤝 Ничья!";
+            ? `🏆 ${color2} побеждает!`
+            : '🤝 Ничья!';
 
       return [
         title,
-        "",
+        '',
         `${color1} Команда ${m.teamIndex1 + 1}`,
         `<code>${lines1}</code>`,
-        "",
+        '',
         `${color2} Команда ${m.teamIndex2 + 1}`,
         `<code>${lines2}</code>`,
-        "",
+        '',
         scoreLine,
-        "",
+        '',
         resultText,
-      ].join("\n");
+      ].join('\n');
     });
 
-    const text = sections.join("\n\n===============\n\n");
-    
+    const text = sections.join('\n\n===============\n\n');
+
     // Отправляем сообщение в личку
-    try {
-      const sent = await bot.telegram.sendMessage(userId, text, { parse_mode: "HTML" });
-      GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
-      deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
-    } catch (error) {
-      // Если не удалось отправить - возможно пользователь еще не начинал диалог
-      throw error;
-    }
+    const sent = await bot.telegram.sendMessage(userId, text, { parse_mode: 'HTML' });
+    GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
+    deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
   };
 
   // Обработчик кнопки "Результаты"
-  bot.action("show_results", async (ctx) => {
+  bot.action('show_results', async (ctx) => {
     const userId = ctx.from.id;
-    const chatId = ctx.callbackQuery?.message?.chat?.id;
 
-    await safeAnswerCallback(ctx, "📊 Отправляю результаты в личные сообщения бота");
+    await safeAnswerCallback(ctx, '📊 Отправляю результаты в личные сообщения бота');
 
     try {
       // Пытаемся отправить результаты в личку
       await sendResults(ctx, userId);
-      await safeAnswerCallback(ctx, "✅ Результаты отправлены в личные сообщения!");
+      await safeAnswerCallback(ctx, '✅ Результаты отправлены в личные сообщения!');
     } catch (error) {
       // Если не удалось отправить
       const errorCode = error.response?.error_code;
-      const errorDescription = error.response?.description || "";
-      
-      if (errorCode === 403 || errorDescription.includes("bot was blocked")) {
+      const errorDescription = error.response?.description || '';
+
+      if (errorCode === 403 || errorDescription.includes('bot was blocked')) {
         // Пользователь заблокировал бота
-        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
-      } else if (errorCode === 400 && (errorDescription.includes("chat not found") || errorDescription.includes("have no access"))) {
+        await safeAnswerCallback(ctx, '⚠️ Начните диалог с ботом в личных сообщениях или нажми /start');
+      } else if (errorCode === 400 && (errorDescription.includes('chat not found') || errorDescription.includes('have no access'))) {
         // Пользователь еще не начинал диалог с ботом
-        await safeAnswerCallback(ctx, "⚠️ Начните диалог с ботом в личных сообщениях или нажми /start");
+        await safeAnswerCallback(ctx, '⚠️ Начните диалог с ботом в личных сообщениях или нажми /start');
       } else {
-        console.error("Ошибка при отправке результатов:", error);
+        console.error('Ошибка при отправке результатов:', error);
         await safeAnswerCallback(ctx, "⚠️ Ошибка при отправке. Напишите боту команду 'результаты' в личных сообщениях.");
       }
     }
@@ -110,49 +103,49 @@ module.exports = (bot, GlobalState) => {
     await ctx.deleteMessage().catch(() => {});
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
     const results = GlobalState.getMatchResults();
 
     if (results.length === 0) {
-      const msg = await ctx.reply("📋 Пока нет сыгранных матчей.");
+      const msg = await ctx.reply('📋 Пока нет сыгранных матчей.');
       deleteMessageAfterDelay(ctx, msg.message_id, 30000);
       return;
     }
 
     // Собираем текст сообщения
     const sections = results.map((m, i) => {
-      const color1 = teamColors[m.teamIndex1] || "⚽";
-      const color2 = teamColors[m.teamIndex2] || "⚽";
+      const color1 = teamColors[m.teamIndex1] || '⚽';
+      const color2 = teamColors[m.teamIndex2] || '⚽';
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
-      const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join("\n");
-      const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join("\n");
+      const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
+      const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
       const resultText =
         m.score1 > m.score2
           ? `🏆 ${color1} побеждает!`
           : m.score2 > m.score1
-          ? `🏆 ${color2} побеждает!`
-          : "🤝 Ничья!";
+            ? `🏆 ${color2} побеждает!`
+            : '🤝 Ничья!';
 
       return [
         title,
-        "",
+        '',
         `${color1} Команда ${m.teamIndex1 + 1}`,
         `<code>${lines1}</code>`,
-        "",
+        '',
         `${color2} Команда ${m.teamIndex2 + 1}`,
         `<code>${lines2}</code>`,
-        "",
+        '',
         scoreLine,
-        "",
+        '',
         resultText,
-      ].join("\n");
+      ].join('\n');
     });
 
-    const text = sections.join("\n\n===============\n\n");
+    const text = sections.join('\n\n===============\n\n');
     const last = GlobalState.getLastResultMessageId();
 
     if (last && last.chatId && last.messageId) {
@@ -162,7 +155,7 @@ module.exports = (bot, GlobalState) => {
           last.messageId,
           null,
           text,
-          { parse_mode: "HTML" }
+          { parse_mode: 'HTML' },
         );
         deleteMessageAfterDelay(ctx, last.messageId, 120000);
       } catch (err) {
@@ -188,7 +181,7 @@ module.exports = (bot, GlobalState) => {
     if (startParam === 'results') {
       // Пользователь перешел по ссылке для получения результатов
       await sendResults(ctx, ctx.from.id).catch((error) => {
-        console.error("Ошибка при отправке результатов через start:", error);
+        console.error('Ошибка при отправке результатов через start:', error);
       });
     }
   });

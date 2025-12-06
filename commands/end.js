@@ -1,23 +1,23 @@
-const { Markup } = require("telegraf");
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const savePlayersToDatabase = require("../database/savePlayers");
-const { buildTeamsMessage } = require("../message/buildTeamsMessage");
-const { locations } = require("../utils/sendPlayerList");
+const { Markup } = require('telegraf');
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const savePlayersToDatabase = require('../database/savePlayers');
+const { buildTeamsMessage } = require('../message/buildTeamsMessage');
+const { locations } = require('../utils/sendPlayerList');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
-  bot.on("pinned_message", async (ctx) => {
+  bot.on('pinned_message', async (ctx) => {
     try {
       await ctx.deleteMessage().catch((error) => {
         console.error(
-          "Ошибка при удалении системного сообщения о закреплении:",
-          error.message
+          'Ошибка при удалении системного сообщения о закреплении:',
+          error.message,
         );
       });
     } catch (error) {
       console.error(
-        "Общая ошибка в обработчике pinned_message:",
-        error.message
+        'Общая ошибка в обработчике pinned_message:',
+        error.message,
       );
     }
   });
@@ -35,20 +35,20 @@ module.exports = (bot, GlobalState) => {
 
       // Проверка прав администратора
       if (!ADMIN_ID.includes(ctx.from.id)) {
-        const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+        const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       // Проверка, начат ли матч
       if (!isMatchStarted) {
-        const message = await ctx.reply("⚠️ Матч не начат!");
+        const message = await ctx.reply('⚠️ Матч не начат!');
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
       // Проверка, разрешена ли команда e!
       if (!isEndCommandAllowed) {
         const message = await ctx.reply(
-          "⛔ Команда e! запрещена, пока не начат матч между командами (используйте pl)."
+          '⛔ Команда e! запрещена, пока не начат матч между командами (используйте pl).',
         );
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
@@ -63,24 +63,24 @@ module.exports = (bot, GlobalState) => {
               if (
                 error.response?.error_code === 400 &&
                 error.response?.description.includes(
-                  "message to delete not found"
+                  'message to delete not found',
                 )
               ) {
-                console.warn("Сообщение для удаления не найдено:", {
+                console.warn('Сообщение для удаления не найдено:', {
                   chat_id: listMessageChatId,
                   message_id: listMessageId,
                 });
               } else {
                 console.error(
-                  "Ошибка при удалении сообщения из группы:",
-                  error.message
+                  'Ошибка при удалении сообщения из группы:',
+                  error.message,
                 );
               }
             });
           GlobalState.setListMessageId(null);
           GlobalState.setListMessageChatId(null);
         } catch (error) {
-          console.error("Общая ошибка при удалении сообщения:", error.message);
+          console.error('Общая ошибка при удалении сообщения:', error.message);
         }
       }
 
@@ -120,36 +120,36 @@ module.exports = (bot, GlobalState) => {
         await savePlayersToDatabase(allPlayers);
         GlobalState.appendToPlayersHistory(allPlayers);
       } catch (error) {
-        if (error.code === "ECONNRESET") {
+        if (error.code === 'ECONNRESET') {
           console.error(
-            "Ошибка подключения к базе данных (ECONNRESET). Не удалось сохранить игроков:",
-            error.message
+            'Ошибка подключения к базе данных (ECONNRESET). Не удалось сохранить игроков:',
+            error.message,
           );
           const message = await ctx.reply(
-            "⚠️ Ошибка подключения к базе данных. Данные не сохранены."
+            '⚠️ Ошибка подключения к базе данных. Данные не сохранены.',
           );
           return deleteMessageAfterDelay(ctx, message.message_id, 6000);
         } else {
           console.error(
-            "Ошибка при сохранении игроков в базу данных:",
-            error.message
+            'Ошибка при сохранении игроков в базу данных:',
+            error.message,
           );
           const message = await ctx.reply(
-            "⚠️ Ошибка при сохранении данных игроков."
+            '⚠️ Ошибка при сохранении данных игроков.',
           );
           return deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
       }
 
-      
+
 
       // Формируем сообщение с итогами и локацией
       if (listMessageChatId && allTeams.length > 0) {
         const collectionDate = GlobalState.getCollectionDate();
-        let formattedDate = "";
+        let formattedDate = '';
         if (collectionDate) {
-          const day = String(collectionDate.getDate()).padStart(2, "0");
-          const month = String(collectionDate.getMonth() + 1).padStart(2, "0");
+          const day = String(collectionDate.getDate()).padStart(2, '0');
+          const month = String(collectionDate.getMonth() + 1).padStart(2, '0');
           const year = collectionDate.getFullYear();
           formattedDate = ` ${day}.${month}.${year}`;
         }
@@ -163,47 +163,47 @@ module.exports = (bot, GlobalState) => {
           teamStats,
           allTeams,
           mvpPlayer,
-          false
+          false,
         );
 
         const paymentReminder =
           `<b>💰 Напоминаем об оплате участия: ${loc.sum} ₽</b>\n` +
-          `- <b>Перевод СБЕРБАНК</b> (Павел С.):\n` +
-          `  📱 <a href="tel:89166986185"><code>89166986185</code></a>\n` +
-          `  🔗 <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие</a>\n` +
-          `  ❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n`;
+          '- <b>Перевод СБЕРБАНК</b> (Павел С.):\n' +
+          '  📱 <a href="tel:89166986185"><code>89166986185</code></a>\n' +
+          '  🔗 <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие</a>\n' +
+          '  ❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n';
 
         const vkLinkMessage =
           `${teamsMessage}\n\n` +
           '🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
           '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
           '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
-          `Чтобы просмотреть историю матчей, напишите <b>«результаты»</b> в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n` +
-          (currentLocationKey === "tr" ? "" : paymentReminder);
+          'Чтобы просмотреть историю матчей, напишите <b>«результаты»</b> в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n' +
+          (currentLocationKey === 'tr' ? '' : paymentReminder);
 
         try {
           const sentMessage = await ctx.telegram.sendMessage(
             listMessageChatId,
             vkLinkMessage,
             {
-              parse_mode: "HTML",
+              parse_mode: 'HTML',
               disable_notification: true,
               reply_markup: Markup.inlineKeyboard([
-                [Markup.button.callback("📊 Результаты", "show_results")],
+                [Markup.button.callback('📊 Результаты', 'show_results')],
               ]).reply_markup,
-            }
+            },
           );
 
           await ctx.telegram
             .unpinChatMessage(listMessageChatId, sentMessage.message_id)
             .catch((error) => {
               console.log(
-                "Сообщение не было закреплено или ошибка при откреплении:",
-                error.message
+                'Сообщение не было закреплено или ошибка при откреплении:',
+                error.message,
               );
             });
         } catch (error) {
-          console.error("Ошибка при отправке таблицы в группу:", error.message);
+          console.error('Ошибка при отправке таблицы в группу:', error.message);
         }
       }
 
@@ -230,11 +230,11 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setIsTableAllowed(false);
       GlobalState.setReferee('Карен');
 
-      const message = await ctx.reply("✅ Сбор успешно завершён!");
+      const message = await ctx.reply('✅ Сбор успешно завершён!');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     } catch (error) {
-      console.error("Необработанная ошибка в обработчике команды e!:", error.message);
-      const message = await ctx.reply("⚠️ Произошла ошибка при обработке команды.");
+      console.error('Необработанная ошибка в обработчике команды e!:', error.message);
+      const message = await ctx.reply('⚠️ Произошла ошибка при обработке команды.');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
   });

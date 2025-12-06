@@ -1,16 +1,16 @@
-const { Markup } = require("telegraf");
+const { Markup } = require('telegraf');
 
 const createTeamButtons = (team, teamIndex) => {
-  const teamColors = ["🔴", "🔵", "🟢", "🟡"];
-  const teamColor = teamColors[teamIndex] || "⚽"; // Цвет команды
+  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
+  const teamColor = teamColors[teamIndex] || '⚽'; // Цвет команды
 
   const buttons = team.map((player, index) => {
-    const displayName = player.username 
+    const displayName = player.username
       ? player.username
       : player.name;
     return Markup.button.callback(
       `${teamColor} ${index + 1}. ${displayName}`,
-      `goal_${teamIndex}_${index}`
+      `goal_${teamIndex}_${index}`,
     );
   });
 

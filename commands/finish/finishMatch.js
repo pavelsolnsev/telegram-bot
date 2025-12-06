@@ -1,24 +1,24 @@
-const { Markup } = require("telegraf");
+const { Markup } = require('telegraf');
 const {
   buildPlayingTeamsMessage,
-} = require("../../message/buildPlayingTeamsMessage");
-const { createTeamButtons } = require("../../buttons/createTeamButtons");
-const { deleteMessageAfterDelay } = require("../../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../../utils/telegramUtils");
+} = require('../../message/buildPlayingTeamsMessage');
+const { createTeamButtons } = require('../../buttons/createTeamButtons');
+const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../../utils/telegramUtils');
 const {
   getMatchResult,
   updateTeamStats,
   updatePlayerStats,
   updateTeamsMessage,
-} = require("../../utils/matchHelpers");
+} = require('../../utils/matchHelpers');
 
 // Функция завершения матча
 const finishMatch = async (ctx, GlobalState) => {
   const playingTeams = GlobalState.getPlayingTeams();
   if (!playingTeams) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      "⛔ Нет активного матча!",
+      '⛔ Нет активного матча!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
@@ -30,24 +30,24 @@ const finishMatch = async (ctx, GlobalState) => {
     matchHistory: JSON.parse(JSON.stringify(GlobalState.getMatchHistory())),
     lastMatchIndex: JSON.parse(JSON.stringify(GlobalState.getLastMatchIndex())),
     consecutiveGames: JSON.parse(
-      JSON.stringify(GlobalState.getConsecutiveGames())
+      JSON.stringify(GlobalState.getConsecutiveGames()),
     ),
     playingTeams: JSON.parse(JSON.stringify(GlobalState.getPlayingTeams())),
   });
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  let allTeams = GlobalState.getTeams();
+  const allTeams = GlobalState.getTeams();
   const teamStats = GlobalState.getTeamStats();
   const allTeamsBase = GlobalState.getTeamsBase();
   const result = getMatchResult(team1, team2);
 
   const team1Goals = team1.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
   const team2Goals = team2.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
 
   GlobalState.addMatchResult({
@@ -68,41 +68,41 @@ const finishMatch = async (ctx, GlobalState) => {
   updateTeamStats(
     teamStats,
     `team${teamIndex1 + 1}`,
-    result === "team1",
-    result === "draw",
+    result === 'team1',
+    result === 'draw',
     team1Goals,
-    team2Goals
+    team2Goals,
   );
   updateTeamStats(
     teamStats,
     `team${teamIndex2 + 1}`,
-    result === "team2",
-    result === "draw",
+    result === 'team2',
+    result === 'draw',
     team2Goals,
-    team1Goals
+    team1Goals,
   );
 
   allTeams[teamIndex1] = updatePlayerStats(
     team1,
     allTeams[teamIndex1],
-    result === "team1",
-    result === "draw",
-    result === "team2",
+    result === 'team1',
+    result === 'draw',
+    result === 'team2',
     allTeamsBase,
     teamIndex1,
     team1Goals,
-    team2Goals
+    team2Goals,
   );
   allTeams[teamIndex2] = updatePlayerStats(
     team2,
     allTeams[teamIndex2],
-    result === "team2",
-    result === "draw",
-    result === "team1",
+    result === 'team2',
+    result === 'draw',
+    result === 'team1',
     allTeamsBase,
     teamIndex2,
     team2Goals,
-    team1Goals
+    team1Goals,
   );
 
   GlobalState.setTeams(allTeams);
@@ -119,26 +119,26 @@ const finishMatch = async (ctx, GlobalState) => {
     team2,
     teamIndex1,
     teamIndex2,
-    "finished",
+    'finished',
     undefined,
-    finishedMatchNumber
+    finishedMatchNumber,
   );
   const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
   if (playingTeamsMessage) {
-    await safeTelegramCall(ctx, "editMessageText", [
+    await safeTelegramCall(ctx, 'editMessageText', [
       playingTeamsMessage.chatId,
       playingTeamsMessage.messageId,
       null,
       finishedMessage,
-      { parse_mode: "HTML" },
+      { parse_mode: 'HTML' },
     ]);
   }
 
   await updateTeamsMessage(ctx, GlobalState, allTeamsBase, teamStats);
 
-  const notificationMessage = await safeTelegramCall(ctx, "sendMessage", [
+  const notificationMessage = await safeTelegramCall(ctx, 'sendMessage', [
     ctx.chat.id,
-    "✅ Матч завершен, статистика обновлена!",
+    '✅ Матч завершен, статистика обновлена!',
   ]);
   deleteMessageAfterDelay(ctx, notificationMessage.message_id);
 };
@@ -149,16 +149,16 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   if (!(await checkMatchStarted(ctx, GlobalState.getStart()))) return false;
 
   if (ctx.chat.id < 0) {
-    const msg = await ctx.reply("Напиши мне в ЛС.");
+    const msg = await ctx.reply('Напиши мне в ЛС.');
     deleteMessageAfterDelay(ctx, msg.message_id);
     return false;
   }
 
   const playingTeams = GlobalState.getPlayingTeams();
   if (!playingTeams) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      "⛔ Нет активного матча для продолжения!",
+      '⛔ Нет активного матча для продолжения!',
     ]);
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
     return false;
@@ -170,24 +170,24 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     teamStats: JSON.parse(JSON.stringify(GlobalState.getTeamStats())),
     matchHistory: JSON.parse(JSON.stringify(GlobalState.getMatchHistory())),
     consecutiveGames: JSON.parse(
-      JSON.stringify(GlobalState.getConsecutiveGames())
+      JSON.stringify(GlobalState.getConsecutiveGames()),
     ),
     playingTeams: JSON.parse(JSON.stringify(GlobalState.getPlayingTeams())),
   });
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  let allTeams = GlobalState.getTeams();
+  const allTeams = GlobalState.getTeams();
   const teamStats = GlobalState.getTeamStats();
   const allTeamsBase = GlobalState.getTeamsBase();
   const result = getMatchResult(team1, team2);
 
   const team1Goals = team1.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
   const team2Goals = team2.reduce(
     (sum, player) => sum + (player.goals || 0),
-    0
+    0,
   );
 
   GlobalState.addMatchResult({
@@ -208,41 +208,41 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   updateTeamStats(
     teamStats,
     `team${teamIndex1 + 1}`,
-    result === "team1",
-    result === "draw",
+    result === 'team1',
+    result === 'draw',
     team1Goals,
-    team2Goals
+    team2Goals,
   );
   updateTeamStats(
     teamStats,
     `team${teamIndex2 + 1}`,
-    result === "team2",
-    result === "draw",
+    result === 'team2',
+    result === 'draw',
     team2Goals,
-    team1Goals
+    team1Goals,
   );
 
   allTeams[teamIndex1] = updatePlayerStats(
     team1,
     allTeams[teamIndex1],
-    result === "team1",
-    result === "draw",
-    result === "team2",
+    result === 'team1',
+    result === 'draw',
+    result === 'team2',
     allTeamsBase,
     teamIndex1,
     team1Goals,
-    team2Goals
+    team2Goals,
   );
   allTeams[teamIndex2] = updatePlayerStats(
     team2,
     allTeams[teamIndex2],
-    result === "team2",
-    result === "draw",
-    result === "team1",
+    result === 'team2',
+    result === 'draw',
+    result === 'team1',
     allTeamsBase,
     teamIndex2,
     team2Goals,
-    team1Goals
+    team1Goals,
   );
 
   GlobalState.setTeams(allTeams);
@@ -257,18 +257,18 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     team2,
     teamIndex1,
     teamIndex2,
-    "finished",
+    'finished',
     undefined,
-    finishedMatchNumberAfterKsk
+    finishedMatchNumberAfterKsk,
   );
   const playingTeamsMessage = GlobalState.getPlayingTeamsMessageId();
   if (playingTeamsMessage) {
-    await safeTelegramCall(ctx, "editMessageText", [
+    await safeTelegramCall(ctx, 'editMessageText', [
       playingTeamsMessage.chatId,
       playingTeamsMessage.messageId,
       null,
       finishedMessage,
-      { parse_mode: "HTML" },
+      { parse_mode: 'HTML' },
     ]);
   }
 
@@ -277,9 +277,9 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   const totalTeams = allTeams.length;
   if (totalTeams <= 2) {
     GlobalState.setPlayingTeams(null);
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      "⛔ Недостаточно команд для следующего матча!",
+      '⛔ Недостаточно команд для следующего матча!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
@@ -297,7 +297,7 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
 
   let matchHistory = GlobalState.getMatchHistory();
   let lastMatchIndex = GlobalState.getLastMatchIndex();
-  
+
   // Инициализируем структуры
   for (let i = 0; i < totalTeams; i++) {
     if (!matchHistory[i]) matchHistory[i] = {};
@@ -309,13 +309,13 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
   matchHistory[teamIndex2][teamIndex1] =
     (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
-  
+
   // Обновляем индекс последнего матча между этими командами
   const currentMatchIndex = matchResultsAfterKsk.length;
   lastMatchIndex[teamIndex1][teamIndex2] = currentMatchIndex;
   lastMatchIndex[teamIndex2][teamIndex1] = currentMatchIndex;
 
-  let consecutiveGames = GlobalState.getConsecutiveGames() || {};
+  const consecutiveGames = GlobalState.getConsecutiveGames() || {};
   consecutiveGames[teamIndex1] = (consecutiveGames[teamIndex1] || 0) + 1;
   consecutiveGames[teamIndex2] = (consecutiveGames[teamIndex2] || 0) + 1;
 
@@ -331,11 +331,11 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   }
 
   const minMatchesPlayed = Math.min(
-    ...allMatchups.map(([i, j]) => matchHistory[i]?.[j] || 0)
+    ...allMatchups.map(([i, j]) => matchHistory[i]?.[j] || 0),
   );
   if (
     allMatchups.every(
-      ([i, j]) => (matchHistory[i]?.[j] || 0) >= minMatchesPlayed + 1
+      ([i, j]) => (matchHistory[i]?.[j] || 0) >= minMatchesPlayed + 1,
     )
   ) {
     matchHistory = {};
@@ -352,7 +352,7 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   const totalMatches = matchResultsAfterKsk.length;
   const teamGamesCount = {}; // Количество игр каждой команды
   const teamRestCount = {}; // Количество отдыхов каждой команды
-  
+
   // Инициализируем счетчики
   for (let i = 0; i < totalTeams; i++) {
     teamGamesCount[i] = 0;
@@ -378,11 +378,11 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   // Вычисляем среднее значение игр и отдыхов для более точного баланса (один раз, не в цикле)
   const gamesCountValues = Object.values(teamGamesCount);
   const restCountValues = Object.values(teamRestCount);
-  const avgGames = gamesCountValues.length > 0 
-    ? gamesCountValues.reduce((sum, val) => sum + val, 0) / gamesCountValues.length 
+  const avgGames = gamesCountValues.length > 0
+    ? gamesCountValues.reduce((sum, val) => sum + val, 0) / gamesCountValues.length
     : 0;
-  const avgRests = restCountValues.length > 0 
-    ? restCountValues.reduce((sum, val) => sum + val, 0) / restCountValues.length 
+  const avgRests = restCountValues.length > 0
+    ? restCountValues.reduce((sum, val) => sum + val, 0) / restCountValues.length
     : 0;
 
   let nextTeamIndex1 = null;
@@ -457,13 +457,13 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
       nextTeamIndex2 = j;
     }
   }
-  
+
   // Сохраняем обновленные структуры
   GlobalState.setLastMatchIndex(lastMatchIndex);
 
   if (nextTeamIndex1 === null || nextTeamIndex2 === null) {
     const msg = await ctx.reply(
-      "⛔ Не удалось подобрать команды, которые не играли 3 раза подряд."
+      '⛔ Не удалось подобрать команды, которые не играли 3 раза подряд.',
     );
     return deleteMessageAfterDelay(ctx, msg.message_id);
   }
@@ -485,28 +485,28 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     team2Next,
     nextTeamIndex1,
     nextTeamIndex2,
-    "playing",
+    'playing',
     undefined,
-    nextMatchNumber
+    nextMatchNumber,
   );
-  const sentMessage = await safeTelegramCall(ctx, "sendMessage", [
+  const sentMessage = await safeTelegramCall(ctx, 'sendMessage', [
     ctx.chat.id,
     teamsMessage,
     {
-      parse_mode: "HTML",
+      parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
         ...createTeamButtons(team1Next, nextTeamIndex1),
         ...createTeamButtons(team2Next, nextTeamIndex2),
         [], // Пустая строка для разделения
-        [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("⚙️ Управление", "management_menu")],
+        [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+        [Markup.button.callback('⚙️ Управление', 'management_menu')],
       ]).reply_markup,
     },
   ]);
 
   GlobalState.setPlayingTeamsMessageId(
     sentMessage.chat.id,
-    sentMessage.message_id
+    sentMessage.message_id,
   );
   // Сохраняем сообщение матча по номеру для возможности удаления при отмене
   GlobalState.setMatchMessageByNumber(nextMatchNumber, sentMessage.chat.id, sentMessage.message_id);

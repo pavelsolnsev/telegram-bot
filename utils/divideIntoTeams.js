@@ -1,6 +1,6 @@
 const divideIntoTeams = (players, numTeams) => {
   if (!players || players.length === 0 || players.length < numTeams) {
-    console.log("Недостаточно игроков или пустой список:", players);
+    console.log('Недостаточно игроков или пустой список:', players);
     return Array.from({ length: numTeams }, () => []);
   }
 

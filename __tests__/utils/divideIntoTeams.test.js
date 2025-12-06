@@ -71,7 +71,7 @@ describe('divideIntoTeams', () => {
   describe('Крайние случаи', () => {
     test('должен вернуть пустые команды если игроков нет', () => {
       const teams = divideIntoTeams([], 2);
-      
+
       expect(teams.length).toBe(2);
       expect(teams[0].length).toBe(0);
       expect(teams[1].length).toBe(0);
@@ -81,9 +81,9 @@ describe('divideIntoTeams', () => {
       const players = [
         { id: 1, name: 'Player1', rating: 100 },
       ];
-      
+
       const teams = divideIntoTeams(players, 3);
-      
+
       expect(teams.length).toBe(3);
       // Функция возвращает пустые команды, так как игроков меньше чем команд
       expect(teams[0].length).toBe(0);
@@ -93,7 +93,7 @@ describe('divideIntoTeams', () => {
 
     test('должен обработать null без ошибок', () => {
       const teams = divideIntoTeams(null, 2);
-      
+
       expect(teams.length).toBe(2);
       expect(teams[0].length).toBe(0);
       expect(teams[1].length).toBe(0);
@@ -101,7 +101,7 @@ describe('divideIntoTeams', () => {
 
     test('должен обработать undefined без ошибок', () => {
       const teams = divideIntoTeams(undefined, 2);
-      
+
       expect(teams.length).toBe(2);
       expect(teams[0].length).toBe(0);
       expect(teams[1].length).toBe(0);

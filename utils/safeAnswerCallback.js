@@ -5,9 +5,9 @@ const safeAnswerCallback = async (ctx, text, retries = 3) => {
     try {
       return await ctx.answerCbQuery(text);
     } catch (error) {
-      const description = error?.description || "";
+      const description = error?.description || '';
       // Игнорируем устаревшие callback-запросы
-      if (error.code === 400 && description.includes("query is too old")) {
+      if (error.code === 400 && description.includes('query is too old')) {
         console.warn(`Callback query устарел, пропускаем ответ: ${text}`);
         return null;
       }

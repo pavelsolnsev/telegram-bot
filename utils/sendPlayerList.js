@@ -1,111 +1,112 @@
-const { GlobalState } = require("../store");
-const { Markup } = require("telegraf");
+const { GlobalState } = require('../store');
+const { Markup } = require('telegraf');
 
 // ========================================
 // 🧩 Гибкая структура локаций
 // ========================================
 const locations = {
   kz: {
-    name: "Красное Знамя",
+    name: 'Красное Знамя',
     address:
-      "Московская область, г. Раменское, ул. Воровского, д.4A (Красное Знамя - Спортивный зал)",
-    link: "https://yandex.ru/maps/-/CLuPMJ3L",
+      'Московская область, г. Раменское, ул. Воровского, д.4A (Красное Знамя - Спортивный зал)',
+    link: 'https://yandex.ru/maps/-/CLuPMJ3L',
     route:
-      "https://yandex.ru/maps/?mode=routes&rtext=~55.574202,38.205299&rtt=auto",
+      'https://yandex.ru/maps/?mode=routes&rtext=~55.574202,38.205299&rtt=auto',
     sum: 400,
     limit: 20,
     blocks: [
-      "date",
-      "location",
-      "payment",
-      "instructions",
-      "players",
-      "queue",
-      "summary",
+      'date',
+      'location',
+      'payment',
+      'instructions',
+      'players',
+      'queue',
+      'summary',
     ],
   },
 
   prof: {
-    name: "Профилакторий",
+    name: 'Профилакторий',
     address:
-      "Московская область, г. Раменское, ул. Махова, д.18. (Профилакторий)",
-    link: "https://yandex.ru/maps/-/CHfBZ-mH",
+      'Московская область, г. Раменское, ул. Махова, д.18. (Профилакторий)',
+    link: 'https://yandex.ru/maps/-/CHfBZ-mH',
     route:
-      "https://yandex.ru/maps/?mode=routes&rtext=~55.578414,38.219605&rtt=auto",
+      'https://yandex.ru/maps/?mode=routes&rtext=~55.578414,38.219605&rtt=auto',
     sum: 400,
     limit: 20,
     blocks: [
-      "date",
-      "location",
-      "payment",
-      "instructions",
-      "players",
-      "queue",
-      "summary",
+      'date',
+      'location',
+      'payment',
+      'instructions',
+      'players',
+      'queue',
+      'summary',
     ],
   },
 
   saturn: {
-    name: "Сатурн",
+    name: 'Сатурн',
     address:
-      "Московская область, г. Раменское, ул. Народное Имение, 6А (Стадион Сатурн - спорт зал)",
-    link: "https://yandex.ru/maps/-/CLBZ4H~9",
+      'Московская область, г. Раменское, ул. Народное Имение, 6А (Стадион Сатурн - спорт зал)',
+    link: 'https://yandex.ru/maps/-/CLBZ4H~9',
     route:
-      "https://yandex.ru/maps/?mode=routes&rtext=~55.578216,38.226238&rtt=auto",
+      'https://yandex.ru/maps/?mode=routes&rtext=~55.578216,38.226238&rtt=auto',
     sum: 600,
     limit: 10,
     blocks: [
-      "date",
-      "location",
-      "payment",
-      "instructions",
-      "players",
-      "queue",
-      "summary",
+      'date',
+      'location',
+      'payment',
+      'instructions',
+      'players',
+      'queue',
+      'summary',
     ],
   },
 
   tr: {
-    name: "Турнир",
+    name: 'Турнир',
     address:
-      "Московская область, г. Раменское, ул. Воровского, д.4A (Красное Знамя - Спортивный зал)",
-    link: "https://yandex.ru/maps/-/CLuPMJ3L",
+      'Московская область, г. Раменское, ул. Воровского, д.4A (Красное Знамя - Спортивный зал)',
+    link: 'https://yandex.ru/maps/-/CLuPMJ3L',
     route:
-      "https://yandex.ru/maps/?mode=routes&rtext=~55.574202,38.205299&rtt=auto",
+      'https://yandex.ru/maps/?mode=routes&rtext=~55.574202,38.205299&rtt=auto',
     limit: 20,
     extraInfo: [
-      "<b>Запись:</b> Только для участников турнира.",
-      "<b>Формат:</b> В 2 круга каждый с каждым"
+      '<b>Запись:</b> Только для участников турнира.',
+      '<b>Формат:</b> В 3 круга каждый с каждым',
+      '<b>Время:</b> 2 часа',
     ],
     blocks: [
-      "date",
-      "tournamentTitle",
-      "location",
-      "extra",
-      "instructions",
-      "players",
-      "queue",
-      "summary",
+      'date',
+      'tournamentTitle',
+      'location',
+      'extra',
+      'instructions',
+      'players',
+      'queue',
+      'summary',
     ],
   },
 };
 
 function formatDateBlock(collectionDate) {
-  if (!collectionDate) return "🕒 <b>Дата и время сбора не указаны!</b>\n\n";
+  if (!collectionDate) return '🕒 <b>Дата и время сбора не указаны!</b>\n\n';
 
   const options = {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    weekday: "long",
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    weekday: 'long',
   };
-  const formattedDate = collectionDate.toLocaleString("ru-RU", options);
-  const [weekday, date, time] = formattedDate.split(", ");
+  const formattedDate = collectionDate.toLocaleString('ru-RU', options);
+  const [weekday, date, time] = formattedDate.split(', ');
   return `🕒 <b>${
     weekday.charAt(0).toUpperCase() + weekday.slice(1)
-  }, ${date.replace(" г.", "")}, ${time}</b>\n\n`;
+  }, ${date.replace(' г.', '')}, ${time}</b>\n\n`;
 }
 
 function formatLocationBlock(loc) {
@@ -114,45 +115,43 @@ function formatLocationBlock(loc) {
     `📍 <b>Маршрут:</b> <a href="${loc.route}">Построить маршрут</a>\n` +
     (loc.sum
       ? `💰 <b>Стоимость: ${loc.sum} ₽</b> (аренда поля, съёмка, манишки, мячи, аптечка, музыка, вода)\n`
-      : "")
+      : '')
   );
 }
 
 function formatPaymentBlock() {
   return (
-    "💸 <b>Оплата:</b>\n" +
-    "- <b>Перевод СБЕРБАНК</b> (Павел С.):\n" +
+    '💸 <b>Оплата:</b>\n' +
+    '- <b>Перевод СБЕРБАНК</b> (Павел С.):\n' +
     '📱 <a href="tel:89166986185"><code>89166986185</code></a>\n' +
     '🔗 <a href="https://messenger.online.sberbank.ru/sl/JWnaTcQf0aviSEAxy">Оплатить участие</a>\n' +
-    "❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n" +
-    "- <b>Наличные:</b> На месте\n"
+    '❗ <b>Укажите в комментарии к переводу ваш ник из списка на игру</b>\n' +
+    '- <b>Наличные:</b> На месте\n'
   );
 }
 
 function formatPlayerName(name, maxLength = 12) {
-  const cleanName = name
-    .replace(
-      /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu,
-      ""
-    )
-    .trim();
+  // Удаляем эмодзи и специальные символы
+  // eslint-disable-next-line no-misleading-character-class
+  const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+  const cleanName = name.replace(emojiRegex, '').trim();
   const chars = Array.from(cleanName);
-  if (chars.length <= maxLength) return cleanName.padEnd(maxLength, " ");
-  return chars.slice(0, maxLength - 3).join("") + "...";
+  if (chars.length <= maxLength) return cleanName.padEnd(maxLength, ' ');
+  return chars.slice(0, maxLength - 3).join('') + '...';
 }
 
 function formatPlayerLine(index, name, rating, paid) {
-  const paidMark = paid ? " ✅" : "";
-  const paddedIndex = (index + 1).toString().padStart(2, " ") + ".";
-  const paddedName = formatPlayerName(name).padEnd(12, " ");
+  const paidMark = paid ? ' ✅' : '';
+  const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
+  const paddedName = formatPlayerName(name).padEnd(12, ' ');
   const formattedRating = parseFloat(rating).toString();
   let ratingIcon;
-  if (rating < 10) ratingIcon = "⭐";
-  else if (rating < 30) ratingIcon = "💫";
-  else if (rating < 60) ratingIcon = "✨";
-  else if (rating < 100) ratingIcon = "🌠";
-  else if (rating < 150) ratingIcon = "💎";
-  else ratingIcon = "🏆";
+  if (rating < 10) ratingIcon = '⭐';
+  else if (rating < 30) ratingIcon = '💫';
+  else if (rating < 60) ratingIcon = '✨';
+  else if (rating < 100) ratingIcon = '🌠';
+  else if (rating < 150) ratingIcon = '💎';
+  else ratingIcon = '🏆';
   return `${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${paidMark}`;
 }
 
@@ -161,57 +160,57 @@ const blockRenderers = {
 
   location: (_, loc) => formatLocationBlock(loc),
 
-  tournamentTitle: () => "🏆 <b>⚡ ТУРНИР РФОИ ⚡</b>\n\n",
+  tournamentTitle: () => '🏆 <b>⚡ ТУРНИР РФОИ ⚡</b>\n\n',
 
-  payment: (_, loc) => (loc.sum ? formatPaymentBlock() : ""),
+  payment: (_, loc) => (loc.sum ? formatPaymentBlock() : ''),
 
   extra: (_, loc) => {
     const referee = GlobalState.getReferee?.();
     const extraLines = loc.extraInfo ? [...loc.extraInfo] : [];
     if (referee) extraLines.push(`<b>Судья:</b> ${referee}`);
     return extraLines.length
-      ? "\n📜 <b>Информация для игроков:</b>\n" +
-          extraLines.map((l) => `- ${l}`).join("\n") +
-          "\n"
-      : "";
+      ? '\n📜 <b>Информация для игроков:</b>\n' +
+          extraLines.map((l) => `- ${l}`).join('\n') +
+          '\n'
+      : '';
   },
 
   custom: (_, loc) =>
     loc.customInfo?.length
-      ? "\n🧾 <b>Дополнительная информация:</b>\n" +
-        loc.customInfo.map((l) => `- ${l}`).join("\n") +
-        "\n"
-      : "",
+      ? '\n🧾 <b>Дополнительная информация:</b>\n' +
+        loc.customInfo.map((l) => `- ${l}`).join('\n') +
+        '\n'
+      : '',
 
   instructions: () =>
     '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
     '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
     '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
-    "🕹 <b>Управление записью:</b>\n" +
+    '🕹 <b>Управление записью:</b>\n' +
     "- <b>Записаться:</b> Напишите '+' или нажмите '⚽ Играть'\n" +
     "- <b>Выйти:</b> Напишите '-' или нажмите '🚶 Выйти'\n",
 
   players: (_, __, players) =>
     players.length
-      ? "\n🏆 <b>В игре:</b>\n<code>" +
+      ? '\n🏆 <b>В игре:</b>\n<code>' +
         players
           .map((p, i) =>
-            formatPlayerLine(i, p.username || p.name, p.rating, p.paid)
+            formatPlayerLine(i, p.username || p.name, p.rating, p.paid),
           )
-          .join("\n") +
-        "</code>\n"
-      : "",
+          .join('\n') +
+        '</code>\n'
+      : '',
 
   queue: (_, __, ___, queue) =>
     queue.length
-      ? "\n📢 <b>Очередь игроков:</b>\n<code>" +
+      ? '\n📢 <b>Очередь игроков:</b>\n<code>' +
         queue
           .map((p, i) =>
-            formatPlayerLine(i, p.username || p.name, p.rating, p.paid)
+            formatPlayerLine(i, p.username || p.name, p.rating, p.paid),
           )
-          .join("\n") +
-        "</code>\n"
-      : "",
+          .join('\n') +
+        '</code>\n'
+      : '',
 
   summary: (_, __, ___, ____, players, maxPlayers) =>
     `\n📋 <b>Список игроков:</b> ${players.length} / ${maxPlayers}\n`,
@@ -235,20 +234,20 @@ const sendPlayerList = async (ctx, chatId = null) => {
           players,
           queue,
           players,
-          MaxPlayers
-        ) || ""
+          MaxPlayers,
+        ) || '',
     )
-    .join("");
+    .join('');
 
   const inlineKeyboard = Markup.inlineKeyboard([
     [
-      Markup.button.callback("⚽ Играть", "join_match"),
-      Markup.button.callback("🚶 Выйти", "leave_match"),
+      Markup.button.callback('⚽ Играть', 'join_match'),
+      Markup.button.callback('🚶 Выйти', 'leave_match'),
     ],
   ]);
 
   const messageOptions = {
-    parse_mode: "HTML",
+    parse_mode: 'HTML',
     reply_markup: inlineKeyboard.reply_markup,
     disable_web_page_preview: true,
   };
@@ -264,30 +263,30 @@ const sendPlayerList = async (ctx, chatId = null) => {
         msgId,
         null,
         formattedList,
-        messageOptions
+        messageOptions,
       );
     } else {
       const sent = await ctx.telegram.sendMessage(
         listChat,
         formattedList,
-        messageOptions
+        messageOptions,
       );
       GlobalState.setListMessageId(sent.message_id);
       GlobalState.setListMessageChatId(sent.chat.id);
     }
   } catch (error) {
-    if (error.description?.includes("message to edit not found")) {
+    if (error.description?.includes('message to edit not found')) {
       const sent = await ctx.telegram.sendMessage(
         chatId || ctx.chat.id,
         formattedList,
-        messageOptions
+        messageOptions,
       );
       GlobalState.setListMessageId(sent.message_id);
       GlobalState.setListMessageChatId(sent.chat.id);
-    } else if (error.description?.includes("message is not modified")) {
-      console.log("Сообщение не изменилось — пропускаем обновление.");
+    } else if (error.description?.includes('message is not modified')) {
+      console.log('Сообщение не изменилось — пропускаем обновление.');
     } else {
-      console.error("Ошибка при отправке списка:", error);
+      console.error('Ошибка при отправке списка:', error);
     }
   }
 };

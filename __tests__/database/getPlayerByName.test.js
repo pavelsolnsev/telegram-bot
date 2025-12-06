@@ -3,7 +3,7 @@
 // Мокаем базу данных перед импортом модуля
 const mockQuery = jest.fn();
 jest.mock('../../database/database', () => ({
-  query: mockQuery
+  query: mockQuery,
 }));
 
 const getPlayerByName = require('../../database/getPlayerByName');
@@ -71,7 +71,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250000,
         name: 'Иван',
-        username: 'Иван'
+        username: 'Иван',
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);
@@ -89,7 +89,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250001,
         name: 'Петр',
-        username: null
+        username: null,
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);
@@ -106,7 +106,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250002,
         name: 'Иван',
-        username: 'Иван'
+        username: 'Иван',
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);
@@ -121,7 +121,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250003,
         name: 'Иван',
-        username: 'Иван'
+        username: 'Иван',
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);
@@ -165,7 +165,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250100,
         name: 'Иван',
-        username: 'Иван'
+        username: 'Иван',
       };
 
       mockQuery
@@ -183,7 +183,7 @@ describe('getPlayerByName', () => {
       const conflictingPlayer = {
         id: 250200,
         name: 'ДругойИгрок',
-        username: 'ДругойИгрок'
+        username: 'ДругойИгрок',
       };
 
       mockQuery
@@ -204,12 +204,12 @@ describe('getPlayerByName', () => {
       const conflictingPlayer1 = {
         id: 250300,
         name: 'ДругойИгрок1',
-        username: 'ДругойИгрок1'
+        username: 'ДругойИгрок1',
       };
       const conflictingPlayer2 = {
         id: 350300,
         name: 'ДругойИгрок2',
-        username: 'ДругойИгрок2'
+        username: 'ДругойИгрок2',
       };
 
       mockQuery
@@ -288,7 +288,7 @@ describe('getPlayerByName', () => {
 
     test('должен обработать длинное имя', async () => {
       const longName = 'ОченьДлинноеИмяИгрокаКотороеМожетБытьОченьДлинным';
-      
+
       mockQuery
         .mockResolvedValueOnce([[]])
         .mockResolvedValueOnce([[]]);
@@ -315,7 +315,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250400,
         name: 'СтароеИмя',
-        username: 'НовоеИмя'
+        username: 'НовоеИмя',
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);
@@ -330,7 +330,7 @@ describe('getPlayerByName', () => {
       const existingPlayer = {
         id: 250401,
         name: 'ИмяБезUsername',
-        username: null
+        username: null,
       };
 
       mockQuery.mockResolvedValueOnce([[existingPlayer]]);

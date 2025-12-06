@@ -1,18 +1,18 @@
-const { Markup } = require("telegraf");
-const { deleteMessageAfterDelay } = require("../../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../../utils/telegramUtils");
-const { safeAnswerCallback } = require("../../utils/safeAnswerCallback");
+const { Markup } = require('telegraf');
+const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../../utils/telegramUtils');
+const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const {
   checkAdminRights,
   checkMatchStarted,
-} = require("../../utils/matchHelpers");
-const { finishMatch, executeKskCommand } = require("./finishMatch");
+} = require('../../utils/matchHelpers');
+const { finishMatch, executeKskCommand } = require('./finishMatch');
 const {
   cancelActiveMatch,
   reverseFinishedMatch,
   offerContinueEnd,
   executeEndStep,
-} = require("./cancelReverse");
+} = require('./cancelReverse');
 
 module.exports = (bot, GlobalState) => {
   // Команда fn
@@ -22,7 +22,7 @@ module.exports = (bot, GlobalState) => {
     if (!(await checkMatchStarted(ctx, GlobalState.getStart()))) return;
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id);
     }
 
@@ -30,21 +30,21 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик кнопки "🏁 Завершить матч"
-  bot.action("finish_match", async (ctx) => {
+  bot.action('finish_match', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     const isMatchStarted = GlobalState.getStart();
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
       const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
       if (chatId) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           chatId,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         if (message) {
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -55,11 +55,11 @@ module.exports = (bot, GlobalState) => {
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     if (!chatId || chatId < 0) {
-      await safeAnswerCallback(ctx, "⚠️ Команда доступна только в личных сообщениях!");
+      await safeAnswerCallback(ctx, '⚠️ Команда доступна только в личных сообщениях!');
       return;
     }
 
-    await safeAnswerCallback(ctx, "✅ Завершение матча...");
+    await safeAnswerCallback(ctx, '✅ Завершение матча...');
     await finishMatch(ctx, GlobalState);
   });
 
@@ -69,25 +69,25 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик первого нажатия кнопки KSK (подтверждение)
-  bot.action("ksk_confirm", async (ctx) => {
+  bot.action('ksk_confirm', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
 
     // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     // Проверка условий
     if (!isMatchStarted) {
-      await safeAnswerCallback(ctx, "⚠️ Матч не начат!");
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
       const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
       if (chatId) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           chatId,
-          "⚠️ Матч не начат!",
+          '⚠️ Матч не начат!',
         ]);
         if (message) {
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -97,12 +97,12 @@ module.exports = (bot, GlobalState) => {
     }
 
     if (!playingTeams) {
-      await safeAnswerCallback(ctx, "⛔ Нет активного матча для продолжения!");
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча для продолжения!');
       const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
       if (chatId) {
-        const message = await safeTelegramCall(ctx, "sendMessage", [
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
           chatId,
-          "⛔ Нет активного матча для продолжения!",
+          '⛔ Нет активного матча для продолжения!',
         ]);
         if (message) {
           deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -113,22 +113,22 @@ module.exports = (bot, GlobalState) => {
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     if (!chatId || chatId < 0) {
-      await safeAnswerCallback(ctx, "⚠️ Команда доступна только в личных сообщениях!");
+      await safeAnswerCallback(ctx, '⚠️ Команда доступна только в личных сообщениях!');
       return;
     }
 
     // Показываем подтверждающее сообщение с кнопками
-    const confirmMessage = await safeTelegramCall(ctx, "sendMessage", [
+    const confirmMessage = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
-      "⚠️ <b>Подтверждение перехода к следующему матчу</b>\n\n" +
-      "Текущий матч будет завершен, статистика обновлена, и начнется следующий матч.\n\n" +
-      "Вы уверены, что хотите продолжить?",
+      '⚠️ <b>Подтверждение перехода к следующему матчу</b>\n\n' +
+      'Текущий матч будет завершен, статистика обновлена, и начнется следующий матч.\n\n' +
+      'Вы уверены, что хотите продолжить?',
       {
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
           [
-            Markup.button.callback("✅ Подтвердить", "ksk_execute"),
-            Markup.button.callback("❌ Отмена", "ksk_cancel"),
+            Markup.button.callback('✅ Подтвердить', 'ksk_execute'),
+            Markup.button.callback('❌ Отмена', 'ksk_cancel'),
           ],
         ]).reply_markup,
       },
@@ -137,7 +137,7 @@ module.exports = (bot, GlobalState) => {
     // Удаляем сообщение с подтверждением через 30 секунд
     if (confirmMessage) {
       setTimeout(() => {
-        safeTelegramCall(ctx, "deleteMessage", [
+        safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           confirmMessage.message_id,
         ]).catch(() => {
@@ -146,14 +146,14 @@ module.exports = (bot, GlobalState) => {
       }, 30000);
     }
 
-    await safeAnswerCallback(ctx, "Подтвердите переход к следующему матчу");
+    await safeAnswerCallback(ctx, 'Подтвердите переход к следующему матчу');
   });
 
   // Обработчик подтверждения выполнения команды KSK
-  bot.action("ksk_execute", async (ctx) => {
+  bot.action('ksk_execute', async (ctx) => {
     // Удаляем сообщение с подтверждением
     if (ctx.callbackQuery?.message) {
-      await safeTelegramCall(ctx, "deleteMessage", [
+      await safeTelegramCall(ctx, 'deleteMessage', [
         ctx.callbackQuery.message.chat.id,
         ctx.callbackQuery.message.message_id,
       ]).catch(() => {
@@ -161,15 +161,15 @@ module.exports = (bot, GlobalState) => {
       });
     }
 
-    await safeAnswerCallback(ctx, "✅ Переход к следующему матчу...");
+    await safeAnswerCallback(ctx, '✅ Переход к следующему матчу...');
     await executeKskCommand(ctx, GlobalState, checkAdminRights, checkMatchStarted);
   });
 
   // Обработчик отмены выполнения команды KSK
-  bot.action("ksk_cancel", async (ctx) => {
+  bot.action('ksk_cancel', async (ctx) => {
     // Удаляем сообщение с подтверждением
     if (ctx.callbackQuery?.message) {
-      await safeTelegramCall(ctx, "deleteMessage", [
+      await safeTelegramCall(ctx, 'deleteMessage', [
         ctx.callbackQuery.message.chat.id,
         ctx.callbackQuery.message.message_id,
       ]).catch(() => {
@@ -186,7 +186,7 @@ module.exports = (bot, GlobalState) => {
     if (!(await checkAdminRights(ctx, ADMIN_ID))) return;
 
     if (ctx.chat.id < 0) {
-      const msg = await ctx.reply("Напиши мне в ЛС.");
+      const msg = await ctx.reply('Напиши мне в ЛС.');
       return deleteMessageAfterDelay(ctx, msg.message_id, 6000);
     }
 
@@ -195,13 +195,13 @@ module.exports = (bot, GlobalState) => {
       ctx,
       GlobalState,
       cancelActiveMatch,
-      reverseFinishedMatch
+      reverseFinishedMatch,
     );
 
     if (!result.action) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        "⛔ Нет матчей для обработки",
+        '⛔ Нет матчей для обработки',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -211,16 +211,16 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик кнопки "End" из меню управления - работает так же как команда end
-  bot.action("end_match", async (ctx) => {
+  bot.action('end_match', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     if (!chatId || chatId < 0) {
-      await safeAnswerCallback(ctx, "⚠️ Команда доступна только в личных сообщениях!");
+      await safeAnswerCallback(ctx, '⚠️ Команда доступна только в личных сообщениях!');
       return;
     }
 
@@ -228,7 +228,7 @@ module.exports = (bot, GlobalState) => {
     try {
       const messageId = ctx.callbackQuery?.message?.message_id;
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "deleteMessage", [
+        await safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           messageId,
         ]).catch(() => {});
@@ -241,14 +241,14 @@ module.exports = (bot, GlobalState) => {
       ctx,
       GlobalState,
       cancelActiveMatch,
-      reverseFinishedMatch
+      reverseFinishedMatch,
     );
 
     if (!result.action) {
-      await safeAnswerCallback(ctx, "⛔ Нет матчей для обработки");
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      await safeAnswerCallback(ctx, '⛔ Нет матчей для обработки');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        "⛔ Нет матчей для обработки",
+        '⛔ Нет матчей для обработки',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -258,16 +258,16 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик кнопки "Продолжить" для команды end
-  bot.action("end_continue", async (ctx) => {
+  bot.action('end_continue', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     if (!chatId || chatId < 0) {
-      await safeAnswerCallback(ctx, "⚠️ Команда доступна только в личных сообщениях!");
+      await safeAnswerCallback(ctx, '⚠️ Команда доступна только в личных сообщениях!');
       return;
     }
 
@@ -275,7 +275,7 @@ module.exports = (bot, GlobalState) => {
     try {
       const messageId = ctx.callbackQuery?.message?.message_id;
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "deleteMessage", [
+        await safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           messageId,
         ]).catch(() => {});
@@ -284,19 +284,19 @@ module.exports = (bot, GlobalState) => {
       // Игнорируем ошибки удаления
     }
 
-    await safeAnswerCallback(ctx, "⏳ Выполняю следующее действие...");
+    await safeAnswerCallback(ctx, '⏳ Выполняю следующее действие...');
 
     const result = await executeEndStep(
       ctx,
       GlobalState,
       cancelActiveMatch,
-      reverseFinishedMatch
+      reverseFinishedMatch,
     );
 
     if (!result.action) {
-      const message = await safeTelegramCall(ctx, "sendMessage", [
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        "⛔ Нет матчей для обработки",
+        '⛔ Нет матчей для обработки',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -306,10 +306,10 @@ module.exports = (bot, GlobalState) => {
   });
 
   // Обработчик кнопки "Остановить" для команды end
-  bot.action("end_stop", async (ctx) => {
+  bot.action('end_stop', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      await safeAnswerCallback(ctx, "⛔ У вас нет прав для этой команды.");
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
@@ -318,7 +318,7 @@ module.exports = (bot, GlobalState) => {
       const chatId = ctx.callbackQuery?.message?.chat?.id;
       const messageId = ctx.callbackQuery?.message?.message_id;
       if (chatId && messageId) {
-        await safeTelegramCall(ctx, "deleteMessage", [
+        await safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           messageId,
         ]).catch(() => {});
@@ -327,7 +327,7 @@ module.exports = (bot, GlobalState) => {
       // Игнорируем ошибки удаления
     }
 
-    await safeAnswerCallback(ctx, "✅ Процесс остановлен");
+    await safeAnswerCallback(ctx, '✅ Процесс остановлен');
   });
 };
 

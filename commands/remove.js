@@ -1,6 +1,6 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
-const { sendPrivateMessage } = require("../message/sendPrivateMessage"); // Добавляем импорт sendPrivateMessage
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { sendPlayerList } = require('../utils/sendPlayerList');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage'); // Добавляем импорт sendPrivateMessage
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^r(\d+)$/i, async (ctx) => {
@@ -13,22 +13,22 @@ module.exports = (bot, GlobalState) => {
 
     // Проверяем, является ли отправитель администратором
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await ctx.reply('⚠️ Матч не начат!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (isTeamsDivided) {
-      const message = await ctx.reply("Игра уже идет!");
+      const message = await ctx.reply('Игра уже идет!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id > 0) {
-      const message = await ctx.reply("Напиши в группу!");
+      const message = await ctx.reply('Напиши в группу!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
@@ -37,14 +37,14 @@ module.exports = (bot, GlobalState) => {
 
     // Проверяем, что номер игрока корректен
     if (playerNumber <= 0 || playerNumber > players.length) {
-      const message = await ctx.reply("⚠️ Неверный номер игрока!");
+      const message = await ctx.reply('⚠️ Неверный номер игрока!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     // Находим игрока по его номеру
     const playerIndex = playerNumber - 1;
     const playerName = players[playerIndex];
-    let displayName = playerName.username ? `${playerName.name} (${playerName.username})` : playerName.name;
+    const displayName = playerName.username ? `${playerName.name} (${playerName.username})` : playerName.name;
     // Удаляем игрока из списка
     players.splice(playerIndex, 1);
 
@@ -52,7 +52,7 @@ module.exports = (bot, GlobalState) => {
     if (queue.length > 0) {
       const newPlayer = queue.shift(); // Извлекаем первого игрока из очереди
       players.push(newPlayer); // Добавляем его в основной состав
-      sendPrivateMessage(bot, newPlayer.id, "🎉 Вы в основном составе!"); // Отправляем уведомление
+      sendPrivateMessage(bot, newPlayer.id, '🎉 Вы в основном составе!'); // Отправляем уведомление
     }
 
     // Обновляем список игроков и очередь в GlobalState

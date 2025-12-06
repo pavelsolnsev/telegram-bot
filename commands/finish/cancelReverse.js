@@ -1,11 +1,11 @@
-const { Markup } = require("telegraf");
+const { Markup } = require('telegraf');
 const {
   buildPlayingTeamsMessage,
-} = require("../../message/buildPlayingTeamsMessage");
-const { createTeamButtons } = require("../../buttons/createTeamButtons");
-const { deleteMessageAfterDelay } = require("../../utils/deleteMessageAfterDelay");
-const { safeTelegramCall } = require("../../utils/telegramUtils");
-const { updateTeamsMessage } = require("../../utils/matchHelpers");
+} = require('../../message/buildPlayingTeamsMessage');
+const { createTeamButtons } = require('../../buttons/createTeamButtons');
+const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
+const { safeTelegramCall } = require('../../utils/telegramUtils');
+const { updateTeamsMessage } = require('../../utils/matchHelpers');
 
 // Функция отмены активного матча
 const cancelActiveMatch = async (ctx, GlobalState) => {
@@ -17,9 +17,9 @@ const cancelActiveMatch = async (ctx, GlobalState) => {
   if (!chatId || chatId < 0) {
     const targetChatId = chatId || ctx.from?.id;
     if (targetChatId) {
-      const msg = await safeTelegramCall(ctx, "sendMessage", [
+      const msg = await safeTelegramCall(ctx, 'sendMessage', [
         targetChatId,
-        "Напиши мне в ЛС.",
+        'Напиши мне в ЛС.',
       ]);
       return deleteMessageAfterDelay(ctx, msg.message_id, 6000);
     }
@@ -27,68 +27,68 @@ const cancelActiveMatch = async (ctx, GlobalState) => {
   }
 
   if (!isMatchStarted) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
-      "⚠️ Матч не начат!",
+      '⚠️ Матч не начат!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
 
   if (!playingTeams) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
-      "⛔ Нет активного матча для отмены!",
+      '⛔ Нет активного матча для отмены!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
 
-  const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  
+  // Деструктуризация не используется, но оставляем для ясности структуры
+  // const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+
   // Вычисляем номер текущего матча
   const historyLength = GlobalState.getMatchHistoryStackLength();
   const currentMatchNumber = historyLength + 1;
-  
+
   const playingMsg = GlobalState.getPlayingTeamsMessageId();
-  
+
   // Ищем и удаляем старое сообщение этого матча по номеру (если оно отличается от текущего)
   const oldMatchMessage = GlobalState.getMatchMessageByNumber(currentMatchNumber);
   if (oldMatchMessage && oldMatchMessage.chatId && oldMatchMessage.messageId) {
     // Проверяем, не является ли это сообщение текущим активным сообщением
-    const isCurrentMessage = playingMsg && 
-      playingMsg.chatId === oldMatchMessage.chatId && 
+    const isCurrentMessage = playingMsg &&
+      playingMsg.chatId === oldMatchMessage.chatId &&
       playingMsg.messageId === oldMatchMessage.messageId;
-    
+
     if (!isCurrentMessage) {
       // Удаляем старое сообщение, если оно отличается от текущего
       try {
         const chatId = Number(oldMatchMessage.chatId);
         const messageId = Number(oldMatchMessage.messageId);
-        await safeTelegramCall(ctx, "deleteMessage", [
+        await safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           messageId,
         ]);
       } catch (error) {
         // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
-        console.log("Не удалось удалить старое сообщение матча:", error.message);
+        console.log('Не удалось удалить старое сообщение матча:', error.message);
       }
-    } else {
     }
     // Удаляем запись о сообщении из хранилища
     GlobalState.removeMatchMessageByNumber(currentMatchNumber);
   }
-  
+
   // Удаляем текущее активное сообщение матча
   if (playingMsg && playingMsg.chatId && playingMsg.messageId) {
     try {
       const chatId = Number(playingMsg.chatId);
       const messageId = Number(playingMsg.messageId);
-      await safeTelegramCall(ctx, "deleteMessage", [
+      await safeTelegramCall(ctx, 'deleteMessage', [
         chatId,
         messageId,
       ]);
     } catch (error) {
       // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
-      console.log("Не удалось удалить текущее сообщение матча:", error.message);
+      console.log('Не удалось удалить текущее сообщение матча:', error.message);
     }
   }
 
@@ -103,18 +103,18 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
   const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
 
   if (!isMatchFinished) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
-      "⛔ Нет завершённого матча для отката!",
+      '⛔ Нет завершённого матча для отката!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
 
   const previousState = GlobalState.popMatchHistory();
   if (!previousState) {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
-      "⛔ Нет истории для отката!",
+      '⛔ Нет истории для отката!',
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   }
@@ -131,27 +131,27 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
   if (finishedMatchNumber > 0) {
     const finishedMatchMessage = GlobalState.getMatchMessageByNumber(finishedMatchNumber);
     const playingMsg = GlobalState.getPlayingTeamsMessageId();
-    
+
     // Проверяем, не является ли сообщение завершенного матча текущим активным сообщением
     const isSameAsActive = playingMsg && finishedMatchMessage &&
-      playingMsg.chatId === finishedMatchMessage.chatId && 
+      playingMsg.chatId === finishedMatchMessage.chatId &&
       playingMsg.messageId === finishedMatchMessage.messageId;
-    
+
     if (finishedMatchMessage && finishedMatchMessage.chatId && finishedMatchMessage.messageId) {
       try {
         const chatId = Number(finishedMatchMessage.chatId);
         const messageId = Number(finishedMatchMessage.messageId);
-        await safeTelegramCall(ctx, "deleteMessage", [
+        await safeTelegramCall(ctx, 'deleteMessage', [
           chatId,
           messageId,
         ]);
       } catch (error) {
-        console.log("Не удалось удалить сообщение завершенного матча:", error.message);
+        console.log('Не удалось удалить сообщение завершенного матча:', error.message);
       }
       // Удаляем запись о сообщении из хранилища
       GlobalState.removeMatchMessageByNumber(finishedMatchNumber);
     }
-    
+
     // Если это то же сообщение, что и активное, также очищаем активное сообщение
     if (isSameAsActive) {
       GlobalState.setPlayingTeamsMessageId(null, null);
@@ -174,7 +174,7 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
     ctx,
     GlobalState,
     GlobalState.getTeamsBase(),
-    previousState.teamStats
+    previousState.teamStats,
   );
 
   // Восстанавливаем сообщение с активным матчем (если было)
@@ -190,21 +190,21 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
       team2,
       teamIndex1,
       teamIndex2,
-      "playing",
+      'playing',
       undefined,
-      reverseMatchNumber
+      reverseMatchNumber,
     );
-    const sent = await safeTelegramCall(ctx, "sendMessage", [
+    const sent = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
       teamsMessage,
       {
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
           ...createTeamButtons(team1, teamIndex1),
           ...createTeamButtons(team2, teamIndex2),
           [], // Пустая строка для разделения
-          [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-          [Markup.button.callback("⚙️ Управление", "management_menu")],
+          [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+          [Markup.button.callback('⚙️ Управление', 'management_menu')],
         ]).reply_markup,
       },
     ]);
@@ -225,9 +225,9 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
 
   if (hasMoreToProcess) {
     // Определяем тексты кнопок в зависимости от следующего действия
-    const teamColors = ["🔴", "🔵", "🟢", "🟡"];
-    let continueButtonText = "";
-    let stopButtonText = "";
+    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
+    let continueButtonText = '';
+    let stopButtonText = '';
     let currentMatchNumber = 0;
     let teamIndex1 = -1;
     let teamIndex2 = -1;
@@ -243,12 +243,12 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       }
       // Номер завершённого матча = количество завершённых матчей
       const finishedMatchNumber = matchResults.length;
-      const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0 
+      const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0
         ? ` ${teamColors[teamIndex1]} vs ${teamColors[teamIndex2]}`
-        : "";
+        : '';
       continueButtonText = `⏪ Вернуться в прошлый матч №${finishedMatchNumber}${teamMatchInfo}`;
       // Когда есть завершённый матч, вторая кнопка закрывает меню для выбора новых команд
-      stopButtonText = `🔄 Закрыть меню и выбрать новые команды`;
+      stopButtonText = '🔄 Закрыть меню и выбрать новые команды';
     } else if (playingTeams) {
       // Если есть активный матч - следующее действие: отменить его
       teamIndex1 = playingTeams.teamIndex1;
@@ -273,10 +273,10 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       }
       // Номер матча, который будет откачен = historyLength
       currentMatchNumber = historyLength;
-      const historyWord = historyLength === 1 ? "матч" : historyLength < 5 ? "матча" : "матчей";
-      const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0 
+      const historyWord = historyLength === 1 ? 'матч' : historyLength < 5 ? 'матча' : 'матчей';
+      const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0
         ? ` ${teamColors[teamIndex1]} vs ${teamColors[teamIndex2]}`
-        : "";
+        : '';
       continueButtonText = `⏪ Откатить следующий матч №${currentMatchNumber}${teamMatchInfo} (осталось ${historyLength} ${historyWord})`;
       // После отката матча из истории, восстановится активный матч
       // Номер активного матча после отката = historyLength - 1 (после pop из стека)
@@ -285,18 +285,18 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       if (activeMatchAfterPop > 0) {
         stopButtonText = `✅ Редактировать матч №${activeMatchAfterPop}${teamMatchInfo}`;
       } else {
-        stopButtonText = `✅ Остановить`;
+        stopButtonText = '✅ Остановить';
       }
     }
 
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
       action,
       {
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
-          [Markup.button.callback(continueButtonText, "end_continue")],
-          [Markup.button.callback(stopButtonText, "end_stop")],
+          [Markup.button.callback(continueButtonText, 'end_continue')],
+          [Markup.button.callback(stopButtonText, 'end_stop')],
         ]).reply_markup,
       },
     ]);
@@ -304,7 +304,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
     deleteMessageAfterDelay(ctx, message.message_id, 60000);
     return message.message_id;
   } else {
-    const message = await safeTelegramCall(ctx, "sendMessage", [
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
       chatId,
       `${action}\n\n✅ Все матчи обработаны!`,
     ]);
@@ -324,10 +324,10 @@ const executeEndStep = async (ctx, GlobalState, cancelActiveMatch, reverseFinish
     await reverseFinishedMatch(ctx, GlobalState);
     // Обновляем chatId после выполнения, так как ctx мог измениться
     const updatedChatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
-    
-    return { 
-      action: "⏪ Выбери действие", 
-      chatId: updatedChatId || chatId 
+
+    return {
+      action: '⏪ Выбери действие',
+      chatId: updatedChatId || chatId,
     };
   }
 
@@ -342,10 +342,10 @@ const executeEndStep = async (ctx, GlobalState, cancelActiveMatch, reverseFinish
     }
     // Обновляем chatId после выполнения
     const updatedChatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
-    
-    return { 
-      action: "🚫 Отмена активного матча выполнена", 
-      chatId: updatedChatId || chatId 
+
+    return {
+      action: '🚫 Отмена активного матча выполнена',
+      chatId: updatedChatId || chatId,
     };
   }
 

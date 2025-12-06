@@ -1,12 +1,12 @@
-const db = require("../database/database");
+const db = require('../database/database');
 
 async function getPlayerStats(players, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const playerIds = players.map((p) => p.id);
       const [rows] = await db.query(
-        "SELECT id, gamesPlayed, wins, draws, losses, rating FROM players WHERE id IN (?)",
-        [playerIds]
+        'SELECT id, gamesPlayed, wins, draws, losses, rating FROM players WHERE id IN (?)',
+        [playerIds],
       );
 
       const statsMap = new Map(
@@ -19,7 +19,7 @@ async function getPlayerStats(players, retries = 3) {
             losses: row.losses || 0,
             rating: row.rating || 0,
           },
-        ])
+        ]),
       );
 
       return players.map((player) => ({
@@ -32,12 +32,12 @@ async function getPlayerStats(players, retries = 3) {
       }));
     } catch (error) {
       console.error(`Попытка ${i + 1} получения статистики игроков не удалась:`, error);
-      if (error.code === "ER_CON_COUNT_ERROR") {
-        console.warn("Слишком много подключений, увеличиваем время ожидания...");
+      if (error.code === 'ER_CON_COUNT_ERROR') {
+        console.warn('Слишком много подключений, увеличиваем время ожидания...');
         await new Promise(resolve => setTimeout(resolve, 2000)); // Увеличиваем задержку для повторной попытки
       }
       if (i === retries - 1) {
-        console.error("Все попытки исчерпаны, возвращаем исходных игроков.");
+        console.error('Все попытки исчерпаны, возвращаем исходных игроков.');
         return players;
       }
       await new Promise(resolve => setTimeout(resolve, 1000));

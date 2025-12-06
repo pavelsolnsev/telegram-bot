@@ -1,12 +1,12 @@
-const db = require("./database");
-const crypto = require("crypto");
+const db = require('./database');
+const crypto = require('crypto');
 
 /**
  * Генерирует стабильный ID на основе имени игрока
  * Использует хеш для создания ID в диапазоне 200000-299999
  */
 function generatePlayerIdFromName(name) {
-  const hash = crypto.createHash("md5").update(name.trim().toLowerCase()).digest("hex");
+  const hash = crypto.createHash('md5').update(name.trim().toLowerCase()).digest('hex');
   // Преобразуем первые 8 символов хеша в число и берем модуль для диапазона 200000-299999
   const hashNumber = parseInt(hash.substring(0, 8), 16);
   return 200000 + (hashNumber % 100000);
@@ -20,13 +20,13 @@ function generatePlayerIdFromName(name) {
  */
 async function getPlayerByName(playerName, retries = 3) {
   const normalizedName = playerName.trim();
-  
+
   for (let i = 0; i < retries; i++) {
     try {
       // Сначала пытаемся найти игрока по username или name (нечувствительно к регистру и пробелам)
       const [rows] = await db.query(
-        "SELECT id, name, username FROM players WHERE LOWER(TRIM(COALESCE(username, name))) = ? LIMIT 1",
-        [normalizedName.toLowerCase()]
+        'SELECT id, name, username FROM players WHERE LOWER(TRIM(COALESCE(username, name))) = ? LIMIT 1',
+        [normalizedName.toLowerCase()],
       );
 
       if (rows.length > 0) {
@@ -43,11 +43,11 @@ async function getPlayerByName(playerName, retries = 3) {
 
       // Игрок не найден, генерируем стабильный ID на основе имени
       const generatedId = generatePlayerIdFromName(normalizedName);
-      
+
       // Проверяем, не занят ли этот ID другим игроком
       const [idCheck] = await db.query(
-        "SELECT id, name, username FROM players WHERE id = ? LIMIT 1",
-        [generatedId]
+        'SELECT id, name, username FROM players WHERE id = ? LIMIT 1',
+        [generatedId],
       );
 
       if (idCheck.length > 0) {
@@ -64,10 +64,10 @@ async function getPlayerByName(playerName, retries = 3) {
         // ID занят другим игроком - это коллизия
         // Проверяем еще раз поиск по username или name (на случай, если имя немного отличается)
         const [nameCheckAgain] = await db.query(
-          "SELECT id, name, username FROM players WHERE LOWER(TRIM(COALESCE(username, name))) = ? LIMIT 1",
-          [normalizedName.toLowerCase()]
+          'SELECT id, name, username FROM players WHERE LOWER(TRIM(COALESCE(username, name))) = ? LIMIT 1',
+          [normalizedName.toLowerCase()],
         );
-        
+
         if (nameCheckAgain.length > 0) {
           // Нашли игрока с похожим именем (разница только в регистре/пробелах)
           const foundUsername = nameCheckAgain[0].username || nameCheckAgain[0].name;
@@ -78,19 +78,19 @@ async function getPlayerByName(playerName, retries = 3) {
             found: true,
           };
         }
-        
+
         // Коллизия ID: сгенерированный ID занят другим игроком
         // Генерируем альтернативный ID в другом диапазоне
         const existingPlayerName = idCheck[0].username || idCheck[0].name;
         console.warn(`Коллизия ID для игрока "${normalizedName}": ID ${generatedId} занят игроком "${existingPlayerName}". Используем альтернативный ID.`);
-        const alternativeId = 300000 + (parseInt(crypto.createHash("sha256").update(normalizedName).digest("hex").substring(0, 8), 16) % 100000);
-        
+        const alternativeId = 300000 + (parseInt(crypto.createHash('sha256').update(normalizedName).digest('hex').substring(0, 8), 16) % 100000);
+
         // Проверяем, не занят ли альтернативный ID
         const [altIdCheck] = await db.query(
-          "SELECT id FROM players WHERE id = ? LIMIT 1",
-          [alternativeId]
+          'SELECT id FROM players WHERE id = ? LIMIT 1',
+          [alternativeId],
         );
-        
+
         if (altIdCheck.length > 0) {
           // Альтернативный ID тоже занят, используем простое смещение
           const finalId = alternativeId + 1;
@@ -101,7 +101,7 @@ async function getPlayerByName(playerName, retries = 3) {
             found: false,
           };
         }
-        
+
         return {
           id: alternativeId,
           name: normalizedName,
@@ -119,12 +119,12 @@ async function getPlayerByName(playerName, retries = 3) {
       };
     } catch (error) {
       console.error(`Попытка ${i + 1} поиска игрока по имени не удалась:`, error);
-      if (error.code === "ER_CON_COUNT_ERROR") {
-        console.warn("Слишком много подключений, увеличиваем время ожидания...");
+      if (error.code === 'ER_CON_COUNT_ERROR') {
+        console.warn('Слишком много подключений, увеличиваем время ожидания...');
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
       if (i === retries - 1) {
-        console.error("Все попытки исчерпаны, генерируем ID без проверки БД.");
+        console.error('Все попытки исчерпаны, генерируем ID без проверки БД.');
         // В случае ошибки все равно генерируем стабильный ID
         return {
           id: generatePlayerIdFromName(normalizedName),

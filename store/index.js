@@ -1,6 +1,6 @@
 const GlobalState = (() => {
-  const ADMIN_ID = process.env.ADMIN_ID.split(",").map((id) =>
-    Number(id.trim())
+  const ADMIN_ID = process.env.ADMIN_ID.split(',').map((id) =>
+    Number(id.trim()),
   );
   const GROUP_ID = Number(process.env.ID);
 
@@ -34,7 +34,7 @@ const GlobalState = (() => {
   let matchResults = [];
   let lastResultMessage = null;
   let isTableAllowed = false;
-  let referee = "Не назначен";
+  let referee = 'Не назначен';
   let matchMessagesByNumber = {};
 
   const Store = {
@@ -59,7 +59,7 @@ const GlobalState = (() => {
 
     getReferee: () => referee,
     setReferee: (name) => (referee = name),
-    resetReferee: () => (referee = "Не назначен"),
+    resetReferee: () => (referee = 'Не назначен'),
 
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => (MAX_PLAYERS = number),
@@ -115,7 +115,7 @@ const GlobalState = (() => {
     appendToPlayersHistory: (newPlayers) => {
       newPlayers.forEach((newPlayer) => {
         const existingPlayer = allPlayersHistory.find(
-          (p) => p.id === newPlayer.id
+          (p) => p.id === newPlayer.id,
         );
         if (existingPlayer) {
           existingPlayer.goals += newPlayer.goals;

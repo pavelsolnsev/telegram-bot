@@ -1,4 +1,4 @@
-const db = require("./database");
+const db = require('./database');
 
 /**
  * Обнуляет статистику всех игроков в таблице players.
@@ -18,9 +18,9 @@ async function resetPlayersStats() {
 
   try {
     await db.query(query);
-    console.log("Статистика всех игроков успешно обнулена.");
+    console.log('Статистика всех игроков успешно обнулена.');
   } catch (error) {
-    console.error("Ошибка при обнулении статистики игроков:", error);
+    console.error('Ошибка при обнулении статистики игроков:', error);
     throw error;
   }
 }

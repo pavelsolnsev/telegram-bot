@@ -1,41 +1,41 @@
-const { deleteMessageAfterDelay } = require("../utils/deleteMessageAfterDelay");
-const { sendPlayerList } = require("../utils/sendPlayerList");
-const { sendPrivateMessage } = require("../message/sendPrivateMessage");
+const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { sendPlayerList } = require('../utils/sendPlayerList');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^l(\d+)$/i, async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     let players = GlobalState.getPlayers();
-    let queue = GlobalState.getQueue();
-    let MAX_PLAYERS = GlobalState.getMaxPlayers();
+    const queue = GlobalState.getQueue();
+    const MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
-      const message = await ctx.reply("⛔ У вас нет прав для этой команды.");
+      const message = await ctx.reply('⛔ У вас нет прав для этой команды.');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (!isMatchStarted) {
-      const message = await ctx.reply("⚠️ Матч не начат!");
+      const message = await ctx.reply('⚠️ Матч не начат!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (isTeamsDivided) {
-      const message = await ctx.reply("Лимит закрыт");
+      const message = await ctx.reply('Лимит закрыт');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     if (ctx.chat.id > 0) {
-      const message = await ctx.reply("Напиши в группу!");
+      const message = await ctx.reply('Напиши в группу!');
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
     const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]);
     if (newLimit <= 0) {
       const message = await ctx.reply(
-        "⚠️ Лимит должен быть положительным числом!"
+        '⚠️ Лимит должен быть положительным числом!',
       );
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
@@ -48,7 +48,7 @@ module.exports = (bot, GlobalState) => {
 
       // Отправляем уведомления игрокам, перемещённым в очередь
       playersToMove.forEach((player) => {
-        sendPrivateMessage(bot, player.id, "⚠️ Вы перемещены в очередь!");
+        sendPrivateMessage(bot, player.id, '⚠️ Вы перемещены в очередь!');
       });
     } else if (newLimit > MAX_PLAYERS) {
       // Если новый лимит больше текущего
@@ -58,7 +58,7 @@ module.exports = (bot, GlobalState) => {
 
       // Отправляем уведомления игрокам, перемещённым в основной состав
       playersToAdd.forEach((player) => {
-        sendPrivateMessage(bot, player.id, "🎉 Вы в основном составе!");
+        sendPrivateMessage(bot, player.id, '🎉 Вы в основном составе!');
       });
     }
 
@@ -67,7 +67,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setQueue(queue);
 
     const message = await ctx.reply(
-      `✅ Лимит игроков установлен на ${newLimit}.`
+      `✅ Лимит игроков установлен на ${newLimit}.`,
     );
     deleteMessageAfterDelay(ctx, message.message_id, 6000);
     await sendPlayerList(ctx);

@@ -1,9 +1,9 @@
-const { Markup } = require("telegraf");
-const { GlobalState } = require("../store");
-const { buildPlayingTeamsMessage } = require("./buildPlayingTeamsMessage");
-const { createTeamButtons } = require("../buttons/createTeamButtons");
-const { safeTelegramCall } = require("../utils/telegramUtils");
-const _ = require("lodash"); // Импортируем всю библиотеку lodash
+const { Markup } = require('telegraf');
+const { GlobalState } = require('../store');
+const { buildPlayingTeamsMessage } = require('./buildPlayingTeamsMessage');
+const { createTeamButtons } = require('../buttons/createTeamButtons');
+const { safeTelegramCall } = require('../utils/telegramUtils');
+const _ = require('lodash'); // Импортируем всю библиотеку lodash
 
 // Базовая функция обновления сообщения
 const updatePlayingTeamsMessageBase = async (ctx) => {
@@ -11,7 +11,7 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
   const playingTeams = GlobalState.getPlayingTeams();
 
   if (!playingTeamsMessageId || !playingTeams) {
-    console.log("Ошибка: playingTeamsMessageId или playingTeams отсутствуют!");
+    console.log('Ошибка: playingTeamsMessageId или playingTeams отсутствуют!');
     return;
   }
 
@@ -26,22 +26,22 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
     playingTeams.teamIndex2,
     'playing',
     undefined,
-    matchNumber
+    matchNumber,
   );
 
-  await safeTelegramCall(ctx, "editMessageText", [
+  await safeTelegramCall(ctx, 'editMessageText', [
     playingTeamsMessageId.chatId,
     playingTeamsMessageId.messageId,
     null,
     teamsMessage,
     {
-      parse_mode: "HTML",
+      parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
         ...createTeamButtons(playingTeams.team1, playingTeams.teamIndex1),
         ...createTeamButtons(playingTeams.team2, playingTeams.teamIndex2),
         [], // Пустая строка для разделения
-        [Markup.button.callback("⏭️ Следующий матч", "ksk_confirm")],
-        [Markup.button.callback("⚙️ Управление", "management_menu")],
+        [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+        [Markup.button.callback('⚙️ Управление', 'management_menu')],
       ]).reply_markup,
     },
   ]);
