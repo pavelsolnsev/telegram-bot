@@ -1,7 +1,6 @@
 const { Markup } = require('telegraf');
 const { GlobalState } = require('../store');
 const { buildPlayingTeamsMessage } = require('./buildPlayingTeamsMessage');
-const { createTeamButtons } = require('../buttons/createTeamButtons');
 const { safeTelegramCall } = require('../utils/telegramUtils');
 const _ = require('lodash'); // Импортируем всю библиотеку lodash
 
@@ -37,9 +36,7 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
     {
       parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
-        ...createTeamButtons(playingTeams.team1, playingTeams.teamIndex1),
-        ...createTeamButtons(playingTeams.team2, playingTeams.teamIndex2),
-        [], // Пустая строка для разделения
+        [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
         [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
         [Markup.button.callback('⚙️ Управление', 'management_menu')],
       ]).reply_markup,

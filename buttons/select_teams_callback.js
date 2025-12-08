@@ -3,7 +3,6 @@ const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../utils/telegramUtils');
 const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessage');
-const { createTeamButtons } = require('../buttons/createTeamButtons');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 
 module.exports = (bot, GlobalState) => {
@@ -367,8 +366,6 @@ module.exports = (bot, GlobalState) => {
 
     // Send the playing teams message
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, firstTeamIndex, secondTeamIndex, 'playing', updatedTeams, matchNumber);
-    const team1Buttons = createTeamButtons(team1, firstTeamIndex);
-    const team2Buttons = createTeamButtons(team2, secondTeamIndex);
 
     await safeAnswerCallback(ctx, 'Матч начат!');
 
@@ -378,10 +375,7 @@ module.exports = (bot, GlobalState) => {
       {
         parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
-          ...team1Buttons,
-          [Markup.button.callback('—', 'noop')],
-          ...team2Buttons,
-          [], // Пустая строка для разделения
+          [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
           [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
           [Markup.button.callback('⚙️ Управление', 'management_menu')],
         ]).reply_markup,
@@ -546,8 +540,6 @@ module.exports = (bot, GlobalState) => {
 
     // Send the playing teams message
     const teamsMessage = buildPlayingTeamsMessage(team1, team2, teamIndex1, teamIndex2, 'playing', updatedTeams, matchNumber);
-    const team1Buttons = createTeamButtons(team1, teamIndex1);
-    const team2Buttons = createTeamButtons(team2, teamIndex2);
 
     await safeAnswerCallback(ctx, 'Матч начат!');
 
@@ -557,10 +549,7 @@ module.exports = (bot, GlobalState) => {
       {
         parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
-          ...team1Buttons,
-          [Markup.button.callback('—', 'noop')],
-          ...team2Buttons,
-          [], // Пустая строка для разделения
+          [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
           [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
           [Markup.button.callback('⚙️ Управление', 'management_menu')],
         ]).reply_markup,

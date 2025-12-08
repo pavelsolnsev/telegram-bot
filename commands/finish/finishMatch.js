@@ -2,7 +2,6 @@ const { Markup } = require('telegraf');
 const {
   buildPlayingTeamsMessage,
 } = require('../../message/buildPlayingTeamsMessage');
-const { createTeamButtons } = require('../../buttons/createTeamButtons');
 const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const {
@@ -495,9 +494,7 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     {
       parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
-        ...createTeamButtons(team1Next, nextTeamIndex1),
-        ...createTeamButtons(team2Next, nextTeamIndex2),
-        [], // Пустая строка для разделения
+        [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
         [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
         [Markup.button.callback('⚙️ Управление', 'management_menu')],
       ]).reply_markup,

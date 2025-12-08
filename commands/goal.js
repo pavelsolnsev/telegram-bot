@@ -517,6 +517,167 @@ module.exports = (bot, GlobalState) => {
   });
 
 
+  // Обработчик кнопки "Отметить голы" - показывает список игроков для добавления голов
+  bot.action('show_goals_menu', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка прав админа
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    // Проверка условий
+    if (!isMatchStarted) {
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Матч не начат!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    const team1Buttons = createTeamButtons(team1, teamIndex1);
+    const team2Buttons = createTeamButtons(team2, teamIndex2);
+
+    // Объединяем кнопки с разделителем
+    const allButtons = [
+      ...team1Buttons,
+      [Markup.button.callback('—', 'noop')],
+      ...team2Buttons,
+      [],
+      [Markup.button.callback('❌ Отменить гол', 'cancel_goal_menu')],
+      [Markup.button.callback('⬅️ Назад', 'goals_menu_back')],
+    ];
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+
+    // Вычисляем номер матча для заголовка
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
+    const goalsMenuMessage = buildPlayingTeamsMessage(
+      team1,
+      team2,
+      teamIndex1,
+      teamIndex2,
+      'playing',
+      undefined,
+      matchNumber,
+    );
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          goalsMenuMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '⚽ Выберите игрока');
+    } catch (error) {
+      // Если не удалось отредактировать сообщение, отправляем новое
+      if (chatId) {
+        await safeTelegramCall(ctx, 'sendMessage', [
+          chatId,
+          goalsMenuMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '⚽ Выберите игрока');
+    }
+  });
+
+  // Обработчик кнопки "Назад" из меню голов - возвращает к основному виду
+  bot.action('goals_menu_back', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    // Вычисляем номер матча
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
+    const teamsMessage = buildPlayingTeamsMessage(
+      team1,
+      team2,
+      teamIndex1,
+      teamIndex2,
+      'playing',
+      undefined,
+      matchNumber,
+    );
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          teamsMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard([
+              [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+              [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+              [Markup.button.callback('⚙️ Управление', 'management_menu')],
+            ]).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    } catch (error) {
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    }
+  });
+
   // Обработчик кнопки "Назад" - возвращает к основному меню
   bot.action('management_back', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
@@ -540,8 +701,6 @@ module.exports = (bot, GlobalState) => {
     }
 
     const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-    const team1Buttons = createTeamButtons(team1, teamIndex1);
-    const team2Buttons = createTeamButtons(team2, teamIndex2);
     // Вычисляем номер матча
     const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
     const matchNumber = matchHistoryLength + 1;
@@ -554,7 +713,6 @@ module.exports = (bot, GlobalState) => {
       'playing',
       undefined,
       matchNumber,
-      'playing',
     );
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
@@ -570,10 +728,7 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
-              ...team1Buttons,
-              [Markup.button.callback('—', 'noop')],
-              ...team2Buttons,
-              [], // Пустая строка для разделения
+              [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
             ]).reply_markup,
