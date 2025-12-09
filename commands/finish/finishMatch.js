@@ -57,10 +57,12 @@ const finishMatch = async (ctx, GlobalState) => {
     players1: team1.map((p) => ({
       name: p.username || p.name,
       goals: p.goals || 0,
+      assists: p.assists || 0,
     })),
     players2: team2.map((p) => ({
       name: p.username || p.name,
       goals: p.goals || 0,
+      assists: p.assists || 0,
     })),
   });
 
@@ -197,10 +199,12 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     players1: team1.map((p) => ({
       name: p.username || p.name,
       goals: p.goals || 0,
+      assists: p.assists || 0,
     })),
     players2: team2.map((p) => ({
       name: p.username || p.name,
       goals: p.goals || 0,
+      assists: p.assists || 0,
     })),
   });
 
@@ -495,6 +499,7 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
       parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
         [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+        [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
         [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
         [Markup.button.callback('⚙️ Управление', 'management_menu')],
       ]).reply_markup,

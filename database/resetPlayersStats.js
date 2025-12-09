@@ -9,6 +9,7 @@ async function resetPlayersStats() {
     UPDATE players
     SET
       goals = 0,
+      assists = 0,
       gamesPlayed = 0,
       wins = 0,
       draws = 0,

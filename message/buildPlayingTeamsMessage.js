@@ -37,7 +37,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     : (updatedTeams[teamIndex2] || team2);
 
   // Функция для форматирования имени игрока
-  const formatPlayerName = (name, maxLength = 11) => {
+  const formatPlayerName = (name, maxLength = 9) => {
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
@@ -45,15 +45,16 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const chars = Array.from(cleanName);
     return chars.length <= maxLength
       ? cleanName.padEnd(maxLength, ' ')
-      : chars.slice(0, maxLength - 3).join('') + '...';
+      : chars.slice(0, maxLength - 2).join('') + '..';
   };
 
   // Функция для форматирования строки игрока
-  const formatPlayerLine = (index, name, goals) => {
+  const formatPlayerLine = (index, name, goals, assists) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
+    const assistsMark = assists && assists > 0 ? ` 🅰️${assists}` : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
-    const paddedName = formatPlayerName(name).padEnd(11, ' ');
-    return `${paddedIndex}${paddedName}${goalsMark}`;
+    const paddedName = formatPlayerName(name).padEnd(9, ' ');
+    return `${paddedIndex}${paddedName}${goalsMark}${assistsMark}`;
   };
 
   // Добавляем эмодзи только если номер матча не передан (в старых заголовках нет эмодзи)
@@ -64,7 +65,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b>\n<code>`;
   displayTeam1.forEach((player, idx) => {
     const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals)}\n`;
+    message += `${formatPlayerLine(idx, name, player.goals, player.assists)}\n`;
   });
   message += '</code>\n\n';
 
@@ -72,7 +73,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b>\n<code>`;
   displayTeam2.forEach((player, idx) => {
     const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals)}\n`;
+    message += `${formatPlayerLine(idx, name, player.goals, player.assists)}\n`;
   });
   message += '</code>';
 

@@ -4,7 +4,7 @@ const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessag
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../utils/telegramUtils');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
-const { createTeamButtons } = require('../buttons/createTeamButtons');
+const { createTeamButtons, createAssistButtons } = require('../buttons/createTeamButtons');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
@@ -333,6 +333,185 @@ module.exports = (bot, GlobalState) => {
     return rows;
   };
 
+  // Функция для создания кнопок игроков с ассистами для отмены
+  const createCancelAssistButtons = (team, teamIndex, teamColor) => {
+    const buttons = [];
+    team.forEach((player, index) => {
+      if (player.assists && player.assists > 0) {
+        const displayName = player.username || player.name;
+        buttons.push(
+          Markup.button.callback(
+            `${teamColor} ${index + 1}. ${displayName} 🅰️${player.assists}`,
+            `cancel_assist_${teamIndex}_${index}`,
+          ),
+        );
+      }
+    });
+    // Группируем кнопки по 2 в ряд
+    const rows = [];
+    for (let i = 0; i < buttons.length; i += 2) {
+      rows.push(buttons.slice(i, i + 2));
+    }
+    return rows;
+  };
+
+  // Обработчик отмены ассиста у конкретного игрока
+  bot.action(/^cancel_assist_(\d+)_(\d+)$/, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ У вас нет прав для этой команды.',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (!isMatchStarted) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Матч не начат!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (!playingTeams) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    const teamIndex = parseInt(ctx.match[1], 10);
+    const playerIndex = parseInt(ctx.match[2], 10);
+
+    const team =
+      teamIndex === playingTeams.teamIndex1
+        ? playingTeams.team1
+        : teamIndex === playingTeams.teamIndex2
+          ? playingTeams.team2
+          : null;
+
+    if (!team) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Команда не найдена!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (!team[playerIndex]) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Игрок не найден!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (team[playerIndex].assists && team[playerIndex].assists > 0) {
+      team[playerIndex].assists -= 1;
+    } else {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        `⚠️ У ${team[playerIndex].name || team[playerIndex].username} уже 0 ассистов.`,
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    GlobalState.setPlayingTeams(playingTeams);
+    await updatePlayingTeamsMessage(ctx);
+
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
+      ctx.chat.id,
+      `🅰️ Ассист удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
+    ]);
+    await safeAnswerCallback(ctx, `✅ Ассист отменен у ${team[playerIndex].name || team[playerIndex].username}`);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+  });
+
+  // Обработчик нажатия кнопки "assist_<team>_<player>" для добавления ассиста
+  bot.action(/^assist_(\d+)_(\d+)$/, async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ У вас нет прав для этой команды.',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (!isMatchStarted) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Матч не начат!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    const teamIndex = parseInt(ctx.match[1], 10);
+    const playerIndex = parseInt(ctx.match[2], 10);
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    if (!playingTeams) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    const team =
+      teamIndex === playingTeams.teamIndex1
+        ? playingTeams.team1
+        : teamIndex === playingTeams.teamIndex2
+          ? playingTeams.team2
+          : null;
+
+    if (!team) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Команда не найдена!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    if (!team[playerIndex]) {
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Игрок не найден!',
+      ]);
+      await safeAnswerCallback(ctx);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    team[playerIndex].assists = (team[playerIndex].assists || 0) + 1;
+    GlobalState.setPlayingTeams(playingTeams);
+
+    await updatePlayingTeamsMessage(ctx);
+
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
+      ctx.chat.id,
+      `🅰️ Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
+    ]);
+    await safeAnswerCallback(ctx);
+    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+  });
+
   // Обработчик кнопки "Управление"
   bot.action('management_menu', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
@@ -615,6 +794,257 @@ module.exports = (bot, GlobalState) => {
     }
   });
 
+  // Обработчик кнопки "Отметить ассист" - показывает список игроков для добавления ассистов
+  bot.action('show_assists_menu', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка прав админа
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    // Проверка условий
+    if (!isMatchStarted) {
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Матч не начат!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    const team1Buttons = createAssistButtons(team1, teamIndex1);
+    const team2Buttons = createAssistButtons(team2, teamIndex2);
+
+    // Объединяем кнопки с разделителем
+    const allButtons = [
+      ...team1Buttons,
+      [Markup.button.callback('—', 'noop')],
+      ...team2Buttons,
+      [],
+      [Markup.button.callback('❌ Отменить ассист', 'cancel_assist_menu')],
+      [Markup.button.callback('⬅️ Назад', 'assists_menu_back')],
+    ];
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+
+    // Вычисляем номер матча для заголовка
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
+    const assistsMenuMessage = buildPlayingTeamsMessage(
+      team1,
+      team2,
+      teamIndex1,
+      teamIndex2,
+      'playing',
+      undefined,
+      matchNumber,
+    );
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          assistsMenuMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '🅰️ Выберите игрока');
+    } catch (error) {
+      // Если не удалось отредактировать сообщение, отправляем новое
+      if (chatId) {
+        await safeTelegramCall(ctx, 'sendMessage', [
+          chatId,
+          assistsMenuMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '🅰️ Выберите игрока');
+    }
+  });
+
+  // Обработчик кнопки "Отменить ассист" - показывает список игроков с ассистами
+  bot.action('cancel_assist_menu', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка прав админа
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    // Проверка условий
+    if (!isMatchStarted) {
+      await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Матч не начат!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
+    const color1 = teamColors[teamIndex1] || '⚽';
+    const color2 = teamColors[teamIndex2] || '⚽';
+
+    // Создаем кнопки для игроков с ассистами
+    const team1Buttons = createCancelAssistButtons(team1, teamIndex1, color1);
+    const team2Buttons = createCancelAssistButtons(team2, teamIndex2, color2);
+
+    // Объединяем кнопки
+    const allButtons = [...team1Buttons, ...team2Buttons];
+
+    // Добавляем кнопку "Назад"
+    if (allButtons.length === 0) {
+      allButtons.push([Markup.button.callback('⚠️ Нет игроков с ассистами', 'noop')]);
+    }
+    allButtons.push([Markup.button.callback('⬅️ Назад к ассистам', 'show_assists_menu')]);
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+    const cancelAssistMessage = '❌ <b>Отменить ассист</b>\n\nВыберите игрока:';
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          cancelAssistMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx);
+    } catch (error) {
+      // Если не удалось отредактировать сообщение, отправляем новое
+      if (chatId) {
+        await safeTelegramCall(ctx, 'sendMessage', [
+          chatId,
+          cancelAssistMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx);
+    }
+  });
+
+  // Обработчик кнопки "Назад" из меню ассистов - возвращает к основному виду
+  bot.action('assists_menu_back', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    // Вычисляем номер матча
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
+    const teamsMessage = buildPlayingTeamsMessage(
+      team1,
+      team2,
+      teamIndex1,
+      teamIndex2,
+      'playing',
+      undefined,
+      matchNumber,
+    );
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          teamsMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard([
+              [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+              [Markup.button.callback('⚙️ Управление', 'management_menu')],
+            ]).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    } catch (error) {
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    }
+  });
+
   // Обработчик кнопки "Назад" из меню голов - возвращает к основному виду
   bot.action('goals_menu_back', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
@@ -666,6 +1096,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
             ]).reply_markup,
@@ -729,6 +1160,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
             ]).reply_markup,

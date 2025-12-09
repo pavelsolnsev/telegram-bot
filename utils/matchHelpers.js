@@ -101,6 +101,7 @@ const updatePlayerStats = (
 ) => {
   return team.map((player, index) => {
     const goals = Number(player.goals) || 0;
+    const assists = Number(player.assists) || 0;
 
     const originalPlayer = originalTeam[index] || {};
     const basePlayer = allTeamsBase[teamIndex][index] || {};
@@ -109,6 +110,7 @@ const updatePlayerStats = (
     const mod = growthModifier(baseRating);
 
     const goalDelta = goals * 0.5 * mod;
+    const assistDelta = assists * 0.5 * mod;
 
     const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
     const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;
@@ -117,7 +119,7 @@ const updatePlayerStats = (
     const drawDelta = isDraw ? 0.5 * mod : 0;
     const loseDelta = isShutoutLoss ? -1.5 : isLose ? -1 : 0;
 
-    const delta = goalDelta + winDelta + drawDelta + loseDelta;
+    const delta = goalDelta + assistDelta + winDelta + drawDelta + loseDelta;
 
     const newRating = round1(Math.min(prevRating + delta, 200));
 
@@ -131,6 +133,7 @@ const updatePlayerStats = (
       draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
       losses: (originalPlayer.losses || 0) + (isLose ? 1 : 0),
       goals: (originalPlayer.goals || 0) + goals,
+      assists: (originalPlayer.assists || 0) + assists,
       rating: newRating,
     };
   });

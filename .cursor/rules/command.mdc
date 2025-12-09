@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+If the code contains both a command and a button that perform the same function, updates must be applied to both. Their behavior should remain fully consistent in all cases.

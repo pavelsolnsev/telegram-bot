@@ -6,18 +6,19 @@ const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 module.exports = (bot, GlobalState) => {
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
-  const formatPlayerLine = (idx, { name, goals }) => {
+  const formatPlayerLine = (idx, { name, goals, assists }) => {
     const index = String(idx + 1).padStart(2, ' ') + '.';
     const cleanName = name
       // eslint-disable-next-line no-misleading-character-class
       .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu, '')
       .trim();
     const chars = Array.from(cleanName);
-    const displayName = chars.length <= 11
+    const displayName = chars.length <= 9
       ? cleanName
-      : chars.slice(0, 8).join('') + '...';
+      : chars.slice(0, 7).join('') + '..';
     const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
-    return `${index}${displayName}${goalsMark}`;
+    const assistsMark = assists > 0 ? ` 🅰️${assists}` : '';
+    return `${index}${displayName}${goalsMark}${assistsMark}`;
   };
 
   // Функция для формирования и отправки результатов

@@ -200,6 +200,7 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
         parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
           [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+          [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
           [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
           [Markup.button.callback('⚙️ Управление', 'management_menu')],
         ]).reply_markup,
