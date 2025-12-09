@@ -37,23 +37,29 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     : (updatedTeams[teamIndex2] || team2);
 
   // Функция для форматирования имени игрока
-  const formatPlayerName = (name, maxLength = 9) => {
+  const formatPlayerName = (name, maxLength) => {
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
     const cleanName = name.replace(emojiRegex, '').trim();
     const chars = Array.from(cleanName);
-    return chars.length <= maxLength
-      ? cleanName.padEnd(maxLength, ' ')
-      : chars.slice(0, maxLength - 2).join('') + '..';
+    if (chars.length <= maxLength) {
+      return cleanName.padEnd(maxLength, ' ');
+    }
+    return chars.slice(0, Math.max(2, maxLength - 2)).join('') + '..';
   };
 
   // Функция для форматирования строки игрока
   const formatPlayerLine = (index, name, goals, assists) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
-    const assistsMark = assists && assists > 0 ? ` 🅰️${assists}` : '';
+    const assistsMark = assists && assists > 0 ? `🅰️${assists}` : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
-    const paddedName = formatPlayerName(name).padEnd(9, ' ');
+
+    // Если есть статистика, немного уменьшаем допустимую длину имени, чтобы строка не переносилась на мобилках
+    const hasStats = Boolean(goalsMark || assistsMark);
+    const maxNameLength = hasStats ? 10 : 12;
+    const paddedName = formatPlayerName(name, maxNameLength);
+
     return `${paddedIndex}${paddedName}${goalsMark}${assistsMark}`;
   };
 

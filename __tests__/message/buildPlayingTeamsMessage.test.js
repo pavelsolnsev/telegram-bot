@@ -194,6 +194,25 @@ describe('buildPlayingTeamsMessage', () => {
 
       expect(message).toContain('long');
     });
+
+    test('не должен переносить строки с голами и ассистами (компактный формат)', () => {
+      const teamWithStats = [
+        { id: 1, name: 'SuperLongUsername12', username: 'long_username_123', goals: 3, assists: 2 },
+      ];
+      const message = buildPlayingTeamsMessage(teamWithStats, teamWithStats, 0, 1, 'playing');
+
+      // Извлекаем строки игроков из <code> блоков и проверяем их длину (важно для мобильного представления)
+      const codeBlocks = [...message.matchAll(/<code>([\s\S]*?)<\/code>/g)].map((match) => match[1]);
+      const playerLines = codeBlocks
+        .flatMap((block) => block.split('\n'))
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      expect(playerLines.length).toBeGreaterThan(0);
+      playerLines.forEach((line) => {
+        expect(line.length).toBeLessThanOrEqual(32);
+      });
+    });
   });
 
   describe('Крайние случаи', () => {

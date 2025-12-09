@@ -17,7 +17,7 @@ module.exports = (bot, GlobalState) => {
       ? cleanName
       : chars.slice(0, 7).join('') + '..';
     const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
-    const assistsMark = assists > 0 ? ` 🅰️${assists}` : '';
+    const assistsMark = assists > 0 ? `🅰️${assists}` : '';
     return `${index}${displayName}${goalsMark}${assistsMark}`;
   };
 

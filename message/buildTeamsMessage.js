@@ -34,7 +34,7 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
   }
 
   // Функция для форматирования имени игрока
-  const formatPlayerName = (name, maxLength = 9) => {
+  const formatPlayerName = (name, maxLength) => {
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
@@ -43,15 +43,19 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     if (chars.length <= maxLength) {
       return cleanName.padEnd(maxLength, ' ');
     }
-    return chars.slice(0, maxLength - 2).join('') + '..';
+    return chars.slice(0, Math.max(2, maxLength - 2)).join('') + '..';
   };
 
   // Функция для форматирования строки игрока
   const formatPlayerLine = (index, name, rating, goals, assists) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
-    const assistsMark = assists && assists > 0 ? ` 🅰️${assists}` : '';
+    const assistsMark = assists && assists > 0 ? `🅰️${assists}` : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
-    const paddedName = formatPlayerName(name).padEnd(9, ' ');
+
+    // Если есть голы/ассисты или рейтинг и иконка, сокращаем имя чуть сильнее, чтобы избежать переноса
+    const hasStats = Boolean(goalsMark || assistsMark);
+    const maxNameLength = hasStats ? 10 : 12;
+    const paddedName = formatPlayerName(name, maxNameLength);
     const formattedRating = parseFloat(rating).toString();
 
     if (!showRatings) {
