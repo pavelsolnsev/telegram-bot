@@ -94,7 +94,7 @@ module.exports = (bot, GlobalState) => {
 
 
       // Находим лучшего игрока (MVP)
-      // Приоритет: голы > ассисты > очки > рейтинг
+      // Приоритет: голы > ассисты > сейвы > очки > рейтинг
       const mvpCandidates = allPlayers.reduce((best, player) => {
         if (!best.length) return [player];
         const topPlayer = best[0];
@@ -108,6 +108,12 @@ module.exports = (bot, GlobalState) => {
         const topPlayerAssists = topPlayer.assists || 0;
         if (playerAssists > topPlayerAssists) return [player];
         if (playerAssists < topPlayerAssists) return best;
+
+        // Затем сравниваем сейвы
+        const playerSaves = player.saves || 0;
+        const topPlayerSaves = topPlayer.saves || 0;
+        if (playerSaves > topPlayerSaves) return [player];
+        if (playerSaves < topPlayerSaves) return best;
 
         // При равных голах и ассистах сравниваем очки
         const playerPoints = player.wins * 3 + player.draws;

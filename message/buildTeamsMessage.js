@@ -47,22 +47,25 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
   };
 
   // Функция для форматирования строки игрока
-  const formatPlayerLine = (index, name, rating, goals, assists) => {
+  const formatPlayerLine = (index, name, rating, goals, assists, saves) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
     const assistsMark = assists && assists > 0
       ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
       : '';
+    const savesMark = saves && saves > 0
+      ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)
+      : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
 
     // Если есть голы/ассисты или рейтинг и иконка, сокращаем имя чуть сильнее, чтобы избежать переноса
-    const hasStats = Boolean(goalsMark || assistsMark);
+    const hasStats = Boolean(goalsMark || assistsMark || savesMark);
     const maxNameLength = hasStats ? 10 : 11;
     const paddedName = formatPlayerName(name, maxNameLength);
     const formattedRating = parseFloat(rating).toString();
 
     if (!showRatings) {
       const ratingPrefix = rating > 0 ? '+' : '';
-      return `<code>${paddedIndex}${paddedName}</code> <b><i>${ratingPrefix}${formattedRating}</i></b>${goalsMark}${assistsMark}`;
+      return `<code>${paddedIndex}${paddedName}</code> <b><i>${ratingPrefix}${formattedRating}</i></b>${goalsMark}${assistsMark}${savesMark}`;
     }
 
     let ratingIcon;
@@ -72,7 +75,7 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     else if (rating < 100) ratingIcon = '🌠';
     else if (rating < 150) ratingIcon = '💎';
     else ratingIcon = '🏆';
-    return `<code>${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}${assistsMark}</code>`;
+    return `<code>${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}${assistsMark}${savesMark}</code>`;
   };
 
   message += '<b>Составы:</b>\n';
@@ -83,7 +86,7 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     updatedTeam.forEach((player, i) => {
       const displayName = player.username ? player.username : player.name;
       const rating = player.rating || 0;
-      message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists)}\n`;
+      message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists, player.saves)}\n`;
     });
   });
 

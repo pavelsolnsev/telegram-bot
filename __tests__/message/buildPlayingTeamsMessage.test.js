@@ -134,10 +134,10 @@ describe('buildPlayingTeamsMessage', () => {
 
     test('пробел перед ассистом только если нет гола', () => {
       const teamOnlyAssist = [
-        { id: 1, name: 'AssistOnly', username: 'assist', goals: 0, assists: 2 },
+        { id: 1, name: 'AssistOnly', username: 'assist', goals: 0, assists: 2, saves: 0 },
       ];
       const teamGoalAssist = [
-        { id: 1, name: 'GoalAssist', username: 'ga', goals: 1, assists: 1 },
+        { id: 1, name: 'GoalAssist', username: 'ga', goals: 1, assists: 1, saves: 0 },
       ];
 
       const msgOnlyAssist = buildPlayingTeamsMessage(teamOnlyAssist, teamOnlyAssist, 0, 1, 'playing');
@@ -153,6 +153,30 @@ describe('buildPlayingTeamsMessage', () => {
 
       expect(goalAssistLines.some((l) => l.includes('⚽1🅰️1'))).toBe(true);
       expect(goalAssistLines.some((l) => l.includes(' ⚽1 🅰️1'))).toBe(false);
+    });
+
+    test('сейвы: пробел если только сейвы, без пробела после голов/ассистов', () => {
+      const onlySaves = [
+        { id: 1, name: 'Keeper', username: 'gk', goals: 0, assists: 0, saves: 3 },
+      ];
+      const goalsAssistsSaves = [
+        { id: 1, name: 'GkStats', username: 'gkstats', goals: 1, assists: 1, saves: 2 },
+      ];
+
+      const msgOnlySaves = buildPlayingTeamsMessage(onlySaves, onlySaves, 0, 1, 'playing');
+      const msgAll = buildPlayingTeamsMessage(goalsAssistsSaves, goalsAssistsSaves, 0, 1, 'playing');
+
+      const onlySavesLines = [...msgOnlySaves.matchAll(/<code>([\s\S]*?)<\/code>/g)]
+        .flatMap((m) => m[1].split('\n').map((l) => l.trim()).filter(Boolean));
+      const allLines = [...msgAll.matchAll(/<code>([\s\S]*?)<\/code>/g)]
+        .flatMap((m) => m[1].split('\n').map((l) => l.trim()).filter(Boolean));
+
+      expect(onlySavesLines.some((l) => l.includes(' 🧤3'))).toBe(true);
+      expect(onlySavesLines.some((l) => l.includes('⚽'))).toBe(false);
+      expect(onlySavesLines.some((l) => l.includes('🅰️'))).toBe(false);
+
+      expect(allLines.some((l) => l.includes('⚽1🅰️1🧤2'))).toBe(true);
+      expect(allLines.some((l) => l.includes(' ⚽1 🅰️1 🧤2'))).toBe(false);
     });
   });
 

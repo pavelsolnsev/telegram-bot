@@ -50,19 +50,22 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   };
 
   // Функция для форматирования строки игрока
-  const formatPlayerLine = (index, name, goals, assists) => {
+  const formatPlayerLine = (index, name, goals, assists, saves) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
     const assistsMark = assists && assists > 0
       ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
       : '';
+    const savesMark = saves && saves > 0
+      ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)
+      : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
 
     // Если есть статистика, немного уменьшаем допустимую длину имени, чтобы строка не переносилась на мобилках
-    const hasStats = Boolean(goalsMark || assistsMark);
+    const hasStats = Boolean(goalsMark || assistsMark || savesMark);
     const maxNameLength = hasStats ? 11 : 12;
     const paddedName = formatPlayerName(name, maxNameLength);
 
-    return `${paddedIndex}${paddedName}${goalsMark}${assistsMark}`;
+    return `${paddedIndex}${paddedName}${goalsMark}${assistsMark}${savesMark}`;
   };
 
   // Добавляем эмодзи только если номер матча не передан (в старых заголовках нет эмодзи)
@@ -73,7 +76,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b>\n<code>`;
   displayTeam1.forEach((player, idx) => {
     const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals, player.assists)}\n`;
+    message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
   });
   message += '</code>\n\n';
 
@@ -81,7 +84,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b>\n<code>`;
   displayTeam2.forEach((player, idx) => {
     const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals, player.assists)}\n`;
+    message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
   });
   message += '</code>';
 

@@ -199,10 +199,10 @@ describe('buildTeamsMessage', () => {
 
     test('пробел перед ассистом только если нет гола', () => {
       const onlyAssist = [
-        [{ id: 1, name: 'AssistOnly', username: 'assist', rating: 10, assists: 2 }],
+        [{ id: 1, name: 'AssistOnly', username: 'assist', rating: 10, assists: 2, saves: 0, goals: 0 }],
       ];
       const withGoalAndAssist = [
-        [{ id: 1, name: 'GoalAssist', username: 'ga', rating: 10, goals: 1, assists: 1 }],
+        [{ id: 1, name: 'GoalAssist', username: 'ga', rating: 10, goals: 1, assists: 1, saves: 0 }],
       ];
 
       const msgOnlyAssist = buildTeamsMessage(onlyAssist, 'Тест', {}, onlyAssist);
@@ -213,6 +213,25 @@ describe('buildTeamsMessage', () => {
 
       expect(msgGoalAssist).toContain('⚽1🅰️1');
       expect(msgGoalAssist).not.toContain(' ⚽1 🅰️1');
+    });
+
+    test('сейвы: пробел если только сейвы, без пробела после голов/ассистов', () => {
+      const onlySaves = [
+        [{ id: 1, name: 'Keeper', username: 'gk', rating: 20, goals: 0, assists: 0, saves: 4 }],
+      ];
+      const goalAssistSave = [
+        [{ id: 1, name: 'GkStats', username: 'gkstats', rating: 30, goals: 1, assists: 1, saves: 2 }],
+      ];
+
+      const msgOnlySaves = buildTeamsMessage(onlySaves, 'Тест', {}, onlySaves);
+      const msgAll = buildTeamsMessage(goalAssistSave, 'Тест', {}, goalAssistSave);
+
+      expect(msgOnlySaves).toContain(' 🧤4');
+      expect(msgOnlySaves).not.toContain('⚽');
+      expect(msgOnlySaves).not.toContain('🅰️');
+
+      expect(msgAll).toContain('⚽1🅰️1🧤2');
+      expect(msgAll).not.toContain(' ⚽1 🅰️1 🧤2');
     });
   });
 
