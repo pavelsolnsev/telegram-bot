@@ -8,16 +8,25 @@ module.exports = (bot, GlobalState) => {
 
   const formatPlayerLine = (idx, { name, goals, assists }) => {
     const index = String(idx + 1).padStart(2, ' ') + '.';
+
+    // Форматируем статистику
+    const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
+    const assistsMark = assists > 0
+      ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
+      : '';
+
+    // Форматируем имя аналогично buildPlayingTeamsMessage
     const cleanName = name
       // eslint-disable-next-line no-misleading-character-class
       .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu, '')
       .trim();
     const chars = Array.from(cleanName);
-    const displayName = chars.length <= 9
-      ? cleanName
-      : chars.slice(0, 7).join('') + '..';
-    const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
-    const assistsMark = assists > 0 ? `🅰️${assists}` : '';
+    const hasStats = Boolean(goalsMark || assistsMark);
+    const maxNameLength = hasStats ? 11 : 12;
+    const displayName = chars.length <= maxNameLength
+      ? cleanName.padEnd(maxNameLength, ' ')
+      : chars.slice(0, Math.max(2, maxNameLength - 2)).join('') + '..';
+
     return `${index}${displayName}${goalsMark}${assistsMark}`;
   };
 

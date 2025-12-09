@@ -131,6 +131,29 @@ describe('buildPlayingTeamsMessage', () => {
       expect(message).toContain('2:2');
       expect(message).toContain('🤝 Ничья!');
     });
+
+    test('пробел перед ассистом только если нет гола', () => {
+      const teamOnlyAssist = [
+        { id: 1, name: 'AssistOnly', username: 'assist', goals: 0, assists: 2 },
+      ];
+      const teamGoalAssist = [
+        { id: 1, name: 'GoalAssist', username: 'ga', goals: 1, assists: 1 },
+      ];
+
+      const msgOnlyAssist = buildPlayingTeamsMessage(teamOnlyAssist, teamOnlyAssist, 0, 1, 'playing');
+      const msgGoalAssist = buildPlayingTeamsMessage(teamGoalAssist, teamGoalAssist, 0, 1, 'playing');
+
+      const onlyAssistLines = [...msgOnlyAssist.matchAll(/<code>([\s\S]*?)<\/code>/g)]
+        .flatMap((m) => m[1].split('\n').map((l) => l.trim()).filter(Boolean));
+      const goalAssistLines = [...msgGoalAssist.matchAll(/<code>([\s\S]*?)<\/code>/g)]
+        .flatMap((m) => m[1].split('\n').map((l) => l.trim()).filter(Boolean));
+
+      expect(onlyAssistLines.some((l) => l.includes(' 🅰️2'))).toBe(true);
+      expect(onlyAssistLines.some((l) => l.includes('⚽'))).toBe(false);
+
+      expect(goalAssistLines.some((l) => l.includes('⚽1🅰️1'))).toBe(true);
+      expect(goalAssistLines.some((l) => l.includes(' ⚽1 🅰️1'))).toBe(false);
+    });
   });
 
   describe('Отображение данных из разных источников', () => {

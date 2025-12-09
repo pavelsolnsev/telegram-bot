@@ -196,6 +196,24 @@ describe('buildTeamsMessage', () => {
 
       expect(message).not.toContain('⚽');
     });
+
+    test('пробел перед ассистом только если нет гола', () => {
+      const onlyAssist = [
+        [{ id: 1, name: 'AssistOnly', username: 'assist', rating: 10, assists: 2 }],
+      ];
+      const withGoalAndAssist = [
+        [{ id: 1, name: 'GoalAssist', username: 'ga', rating: 10, goals: 1, assists: 1 }],
+      ];
+
+      const msgOnlyAssist = buildTeamsMessage(onlyAssist, 'Тест', {}, onlyAssist);
+      const msgGoalAssist = buildTeamsMessage(withGoalAndAssist, 'Тест', {}, withGoalAndAssist);
+
+      expect(msgOnlyAssist).toContain(' 🅰️2');
+      expect(msgOnlyAssist).not.toContain('⚽');
+
+      expect(msgGoalAssist).toContain('⚽1🅰️1');
+      expect(msgGoalAssist).not.toContain(' ⚽1 🅰️1');
+    });
   });
 
   describe('Форматирование имен', () => {
