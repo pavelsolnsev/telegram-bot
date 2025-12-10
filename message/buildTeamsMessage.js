@@ -35,31 +35,46 @@ const buildTeamsMessage = (
 
   message += '</pre>\n';
 
-  // Добавляем MVP игрока, если он есть
-  if (mvpPlayer) {
-    const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name} ${mvpPlayer.last_name || ''}`.trim();
-    message += `<b>🏅 MVP: ${mvpName}</b> <b></b>\n\n`;
-  }
-
-  // Добавляем лидеров турнира, если переданы
-  if (leaders) {
+  // Добавляем лидеров турнира и MVP, если переданы
+  if (leaders || mvpPlayer) {
     const formatLeader = (player) => player?.username || player?.name || `${player?.first_name || ''} ${player?.last_name || ''}`.trim();
     const lines = [];
 
-    if (leaders.scorer?.goals > 0 && leaders.scorer?.player) {
-      lines.push(`<b>Голы:\n${formatLeader(leaders.scorer.player)}: ⚽${leaders.scorer.goals}</b>`);
+    if (mvpPlayer) {
+      const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name || ''} ${mvpPlayer.last_name || ''}`.trim();
+      lines.push(`<b>🏅 MVP: ${mvpName}</b>`, '');
     }
 
-    if (leaders.assistant?.assists > 0 && leaders.assistant?.player) {
-      lines.push(`<b>Пасы:\n${formatLeader(leaders.assistant.player)}: 🅰️${leaders.assistant.assists}</b>`);
+    if (leaders?.scorer?.goals > 0 && leaders?.scorer?.player) {
+      lines.push(
+        'Голы:',
+        `<b>${formatLeader(leaders.scorer.player)}: ⚽️${leaders.scorer.goals}</b>`,
+        '',
+      );
     }
 
-    if (leaders.goalkeeper?.saves > 0 && leaders.goalkeeper?.player) {
-      lines.push(`<b>Сейвы:\n${formatLeader(leaders.goalkeeper.player)}: 🧤${leaders.goalkeeper.saves}</b>`);
+    if (leaders?.assistant?.assists > 0 && leaders?.assistant?.player) {
+      lines.push(
+        'Пасы:',
+        `<b>${formatLeader(leaders.assistant.player)}: 🅰️${leaders.assistant.assists}</b>`,
+        '',
+      );
+    }
+
+    if (leaders?.goalkeeper?.saves > 0 && leaders?.goalkeeper?.player) {
+      lines.push(
+        'Сейвы:',
+        `<b>${formatLeader(leaders.goalkeeper.player)}: 🧤${leaders.goalkeeper.saves}</b>`,
+        '',
+      );
     }
 
     if (lines.length > 0) {
-      message += `<b>Лидеры турнира по статистике:</b>\n${lines.join('\n')}\n\n`;
+      // Удаляем завершающие пустые строки, если есть
+      while (lines.length && lines[lines.length - 1] === '') {
+        lines.pop();
+      }
+      message += `<b>Лидеры турнира по статистике:</b>\n\n${lines.join('\n')}\n\n`;
     }
   }
 
