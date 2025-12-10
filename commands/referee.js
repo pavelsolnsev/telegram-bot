@@ -3,10 +3,10 @@ const { sendPlayerList } = require('../utils/sendPlayerList');
 
 module.exports = (bot, GlobalState) => {
   if (!GlobalState.getReferee) {
-    let referee = 'Карен';
+    let referee = 'Не назначен';
     GlobalState.getReferee = () => referee;
     GlobalState.setReferee = (name) => referee = name;
-    GlobalState.resetReferee = () => referee = 'Карен';
+    GlobalState.resetReferee = () => referee = 'Не назначен';
   }
 
   // Команда "судья <имя>"

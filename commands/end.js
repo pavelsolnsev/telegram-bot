@@ -94,43 +94,50 @@ module.exports = (bot, GlobalState) => {
 
 
       // Находим лучшего игрока (MVP)
-      // Приоритет: голы > ассисты > сейвы > очки > рейтинг
-      const mvpCandidates = allPlayers.reduce((best, player) => {
-        if (!best.length) return [player];
-        const topPlayer = best[0];
+      const selectMvp = (players) => {
+        // Приоритет: голы > ассисты > сейвы > очки > рейтинг
+        const candidates = players.reduce((best, player) => {
+          if (!best.length) return [player];
+          const topPlayer = best[0];
 
-        // Сначала сравниваем голы
-        if (player.goals > topPlayer.goals) return [player];
-        if (player.goals < topPlayer.goals) return best;
+          // Голы
+          if (player.goals > topPlayer.goals) return [player];
+          if (player.goals < topPlayer.goals) return best;
 
-        // При равных голах сравниваем ассисты
-        const playerAssists = player.assists || 0;
-        const topPlayerAssists = topPlayer.assists || 0;
-        if (playerAssists > topPlayerAssists) return [player];
-        if (playerAssists < topPlayerAssists) return best;
+          // Ассисты
+          const playerAssists = player.assists || 0;
+          const topPlayerAssists = topPlayer.assists || 0;
+          if (playerAssists > topPlayerAssists) return [player];
+          if (playerAssists < topPlayerAssists) return best;
 
-        // Затем сравниваем сейвы
-        const playerSaves = player.saves || 0;
-        const topPlayerSaves = topPlayer.saves || 0;
-        if (playerSaves > topPlayerSaves) return [player];
-        if (playerSaves < topPlayerSaves) return best;
+          // Сейвы
+          const playerSaves = player.saves || 0;
+          const topPlayerSaves = topPlayer.saves || 0;
+          if (playerSaves > topPlayerSaves) return [player];
+          if (playerSaves < topPlayerSaves) return best;
 
-        // При равных голах и ассистах сравниваем очки
-        const playerPoints = player.wins * 3 + player.draws;
-        const topPlayerPoints = topPlayer.wins * 3 + topPlayer.draws;
+          // Очки (wins/draws)
+          const playerPoints = (player.wins || 0) * 3 + (player.draws || 0);
+          const topPlayerPoints = (topPlayer.wins || 0) * 3 + (topPlayer.draws || 0);
+          if (playerPoints > topPlayerPoints) return [player];
+          if (playerPoints < topPlayerPoints) return best;
 
-        if (playerPoints > topPlayerPoints) return [player];
-        if (playerPoints < topPlayerPoints) return best;
+          // Рейтинг
+          const playerRating = player.rating || 0;
+          const topPlayerRating = topPlayer.rating || 0;
+          if (playerRating > topPlayerRating) return [player];
+          if (playerRating === topPlayerRating) return [...best, player];
 
-        // При равных очках сравниваем рейтинг
-        if (player.rating > topPlayer.rating) return [player];
-        if (player.rating === topPlayer.rating) return [...best, player];
+          return best;
+        }, []);
 
-        return best;
-      }, []);
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      };
 
-      const mvpPlayer =
-        mvpCandidates[Math.floor(Math.random() * mvpCandidates.length)];
+      const mvpPlayer = selectMvp(allPlayers);
+
+      const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);
+      const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
       try {
         await savePlayersToDatabase(allPlayers);
@@ -173,7 +180,7 @@ module.exports = (bot, GlobalState) => {
         // Добавляем локацию в заголовок
         const matchTitle = `Итоги матча${formattedDate} • ${loc.name}`;
 
-        const teamsMessage = buildTeamsMessage(
+        let teamsMessage = buildTeamsMessage(
           teamsBase,
           matchTitle,
           teamStats,
@@ -181,6 +188,16 @@ module.exports = (bot, GlobalState) => {
           mvpPlayer,
           false,
         );
+
+        if (teamMvps.length > 0) {
+          const teamMvpLines = teamMvps.map((p, idx) => {
+            const color = teamColors[idx] || '⚽';
+            const name = p.username || p.name;
+            const ratingText = p.rating !== undefined ? ` +${p.rating}` : '';
+            return `${color} MVP: ${name}${ratingText}`;
+          }).join('\n');
+          teamsMessage += `\n${teamMvpLines}`;
+        }
 
         const paymentReminder =
           `<b>💰 Напоминаем об оплате участия: ${loc.sum} ₽</b>\n` +
@@ -244,7 +261,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setMatchHistory({});
       GlobalState.setConsecutiveGames({});
       GlobalState.setIsTableAllowed(false);
-      GlobalState.setReferee('Карен');
+      GlobalState.setReferee('Не назначен');
 
       const message = await ctx.reply('✅ Сбор успешно завершён!');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);

@@ -386,7 +386,7 @@
   let matchResults = [];
   let lastResultMessage = null;
   let isTableAllowed = false;
-  let referee = "Карен";
+  let referee = "Не назначен";
 &nbsp;
   const Store = {
     getConsecutiveGames: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >consecutiveGames,</span>
@@ -410,7 +410,7 @@
 &nbsp;
     getReferee: () =&gt; referee,
     setReferee: (name) =&gt; (referee = name),
-    resetReferee: () =&gt; (referee = "Карен"),
+    resetReferee: () =&gt; (referee = "Не назначен"),
 &nbsp;
     getMaxPlayers: () =&gt; MAX_PLAYERS,
     setMaxPlayers: (number) =&gt; (MAX_PLAYERS = number),
