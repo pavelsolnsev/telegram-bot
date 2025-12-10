@@ -4,6 +4,7 @@ const savePlayersToDatabase = require('../database/savePlayers');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { locations } = require('../utils/sendPlayerList');
 const { selectLeaders } = require('../utils/selectLeaders');
+const { selectMvp } = require('../utils/selectMvp');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -96,46 +97,6 @@ module.exports = (bot, GlobalState) => {
 
 
       // Находим лучшего игрока (MVP)
-      const selectMvp = (players) => {
-        // Приоритет: голы > ассисты > сейвы > очки > рейтинг
-        const candidates = players.reduce((best, player) => {
-          if (!best.length) return [player];
-          const topPlayer = best[0];
-
-          // Голы
-          if (player.goals > topPlayer.goals) return [player];
-          if (player.goals < topPlayer.goals) return best;
-
-          // Ассисты
-          const playerAssists = player.assists || 0;
-          const topPlayerAssists = topPlayer.assists || 0;
-          if (playerAssists > topPlayerAssists) return [player];
-          if (playerAssists < topPlayerAssists) return best;
-
-          // Сейвы
-          const playerSaves = player.saves || 0;
-          const topPlayerSaves = topPlayer.saves || 0;
-          if (playerSaves > topPlayerSaves) return [player];
-          if (playerSaves < topPlayerSaves) return best;
-
-          // Очки (wins/draws)
-          const playerPoints = (player.wins || 0) * 3 + (player.draws || 0);
-          const topPlayerPoints = (topPlayer.wins || 0) * 3 + (topPlayer.draws || 0);
-          if (playerPoints > topPlayerPoints) return [player];
-          if (playerPoints < topPlayerPoints) return best;
-
-          // Рейтинг
-          const playerRating = player.rating || 0;
-          const topPlayerRating = topPlayer.rating || 0;
-          if (playerRating > topPlayerRating) return [player];
-          if (playerRating === topPlayerRating) return [...best, player];
-
-          return best;
-        }, []);
-
-        return candidates[Math.floor(Math.random() * candidates.length)];
-      };
-
       const mvpPlayer = selectMvp(allPlayers);
 
       const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);

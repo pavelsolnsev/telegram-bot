@@ -314,10 +314,69 @@ module.exports = (bot, GlobalState) => {
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
-  // Кнопка "Назад" из меню сейвов
+  // Кнопка "Назад" из меню сейвов - возвращает к основному виду
   bot.action('saves_menu_back', async (ctx) => {
-    await safeAnswerCallback(ctx, '↩️ Возврат');
-    return handleShowSavesMenu(ctx, { skipAnswerCallback: true });
+    const ADMIN_ID = GlobalState.getAdminId();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⛔ Нет активного матча!',
+      ]);
+      if (message) {
+        deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
+    }
+
+    const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+    // Вычисляем номер матча
+    const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+    const matchNumber = matchHistoryLength + 1;
+
+    const teamsMessage = buildPlayingTeamsMessage(
+      team1,
+      team2,
+      teamIndex1,
+      teamIndex2,
+      'playing',
+      undefined,
+      matchNumber,
+    );
+
+    const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+    const messageId = ctx.callbackQuery?.message?.message_id;
+
+    try {
+      if (chatId && messageId) {
+        await safeTelegramCall(ctx, 'editMessageText', [
+          chatId,
+          messageId,
+          null,
+          teamsMessage,
+          {
+            parse_mode: 'HTML',
+            reply_markup: Markup.inlineKeyboard([
+              [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
+              [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+              [Markup.button.callback('⚙️ Управление', 'management_menu')],
+            ]).reply_markup,
+          },
+        ]);
+      }
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    } catch (error) {
+      await safeAnswerCallback(ctx, '⬅️ Назад');
+    }
   });
 
   // Обработчик команды "sv <team> <player>" для добавления сейва

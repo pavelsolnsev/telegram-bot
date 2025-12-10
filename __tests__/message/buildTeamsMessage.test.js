@@ -157,14 +157,14 @@ describe('buildTeamsMessage', () => {
         leaders,
       );
 
-    expect(message).toContain('Лидеры турнира');
-    expect(message).toContain('⚽');
+      expect(message).toContain('Лидеры турнира');
+      expect(message).toContain('⚽');
       expect(message).toContain('goalKing');
 
-    expect(message).toContain('🅰️');
+      expect(message).toContain('🅰️');
       expect(message).toContain('assistPro');
 
-    expect(message).toContain('🧤');
+      expect(message).toContain('🧤');
       expect(message).toContain('safeHands');
     });
 
