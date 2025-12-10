@@ -103,8 +103,9 @@ const buildTeamsMessage = (
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
 
     // Если есть голы/ассисты или рейтинг и иконка, сокращаем имя чуть сильнее, чтобы избежать переноса
+    const hasAllStats = Boolean(goalsMark && assistsMark && savesMark);
     const hasStats = Boolean(goalsMark || assistsMark || savesMark);
-    const maxNameLength = hasStats ? 10 : 11;
+    const maxNameLength = hasAllStats ? 9 : hasStats ? 10 : 11;
     const paddedName = formatPlayerName(name, maxNameLength);
     const formattedRating = parseFloat(rating).toString();
 

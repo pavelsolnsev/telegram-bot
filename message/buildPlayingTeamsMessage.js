@@ -61,8 +61,9 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
 
     // Если есть статистика, немного уменьшаем допустимую длину имени, чтобы строка не переносилась на мобилках
+    const hasAllStats = Boolean(goalsMark && assistsMark && savesMark);
     const hasStats = Boolean(goalsMark || assistsMark || savesMark);
-    const maxNameLength = hasStats ? 11 : 12;
+    const maxNameLength = hasAllStats ? 10 : hasStats ? 11 : 12;
     const paddedName = formatPlayerName(name, maxNameLength);
 
     return `${paddedIndex}${paddedName}${goalsMark}${assistsMark}${savesMark}`;
