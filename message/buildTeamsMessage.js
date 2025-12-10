@@ -1,4 +1,12 @@
-const buildTeamsMessage = (teamsBase, title = 'Составы команд', teamStats = {}, updatedTeams = teamsBase, mvpPlayer = null, showRatings = true) => {
+const buildTeamsMessage = (
+  teamsBase,
+  title = 'Составы команд',
+  teamStats = {},
+  updatedTeams = teamsBase,
+  mvpPlayer = null,
+  showRatings = true,
+  leaders = null,
+) => {
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
   // Таблица статистики на основе teamsBase
@@ -31,6 +39,28 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
   if (mvpPlayer) {
     const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name} ${mvpPlayer.last_name || ''}`.trim();
     message += `<b>🏅 MVP: ${mvpName}</b> <b><i>+${mvpPlayer.rating}</i></b>\n\n`;
+  }
+
+  // Добавляем лидеров турнира, если переданы
+  if (leaders) {
+    const formatLeader = (player) => player?.username || player?.name || `${player?.first_name || ''} ${player?.last_name || ''}`.trim();
+    const lines = [];
+
+    if (leaders.scorer?.goals > 0 && leaders.scorer?.player) {
+      lines.push(`<b>⚽ Лучший бомбардир: ${formatLeader(leaders.scorer.player)}</b> <i>(${leaders.scorer.goals})</i>\n`);
+    }
+
+    if (leaders.assistant?.assists > 0 && leaders.assistant?.player) {
+      lines.push(`<b>🅰️ Лучший ассистент: ${formatLeader(leaders.assistant.player)}</b> <i>(${leaders.assistant.assists})</i>\n`);
+    }
+
+    if (leaders.goalkeeper?.saves > 0 && leaders.goalkeeper?.player) {
+      lines.push(`<b>🧤 Лучший вратарь: ${formatLeader(leaders.goalkeeper.player)}</b> <i>(${leaders.goalkeeper.saves})</i>\n`);
+    }
+
+    if (lines.length > 0) {
+      message += `${lines.join('\n')}\n\n`;
+    }
   }
 
   // Функция для форматирования имени игрока

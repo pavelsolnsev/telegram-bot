@@ -140,6 +140,46 @@ describe('buildTeamsMessage', () => {
     });
   });
 
+  describe('Лидеры матча', () => {
+    test('должен добавить блок с лучшими игроками по голам/ассистам/сейвам', () => {
+      const leaders = {
+        scorer: { player: { username: 'goalKing', name: 'Goal King' }, goals: 5 },
+        assistant: { player: { username: 'assistPro', name: 'Assist Pro' }, assists: 3 },
+        goalkeeper: { player: { username: 'safeHands', name: 'Safe Hands' }, saves: 7 },
+      };
+
+      const message = buildTeamsMessage(
+        mockTeams,
+        'Тест',
+        {},
+        mockTeams,
+        null,
+        true,
+        leaders,
+      );
+
+      expect(message).toContain('Лучший бомбардир');
+      expect(message).toContain('goalKing');
+      expect(message).toContain('5');
+
+      expect(message).toContain('Лучший ассистент');
+      expect(message).toContain('assistPro');
+      expect(message).toContain('3');
+
+      expect(message).toContain('Лучший вратарь');
+      expect(message).toContain('safeHands');
+      expect(message).toContain('7');
+    });
+
+    test('не должен выводить блок лидеров, если данные не переданы', () => {
+      const message = buildTeamsMessage(mockTeams);
+
+      expect(message).not.toContain('Лучший бомбардир');
+      expect(message).not.toContain('Лучший ассистент');
+      expect(message).not.toContain('Лучший вратарь');
+    });
+  });
+
   describe('Рейтинг игроков', () => {
     test('должен показать рейтинг с иконками', () => {
       const teamsWithRatings = [

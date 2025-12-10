@@ -300,7 +300,12 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
   }
 
   const resetGoals = (team) =>
-    team.map((player) => ({ ...player, goals: 0 }));
+    team.map((player) => ({
+      ...player,
+      goals: 0,
+      assists: 0,
+      saves: 0,
+    }));
 
   let matchHistory = GlobalState.getMatchHistory();
   let lastMatchIndex = GlobalState.getLastMatchIndex();

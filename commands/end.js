@@ -3,6 +3,7 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const savePlayersToDatabase = require('../database/savePlayers');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { locations } = require('../utils/sendPlayerList');
+const { selectLeaders } = require('../utils/selectLeaders');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -88,6 +89,7 @@ module.exports = (bot, GlobalState) => {
       const teamStats = GlobalState.getTeamStats();
       const teamsBase = GlobalState.getTeamsBase();
       const allPlayers = allTeams.flat();
+      const leaders = selectLeaders(allPlayers);
 
       const currentLocationKey = GlobalState.getLocation();
       const loc = locations[currentLocationKey] || locations.prof;
@@ -187,6 +189,7 @@ module.exports = (bot, GlobalState) => {
           allTeams,
           mvpPlayer,
           false,
+          leaders,
         );
 
         if (teamMvps.length > 0) {
@@ -194,7 +197,7 @@ module.exports = (bot, GlobalState) => {
             const color = teamColors[idx] || '⚽';
             const name = p.username || p.name;
             const ratingText = p.rating !== undefined ? ` +${p.rating}` : '';
-            return `${color} MVP: ${name}${ratingText}`;
+            return `${color} MVP: ${name}<i>${ratingText}</i>`;
           }).join('\n');
           teamsMessage += `\n${teamMvpLines}`;
         }
