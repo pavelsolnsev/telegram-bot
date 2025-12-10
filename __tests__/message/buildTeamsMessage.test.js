@@ -122,7 +122,6 @@ describe('buildTeamsMessage', () => {
 
       expect(message).toContain('🏅 MVP:');
       expect(message).toContain('mvp');
-      expect(message).toContain('+15');
     });
 
     test('должен использовать name если нет username для MVP', () => {
@@ -158,17 +157,15 @@ describe('buildTeamsMessage', () => {
         leaders,
       );
 
-      expect(message).toContain('Лучший бомбардир');
+    expect(message).toContain('Лидеры турнира');
+    expect(message).toContain('⚽');
       expect(message).toContain('goalKing');
-      expect(message).toContain('5');
 
-      expect(message).toContain('Лучший ассистент');
+    expect(message).toContain('🅰️');
       expect(message).toContain('assistPro');
-      expect(message).toContain('3');
 
-      expect(message).toContain('Лучший вратарь');
+    expect(message).toContain('🧤');
       expect(message).toContain('safeHands');
-      expect(message).toContain('7');
     });
 
     test('не должен выводить блок лидеров, если данные не переданы', () => {

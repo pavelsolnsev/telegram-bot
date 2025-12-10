@@ -76,8 +76,7 @@ module.exports = (bot, GlobalState) => {
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
-  // Обработчик кнопки "Отметить сейв" - показывает список игроков для добавления сейвов
-  bot.action('show_saves_menu', async (ctx) => {
+  const handleShowSavesMenu = async (ctx, { skipAnswerCallback = false } = {}) => {
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
@@ -144,7 +143,9 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, '🧤 Выберите игрока');
+      if (!skipAnswerCallback) {
+        await safeAnswerCallback(ctx, '🧤 Выберите игрока');
+      }
     } catch (error) {
       if (chatId) {
         await safeTelegramCall(ctx, 'sendMessage', [
@@ -156,9 +157,14 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, '🧤 Выберите игрока');
+      if (!skipAnswerCallback) {
+        await safeAnswerCallback(ctx, '🧤 Выберите игрока');
+      }
     }
-  });
+  };
+
+  // Обработчик кнопки "Отметить сейв" - показывает список игроков для добавления сейвов
+  bot.action('show_saves_menu', handleShowSavesMenu);
 
   // Добавление сейва через кнопку
   bot.action(/^save_(\d+)_(\d+)$/, async (ctx) => {
@@ -311,7 +317,7 @@ module.exports = (bot, GlobalState) => {
   // Кнопка "Назад" из меню сейвов
   bot.action('saves_menu_back', async (ctx) => {
     await safeAnswerCallback(ctx, '↩️ Возврат');
-    return bot.action('show_saves_menu')(ctx);
+    return handleShowSavesMenu(ctx, { skipAnswerCallback: true });
   });
 
   // Обработчик команды "sv <team> <player>" для добавления сейва

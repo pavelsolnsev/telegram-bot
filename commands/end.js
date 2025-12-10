@@ -142,7 +142,12 @@ module.exports = (bot, GlobalState) => {
       const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
       try {
-        await savePlayersToDatabase(allPlayers);
+        const playersWithMvp = allPlayers.map((player) => ({
+          ...player,
+          mvp: player.id === mvpPlayer?.id ? 1 : 0,
+        }));
+
+        await savePlayersToDatabase(playersWithMvp);
         GlobalState.appendToPlayersHistory(allPlayers);
       } catch (error) {
         if (error.code === 'ECONNRESET') {
@@ -193,11 +198,11 @@ module.exports = (bot, GlobalState) => {
         );
 
         if (teamMvps.length > 0) {
+          teamsMessage += '\n<b>Лидеры своих команд</b>\n';
           const teamMvpLines = teamMvps.map((p, idx) => {
             const color = teamColors[idx] || '⚽';
             const name = p.username || p.name;
-            const ratingText = p.rating !== undefined ? ` +${p.rating}` : '';
-            return `${color} MVP: ${name}<i>${ratingText}</i>`;
+            return `${color} MVP: ${name}`;
           }).join('\n');
           teamsMessage += `\n${teamMvpLines}`;
         }
