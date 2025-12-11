@@ -175,10 +175,10 @@ const { sendPlayerList } = <span class="cstat-no" title="statement not covered" 
 <span class="cstat-no" title="statement not covered" >module.exports = <span class="fstat-no" title="function not covered" >(b</span>ot, GlobalState) =&gt; {</span>
   // Если в store ещё нет геттеров/сеттеров для судьи — создаём
 <span class="cstat-no" title="statement not covered" >  if (!GlobalState.getReferee) {</span>
-    let referee = <span class="cstat-no" title="statement not covered" >"Карен";</span>
+    let referee = <span class="cstat-no" title="statement not covered" >"Не назначен";</span>
 <span class="cstat-no" title="statement not covered" >    GlobalState.getReferee = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >referee;</span></span>
 <span class="cstat-no" title="statement not covered" >    GlobalState.setReferee = <span class="fstat-no" title="function not covered" >(n</span>ame) =&gt; <span class="cstat-no" title="statement not covered" >referee = name;</span></span>
-<span class="cstat-no" title="statement not covered" >    GlobalState.resetReferee = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >referee = "Карен";</span></span>
+<span class="cstat-no" title="statement not covered" >    GlobalState.resetReferee = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >referee = "Не назначен";</span></span>
   }
 &nbsp;
   // Команда "судья &lt;имя&gt;"

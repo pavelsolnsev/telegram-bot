@@ -2,7 +2,6 @@ const { Markup } = require('telegraf');
 const {
   buildPlayingTeamsMessage,
 } = require('../../message/buildPlayingTeamsMessage');
-const { createTeamButtons } = require('../../buttons/createTeamButtons');
 const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { updateTeamsMessage } = require('../../utils/matchHelpers');
@@ -200,9 +199,9 @@ const reverseFinishedMatch = async (ctx, GlobalState) => {
       {
         parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard([
-          ...createTeamButtons(team1, teamIndex1),
-          ...createTeamButtons(team2, teamIndex2),
-          [], // Пустая строка для разделения
+          [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+          [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
+          [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
           [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
           [Markup.button.callback('⚙️ Управление', 'management_menu')],
         ]).reply_markup,

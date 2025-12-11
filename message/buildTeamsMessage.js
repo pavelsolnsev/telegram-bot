@@ -1,4 +1,12 @@
-const buildTeamsMessage = (teamsBase, title = 'Составы команд', teamStats = {}, updatedTeams = teamsBase, mvpPlayer = null, showRatings = true) => {
+const buildTeamsMessage = (
+  teamsBase,
+  title = 'Составы команд',
+  teamStats = {},
+  updatedTeams = teamsBase,
+  mvpPlayer = null,
+  showRatings = true,
+  leaders = null,
+) => {
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
   // Таблица статистики на основе teamsBase
@@ -27,14 +35,51 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
 
   message += '</pre>\n';
 
-  // Добавляем MVP игрока, если он есть
-  if (mvpPlayer) {
-    const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name} ${mvpPlayer.last_name || ''}`.trim();
-    message += `<b>🏅 MVP: ${mvpName}</b> <b><i>+${mvpPlayer.rating}</i></b>\n\n`;
+  // Добавляем лидеров турнира и MVP, если переданы
+  if (leaders || mvpPlayer) {
+    const formatLeader = (player) => player?.username || player?.name || `${player?.first_name || ''} ${player?.last_name || ''}`.trim();
+    const lines = [];
+
+    if (mvpPlayer) {
+      const mvpName = mvpPlayer.username ? mvpPlayer.username : mvpPlayer.name || `${mvpPlayer.first_name || ''} ${mvpPlayer.last_name || ''}`.trim();
+      lines.push(`<b>🏅 MVP: ${mvpName}</b>`, '');
+    }
+
+    if (leaders?.scorer?.goals > 0 && leaders?.scorer?.player) {
+      lines.push(
+        'Голы:',
+        `<b>${formatLeader(leaders.scorer.player)}: ⚽️${leaders.scorer.goals}</b>`,
+        '',
+      );
+    }
+
+    if (leaders?.assistant?.assists > 0 && leaders?.assistant?.player) {
+      lines.push(
+        'Пасы:',
+        `<b>${formatLeader(leaders.assistant.player)}: 🎯${leaders.assistant.assists}</b>`,
+        '',
+      );
+    }
+
+    if (leaders?.goalkeeper?.saves > 0 && leaders?.goalkeeper?.player) {
+      lines.push(
+        'Сейвы:',
+        `<b>${formatLeader(leaders.goalkeeper.player)}: 🧤${leaders.goalkeeper.saves}</b>`,
+        '',
+      );
+    }
+
+    if (lines.length > 0) {
+      // Удаляем завершающие пустые строки, если есть
+      while (lines.length && lines[lines.length - 1] === '') {
+        lines.pop();
+      }
+      message += `<b>Лидеры турнира по статистике:</b>\n\n${lines.join('\n')}\n\n`;
+    }
   }
 
   // Функция для форматирования имени игрока
-  const formatPlayerName = (name, maxLength = 11) => {
+  const formatPlayerName = (name, maxLength) => {
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
@@ -43,19 +88,30 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     if (chars.length <= maxLength) {
       return cleanName.padEnd(maxLength, ' ');
     }
-    return chars.slice(0, maxLength - 3).join('') + '...';
+    return chars.slice(0, Math.max(2, maxLength - 2)).join('') + '..';
   };
 
   // Функция для форматирования строки игрока
-  const formatPlayerLine = (index, name, rating, goals) => {
+  const formatPlayerLine = (index, name, rating, goals, assists, saves) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
+    const assistsMark = assists && assists > 0
+      ? (goalsMark ? `🎯${assists}` : ` 🎯${assists}`)
+      : '';
+    const savesMark = saves && saves > 0
+      ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)
+      : '';
     const paddedIndex = (index + 1).toString().padStart(2, ' ') + '.';
-    const paddedName = formatPlayerName(name).padEnd(11, ' ');
+
+    // Если есть голы/ассисты или рейтинг и иконка, сокращаем имя чуть сильнее, чтобы избежать переноса
+    const hasAllStats = Boolean(goalsMark && assistsMark && savesMark);
+    const hasStats = Boolean(goalsMark || assistsMark || savesMark);
+    const maxNameLength = hasAllStats ? 9 : hasStats ? 10 : 11;
+    const paddedName = formatPlayerName(name, maxNameLength);
     const formattedRating = parseFloat(rating).toString();
 
     if (!showRatings) {
       const ratingPrefix = rating > 0 ? '+' : '';
-      return `<code>${paddedIndex}${paddedName}</code> <b><i>${ratingPrefix}${formattedRating}</i></b> ${goalsMark}`;
+      return `<code>${paddedIndex}${paddedName}</code> <b><i>${ratingPrefix}${formattedRating}</i></b>${goalsMark}${assistsMark}${savesMark}`;
     }
 
     let ratingIcon;
@@ -65,7 +121,7 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     else if (rating < 100) ratingIcon = '🌠';
     else if (rating < 150) ratingIcon = '💎';
     else ratingIcon = '🏆';
-    return `<code>${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}</code>`;
+    return `<code>${paddedIndex}${paddedName} ${ratingIcon}${formattedRating}${goalsMark}${assistsMark}${savesMark}</code>`;
   };
 
   message += '<b>Составы:</b>\n';
@@ -76,7 +132,7 @@ const buildTeamsMessage = (teamsBase, title = 'Составы команд', tea
     updatedTeam.forEach((player, i) => {
       const displayName = player.username ? player.username : player.name;
       const rating = player.rating || 0;
-      message += `${formatPlayerLine(i, displayName, rating, player.goals)}\n`;
+      message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists, player.saves)}\n`;
     });
   });
 

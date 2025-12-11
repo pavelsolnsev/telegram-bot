@@ -195,12 +195,12 @@ describe('matchHelpers', () => {
   describe('updatePlayerStats', () => {
     test('должен обновить статистику игрока при победе', () => {
       const team = [
-        { id: 1, name: 'Player1', goals: 2 },
-        { id: 2, name: 'Player2', goals: 0 },
+        { id: 1, name: 'Player1', goals: 2, assists: 1, saves: 1 },
+        { id: 2, name: 'Player2', goals: 0, assists: 0, saves: 0 },
       ];
       const originalTeam = [
-        { id: 1, rating: 100, gamesPlayed: 5, wins: 3, draws: 1, losses: 1, goals: 5 },
-        { id: 2, rating: 80, gamesPlayed: 5, wins: 2, draws: 1, losses: 2, goals: 2 },
+        { id: 1, rating: 100, gamesPlayed: 5, wins: 3, draws: 1, losses: 1, goals: 5, assists: 1, saves: 0 },
+        { id: 2, rating: 80, gamesPlayed: 5, wins: 2, draws: 1, losses: 2, goals: 2, assists: 0, saves: 0 },
       ];
       const allTeamsBase = [
         [
@@ -224,14 +224,16 @@ describe('matchHelpers', () => {
       expect(result[0].gamesPlayed).toBe(6);
       expect(result[0].wins).toBe(4);
       expect(result[0].goals).toBe(7);
+      expect(result[0].assists).toBe(2);
+      expect(result[0].saves).toBe(1);
       expect(result[0].rating).toBeGreaterThan(100);
       expect(result[1].gamesPlayed).toBe(6);
       expect(result[1].wins).toBe(3);
     });
 
     test('должен обновить статистику игрока при ничьей', () => {
-      const team = [{ id: 1, name: 'Player1', goals: 1 }];
-      const originalTeam = [{ id: 1, rating: 100, gamesPlayed: 5, wins: 3, draws: 1, losses: 1, goals: 5 }];
+      const team = [{ id: 1, name: 'Player1', goals: 1, assists: 0, saves: 2 }];
+      const originalTeam = [{ id: 1, rating: 100, gamesPlayed: 5, wins: 3, draws: 1, losses: 1, goals: 5, assists: 0, saves: 0 }];
       const allTeamsBase = [[{ id: 1, rating: 100 }]];
 
       const result = updatePlayerStats(
@@ -247,6 +249,7 @@ describe('matchHelpers', () => {
       );
 
       expect(result[0].draws).toBe(2);
+      expect(result[0].saves).toBe(2);
       expect(result[0].rating).toBeGreaterThan(100);
     });
 

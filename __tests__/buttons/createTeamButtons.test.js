@@ -1,4 +1,5 @@
 const { createTeamButtons } = require('../../buttons/createTeamButtons');
+const { createAssistButtons, createSaveButtons } = require('../../buttons/createTeamButtons');
 
 describe('createTeamButtons', () => {
   const mockTeam = [
@@ -239,6 +240,25 @@ describe('createTeamButtons', () => {
         expect(button.text).toContain('⚽');
       });
     });
+  });
+});
+
+describe('createAssistButtons / createSaveButtons', () => {
+  const mockTeam = [
+    { id: 1, name: 'Player1', username: 'player1' },
+    { id: 2, name: 'Player2', username: 'player2' },
+  ];
+
+  test('assist buttons use correct callbacks', () => {
+    const buttons = createAssistButtons(mockTeam, 0).flat();
+    expect(buttons[0].callback_data).toBe('assist_0_0');
+    expect(buttons[1].callback_data).toBe('assist_0_1');
+  });
+
+  test('save buttons use correct callbacks', () => {
+    const buttons = createSaveButtons(mockTeam, 1).flat();
+    expect(buttons[0].callback_data).toBe('save_1_0');
+    expect(buttons[1].callback_data).toBe('save_1_1');
   });
 });
 

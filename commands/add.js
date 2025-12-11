@@ -63,6 +63,8 @@ const validateAndCreateUser = async (ctx, GlobalState) => {
     name: userName,
     username: userUsername,
     goals: 0,
+    assists: 0,
+    saves: 0,
     gamesPlayed: 0,
     wins: 0,
     draws: 0,
@@ -367,6 +369,8 @@ module.exports = (bot, GlobalState) => {
           name: testUserName,
           username: testUserUsername,
           goals: 0,
+          assists: 0,
+          saves: 0,
           gamesPlayed: 0,
           wins: 0,
           draws: 0,
@@ -461,6 +465,8 @@ module.exports = (bot, GlobalState) => {
           name: playerData.name || playerData.username,
           username: playerData.username || playerData.name,
           goals: 0,
+          assists: 0,
+          saves: 0,
           gamesPlayed: 0,
           wins: 0,
           draws: 0,
@@ -547,13 +553,6 @@ module.exports = (bot, GlobalState) => {
 
     if (isInList) {
       await safeAnswerCallback(ctx, '⚠️ Вы уже записаны!');
-      const message = await safeTelegramCall(ctx, 'sendMessage', [
-        ctx.chat.id,
-        '⚠️ Вы уже записаны!',
-      ]);
-      if (message) {
-        deleteMessageAfterDelay(ctx, message.message_id, 6000);
-      }
       return;
     }
 

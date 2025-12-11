@@ -122,7 +122,6 @@ describe('buildTeamsMessage', () => {
 
       expect(message).toContain('🏅 MVP:');
       expect(message).toContain('mvp');
-      expect(message).toContain('+15');
     });
 
     test('должен использовать name если нет username для MVP', () => {
@@ -137,6 +136,44 @@ describe('buildTeamsMessage', () => {
 
       expect(message).toContain('🏅 MVP:');
       expect(message).toContain('MVP Player');
+    });
+  });
+
+  describe('Лидеры матча', () => {
+    test('должен добавить блок с лучшими игроками по голам/ассистам/сейвам', () => {
+      const leaders = {
+        scorer: { player: { username: 'goalKing', name: 'Goal King' }, goals: 5 },
+        assistant: { player: { username: 'assistPro', name: 'Assist Pro' }, assists: 3 },
+        goalkeeper: { player: { username: 'safeHands', name: 'Safe Hands' }, saves: 7 },
+      };
+
+      const message = buildTeamsMessage(
+        mockTeams,
+        'Тест',
+        {},
+        mockTeams,
+        null,
+        true,
+        leaders,
+      );
+
+      expect(message).toContain('Лидеры турнира');
+      expect(message).toContain('⚽');
+      expect(message).toContain('goalKing');
+
+    expect(message).toContain('🎯');
+      expect(message).toContain('assistPro');
+
+      expect(message).toContain('🧤');
+      expect(message).toContain('safeHands');
+    });
+
+    test('не должен выводить блок лидеров, если данные не переданы', () => {
+      const message = buildTeamsMessage(mockTeams);
+
+      expect(message).not.toContain('Лучший бомбардир');
+      expect(message).not.toContain('Лучший ассистент');
+      expect(message).not.toContain('Лучший вратарь');
     });
   });
 
@@ -196,6 +233,43 @@ describe('buildTeamsMessage', () => {
 
       expect(message).not.toContain('⚽');
     });
+
+    test('пробел перед ассистом только если нет гола', () => {
+      const onlyAssist = [
+        [{ id: 1, name: 'AssistOnly', username: 'assist', rating: 10, assists: 2, saves: 0, goals: 0 }],
+      ];
+      const withGoalAndAssist = [
+        [{ id: 1, name: 'GoalAssist', username: 'ga', rating: 10, goals: 1, assists: 1, saves: 0 }],
+      ];
+
+      const msgOnlyAssist = buildTeamsMessage(onlyAssist, 'Тест', {}, onlyAssist);
+      const msgGoalAssist = buildTeamsMessage(withGoalAndAssist, 'Тест', {}, withGoalAndAssist);
+
+      expect(msgOnlyAssist).toContain(' 🎯2');
+      expect(msgOnlyAssist).not.toContain('⚽');
+
+      expect(msgGoalAssist).toContain('⚽1🎯1');
+      expect(msgGoalAssist).not.toContain(' ⚽1 🎯1');
+    });
+
+    test('сейвы: пробел если только сейвы, без пробела после голов/ассистов', () => {
+      const onlySaves = [
+        [{ id: 1, name: 'Keeper', username: 'gk', rating: 20, goals: 0, assists: 0, saves: 4 }],
+      ];
+      const goalAssistSave = [
+        [{ id: 1, name: 'GkStats', username: 'gkstats', rating: 30, goals: 1, assists: 1, saves: 2 }],
+      ];
+
+      const msgOnlySaves = buildTeamsMessage(onlySaves, 'Тест', {}, onlySaves);
+      const msgAll = buildTeamsMessage(goalAssistSave, 'Тест', {}, goalAssistSave);
+
+      expect(msgOnlySaves).toContain(' 🧤4');
+      expect(msgOnlySaves).not.toContain('⚽');
+      expect(msgOnlySaves).not.toContain('🎯');
+
+      expect(msgAll).toContain('⚽1🎯1🧤2');
+      expect(msgAll).not.toContain(' ⚽1 🎯1 🧤2');
+    });
   });
 
   describe('Форматирование имен', () => {
@@ -218,6 +292,35 @@ describe('buildTeamsMessage', () => {
       const message = buildTeamsMessage(emojiTeam, 'Тест', {}, emojiTeam);
 
       expect(message).not.toMatch(/🏀|⚽/);
+    });
+
+    test('не должен переносить строки с голами/ассистами (компактный формат)', () => {
+      const statsTeam = [
+        [
+          {
+            id: 1,
+            name: 'SuperLongUsername12',
+            username: 'very_long_username_123',
+            rating: 98,
+            goals: 4,
+            assists: 3,
+          },
+        ],
+      ];
+
+      const message = buildTeamsMessage(statsTeam, 'Тест', {}, statsTeam, null, true);
+
+      // Извлекаем строки игроков из <code> блоков и проверяем их длину (важно для мобильного представления)
+      const codeBlocks = [...message.matchAll(/<code>([\s\S]*?)<\/code>/g)].map((match) => match[1]);
+      const playerLines = codeBlocks
+        .flatMap((block) => block.split('\n'))
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      expect(playerLines.length).toBeGreaterThan(0);
+      playerLines.forEach((line) => {
+        expect(line.length).toBeLessThanOrEqual(34);
+      });
     });
   });
 

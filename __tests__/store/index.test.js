@@ -229,8 +229,8 @@ describe('GlobalState', () => {
 
   describe('Управление судьей', () => {
     test('должен устанавливать и получать судью', () => {
-      GlobalState.setReferee('Карен');
-      expect(GlobalState.getReferee()).toBe('Карен');
+      GlobalState.setReferee('Не назначен');
+      expect(GlobalState.getReferee()).toBe('Не назначен');
 
       GlobalState.setReferee('Другой');
       expect(GlobalState.getReferee()).toBe('Другой');

@@ -3,6 +3,8 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const savePlayersToDatabase = require('../database/savePlayers');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { locations } = require('../utils/sendPlayerList');
+const { selectLeaders } = require('../utils/selectLeaders');
+const { selectMvp } = require('../utils/selectMvp');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -88,36 +90,25 @@ module.exports = (bot, GlobalState) => {
       const teamStats = GlobalState.getTeamStats();
       const teamsBase = GlobalState.getTeamsBase();
       const allPlayers = allTeams.flat();
+      const leaders = selectLeaders(allPlayers);
 
       const currentLocationKey = GlobalState.getLocation();
       const loc = locations[currentLocationKey] || locations.prof;
 
 
       // Находим лучшего игрока (MVP)
-      const mvpCandidates = allPlayers.reduce((best, player) => {
-        if (!best.length) return [player];
-        const topPlayer = best[0];
+      const mvpPlayer = selectMvp(allPlayers);
 
-        if (player.goals > topPlayer.goals) return [player];
-        if (player.goals < topPlayer.goals) return best;
-
-        const playerPoints = player.wins * 3 + player.draws;
-        const topPlayerPoints = topPlayer.wins * 3 + topPlayer.draws;
-
-        if (playerPoints > topPlayerPoints) return [player];
-        if (playerPoints < topPlayerPoints) return best;
-
-        if (player.rating > topPlayer.rating) return [player];
-        if (player.rating === topPlayer.rating) return [...best, player];
-
-        return best;
-      }, []);
-
-      const mvpPlayer =
-        mvpCandidates[Math.floor(Math.random() * mvpCandidates.length)];
+      const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);
+      const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
       try {
-        await savePlayersToDatabase(allPlayers);
+        const playersWithMvp = allPlayers.map((player) => ({
+          ...player,
+          mvp: player.id === mvpPlayer?.id ? 1 : 0,
+        }));
+
+        await savePlayersToDatabase(playersWithMvp);
         GlobalState.appendToPlayersHistory(allPlayers);
       } catch (error) {
         if (error.code === 'ECONNRESET') {
@@ -157,14 +148,25 @@ module.exports = (bot, GlobalState) => {
         // Добавляем локацию в заголовок
         const matchTitle = `Итоги матча${formattedDate} • ${loc.name}`;
 
-        const teamsMessage = buildTeamsMessage(
+        let teamsMessage = buildTeamsMessage(
           teamsBase,
           matchTitle,
           teamStats,
           allTeams,
           mvpPlayer,
           false,
+          leaders,
         );
+
+        if (teamMvps.length > 0) {
+          teamsMessage += '\n<b>Лидеры своих команд</b>\n';
+          const teamMvpLines = teamMvps.map((p, idx) => {
+            const color = teamColors[idx] || '⚽';
+            const name = p.username || p.name;
+            return `${color} MVP: ${name}`;
+          }).join('\n');
+          teamsMessage += `\n${teamMvpLines}`;
+        }
 
         const paymentReminder =
           `<b>💰 Напоминаем об оплате участия: ${loc.sum} ₽</b>\n` +
@@ -228,7 +230,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setMatchHistory({});
       GlobalState.setConsecutiveGames({});
       GlobalState.setIsTableAllowed(false);
-      GlobalState.setReferee('Карен');
+      GlobalState.setReferee('Не назначен');
 
       const message = await ctx.reply('✅ Сбор успешно завершён!');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);
