@@ -56,7 +56,7 @@ const buildTeamsMessage = (
     if (leaders?.assistant?.assists > 0 && leaders?.assistant?.player) {
       lines.push(
         'Пасы:',
-        `<b>${formatLeader(leaders.assistant.player)}: 🅰️${leaders.assistant.assists}</b>`,
+        `<b>${formatLeader(leaders.assistant.player)}: 🎯${leaders.assistant.assists}</b>`,
         '',
       );
     }
@@ -95,7 +95,7 @@ const buildTeamsMessage = (
   const formatPlayerLine = (index, name, rating, goals, assists, saves) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
     const assistsMark = assists && assists > 0
-      ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
+      ? (goalsMark ? `🎯${assists}` : ` 🎯${assists}`)
       : '';
     const savesMark = saves && saves > 0
       ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)

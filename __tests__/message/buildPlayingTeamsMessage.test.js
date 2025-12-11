@@ -148,11 +148,11 @@ describe('buildPlayingTeamsMessage', () => {
       const goalAssistLines = [...msgGoalAssist.matchAll(/<code>([\s\S]*?)<\/code>/g)]
         .flatMap((m) => m[1].split('\n').map((l) => l.trim()).filter(Boolean));
 
-      expect(onlyAssistLines.some((l) => l.includes(' 🅰️2'))).toBe(true);
+      expect(onlyAssistLines.some((l) => l.includes(' 🎯2'))).toBe(true);
       expect(onlyAssistLines.some((l) => l.includes('⚽'))).toBe(false);
 
-      expect(goalAssistLines.some((l) => l.includes('⚽1🅰️1'))).toBe(true);
-      expect(goalAssistLines.some((l) => l.includes(' ⚽1 🅰️1'))).toBe(false);
+      expect(goalAssistLines.some((l) => l.includes('⚽1🎯1'))).toBe(true);
+      expect(goalAssistLines.some((l) => l.includes(' ⚽1 🎯1'))).toBe(false);
     });
 
     test('сейвы: пробел если только сейвы, без пробела после голов/ассистов', () => {
@@ -173,10 +173,10 @@ describe('buildPlayingTeamsMessage', () => {
 
       expect(onlySavesLines.some((l) => l.includes(' 🧤3'))).toBe(true);
       expect(onlySavesLines.some((l) => l.includes('⚽'))).toBe(false);
-      expect(onlySavesLines.some((l) => l.includes('🅰️'))).toBe(false);
+      expect(onlySavesLines.some((l) => l.includes('🎯'))).toBe(false);
 
-      expect(allLines.some((l) => l.includes('⚽1🅰️1🧤2'))).toBe(true);
-      expect(allLines.some((l) => l.includes(' ⚽1 🅰️1 🧤2'))).toBe(false);
+      expect(allLines.some((l) => l.includes('⚽1🎯1🧤2'))).toBe(true);
+      expect(allLines.some((l) => l.includes(' ⚽1 🎯1 🧤2'))).toBe(false);
     });
   });
 

@@ -12,7 +12,7 @@ module.exports = (bot, GlobalState) => {
     // Форматируем статистику
     const goalsMark = goals > 0 ? ` ⚽️${goals}` : '';
     const assistsMark = assists > 0
-      ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
+      ? (goalsMark ? `🎯${assists}` : ` 🎯${assists}`)
       : '';
     const savesMark = saves > 0
       ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)

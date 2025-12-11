@@ -161,7 +161,7 @@ describe('buildTeamsMessage', () => {
       expect(message).toContain('⚽');
       expect(message).toContain('goalKing');
 
-      expect(message).toContain('🅰️');
+    expect(message).toContain('🎯');
       expect(message).toContain('assistPro');
 
       expect(message).toContain('🧤');
@@ -245,11 +245,11 @@ describe('buildTeamsMessage', () => {
       const msgOnlyAssist = buildTeamsMessage(onlyAssist, 'Тест', {}, onlyAssist);
       const msgGoalAssist = buildTeamsMessage(withGoalAndAssist, 'Тест', {}, withGoalAndAssist);
 
-      expect(msgOnlyAssist).toContain(' 🅰️2');
+      expect(msgOnlyAssist).toContain(' 🎯2');
       expect(msgOnlyAssist).not.toContain('⚽');
 
-      expect(msgGoalAssist).toContain('⚽1🅰️1');
-      expect(msgGoalAssist).not.toContain(' ⚽1 🅰️1');
+      expect(msgGoalAssist).toContain('⚽1🎯1');
+      expect(msgGoalAssist).not.toContain(' ⚽1 🎯1');
     });
 
     test('сейвы: пробел если только сейвы, без пробела после голов/ассистов', () => {
@@ -265,10 +265,10 @@ describe('buildTeamsMessage', () => {
 
       expect(msgOnlySaves).toContain(' 🧤4');
       expect(msgOnlySaves).not.toContain('⚽');
-      expect(msgOnlySaves).not.toContain('🅰️');
+      expect(msgOnlySaves).not.toContain('🎯');
 
-      expect(msgAll).toContain('⚽1🅰️1🧤2');
-      expect(msgAll).not.toContain(' ⚽1 🅰️1 🧤2');
+      expect(msgAll).toContain('⚽1🎯1🧤2');
+      expect(msgAll).not.toContain(' ⚽1 🎯1 🧤2');
     });
   });
 

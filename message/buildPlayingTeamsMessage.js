@@ -53,7 +53,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   const formatPlayerLine = (index, name, goals, assists, saves) => {
     const goalsMark = goals && goals > 0 ? ` ⚽${goals}` : '';
     const assistsMark = assists && assists > 0
-      ? (goalsMark ? `🅰️${assists}` : ` 🅰️${assists}`)
+      ? (goalsMark ? `🎯${assists}` : ` 🎯${assists}`)
       : '';
     const savesMark = saves && saves > 0
       ? (goalsMark || assistsMark ? `🧤${saves}` : ` 🧤${saves}`)

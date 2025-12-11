@@ -365,7 +365,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
-              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
@@ -643,7 +643,7 @@ module.exports = (bot, GlobalState) => {
     await updatePlayingTeamsMessage(ctx);
     const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      `🅰️ Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
+      `🎯 Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
@@ -712,7 +712,7 @@ module.exports = (bot, GlobalState) => {
     await updatePlayingTeamsMessage(ctx);
     const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      `🅰️ Ассист удалён у ${team[playerIndex].username || team[playerIndex].name}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
+      `🎯 Ассист удалён у ${team[playerIndex].username || team[playerIndex].name}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
     ]);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
@@ -903,7 +903,7 @@ module.exports = (bot, GlobalState) => {
         const displayName = player.username || player.name;
         buttons.push(
           Markup.button.callback(
-            `${teamColor} ${index + 1}. ${displayName} 🅰️${player.assists}`,
+            `${teamColor} ${index + 1}. ${displayName} 🎯${player.assists}`,
             `cancel_assist_${teamIndex}_${index}`,
           ),
         );
@@ -1015,7 +1015,7 @@ module.exports = (bot, GlobalState) => {
 
     const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      `🅰️ Ассист удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
+      `🎯 Ассист удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
     ]);
     await safeAnswerCallback(ctx, `✅ Ассист отменен у ${team[playerIndex].name || team[playerIndex].username}`);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -1089,7 +1089,7 @@ module.exports = (bot, GlobalState) => {
 
     const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      `🅰️ Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
+      `🎯 Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
     ]);
     await safeAnswerCallback(ctx);
     return deleteMessageAfterDelay(ctx, message.message_id, 6000);
@@ -1159,7 +1159,6 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
-              [Markup.button.callback('❌ Отменить гол', 'cancel_goal_menu')],
               [Markup.button.callback(endButtonText, 'end_match')],
               [Markup.button.callback('🏁 Завершить матч', 'finish_match')],
               [Markup.button.callback('⬅️ Назад', 'management_back')],
@@ -1177,7 +1176,6 @@ module.exports = (bot, GlobalState) => {
           {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
-              [Markup.button.callback('❌ Отменить гол', 'cancel_goal_menu')],
               [Markup.button.callback(endButtonText, 'end_match')],
               [Markup.button.callback('🏁 Завершить матч', 'finish_match')],
               [Markup.button.callback('⬅️ Назад', 'management_back')],
@@ -1458,7 +1456,7 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, '🅰️ Выберите игрока');
+      await safeAnswerCallback(ctx, '🎯 Выберите игрока');
     } catch (error) {
       // Если не удалось отредактировать сообщение, отправляем новое
       if (chatId) {
@@ -1471,7 +1469,7 @@ module.exports = (bot, GlobalState) => {
           },
         ]);
       }
-      await safeAnswerCallback(ctx, '🅰️ Выберите игрока');
+      await safeAnswerCallback(ctx, '🎯 Выберите игрока');
     }
   });
 
@@ -1615,7 +1613,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
-              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
@@ -1680,7 +1678,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
-              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
@@ -1745,7 +1743,7 @@ module.exports = (bot, GlobalState) => {
             parse_mode: 'HTML',
             reply_markup: Markup.inlineKeyboard([
               [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
-              [Markup.button.callback('🅰️ Отметить ассист', 'show_assists_menu')],
+              [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
               [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
               [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
               [Markup.button.callback('⚙️ Управление', 'management_menu')],
