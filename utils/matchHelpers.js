@@ -163,6 +163,81 @@ const updatePlayerStats = (
   });
 };
 
+// Обновление истории матчей при завершении матча
+const updateMatchHistory = (GlobalState, teamIndex1, teamIndex2) => {
+  const totalTeams = GlobalState.getTeams().length;
+  if (totalTeams <= 2) {
+    return;
+  }
+
+  const previousTeamCount = GlobalState.getTeamCount();
+  if (previousTeamCount !== totalTeams) {
+    GlobalState.setMatchHistory({});
+    GlobalState.setLastMatchIndex({});
+    GlobalState.setTeamCount(totalTeams);
+    GlobalState.setConsecutiveGames({});
+  }
+
+  let matchHistory = GlobalState.getMatchHistory();
+  let lastMatchIndex = GlobalState.getLastMatchIndex();
+  const matchResults = GlobalState.getMatchResults();
+  const currentMatchIndex = matchResults.length;
+
+  // Инициализируем структуры
+  for (let i = 0; i < totalTeams; i++) {
+    if (!matchHistory[i]) matchHistory[i] = {};
+    if (!lastMatchIndex[i]) lastMatchIndex[i] = {};
+  }
+
+  // Обновляем количество игр между командами
+  matchHistory[teamIndex1][teamIndex2] =
+    (matchHistory[teamIndex1][teamIndex2] || 0) + 1;
+  matchHistory[teamIndex2][teamIndex1] =
+    (matchHistory[teamIndex2][teamIndex1] || 0) + 1;
+
+  // Обновляем индекс последнего матча между этими командами
+  lastMatchIndex[teamIndex1][teamIndex2] = currentMatchIndex;
+  lastMatchIndex[teamIndex2][teamIndex1] = currentMatchIndex;
+
+  // Обновляем consecutiveGames
+  const consecutiveGames = GlobalState.getConsecutiveGames() || {};
+  consecutiveGames[teamIndex1] = (consecutiveGames[teamIndex1] || 0) + 1;
+  consecutiveGames[teamIndex2] = (consecutiveGames[teamIndex2] || 0) + 1;
+
+  for (let i = 0; i < totalTeams; i++) {
+    if (i !== teamIndex1 && i !== teamIndex2) consecutiveGames[i] = 0;
+  }
+
+  // Проверяем, нужно ли сбросить историю (если все пары сыграли одинаковое количество раз)
+  const allMatchups = [];
+  for (let i = 0; i < totalTeams; i++) {
+    for (let j = i + 1; j < totalTeams; j++) {
+      allMatchups.push([i, j]);
+    }
+  }
+
+  const minMatchesPlayed = Math.min(
+    ...allMatchups.map(([i, j]) => matchHistory[i]?.[j] || 0),
+  );
+  if (
+    allMatchups.every(
+      ([i, j]) => (matchHistory[i]?.[j] || 0) >= minMatchesPlayed + 1,
+    )
+  ) {
+    matchHistory = {};
+    lastMatchIndex = {};
+    for (let i = 0; i < totalTeams; i++) {
+      matchHistory[i] = {};
+      lastMatchIndex[i] = {};
+    }
+  }
+
+  // Сохраняем обновленные структуры
+  GlobalState.setMatchHistory(matchHistory);
+  GlobalState.setLastMatchIndex(lastMatchIndex);
+  GlobalState.setConsecutiveGames(consecutiveGames);
+};
+
 // Обновление сообщения с командами
 const updateTeamsMessage = async (
   ctx,
@@ -230,5 +305,6 @@ module.exports = {
   updateTeamStats,
   updatePlayerStats,
   updateTeamsMessage,
+  updateMatchHistory,
 };
 
