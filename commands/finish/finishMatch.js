@@ -111,10 +111,10 @@ const finishMatch = async (ctx, GlobalState) => {
 
   GlobalState.setTeams(allTeams);
   GlobalState.setTeamStats(teamStats);
-  
+
   // Обновляем историю матчей для корректной работы алгоритма распределения
   updateMatchHistory(GlobalState, teamIndex1, teamIndex2);
-  
+
   GlobalState.setPlayingTeams(null);
   GlobalState.setIsMatchFinished(true);
 

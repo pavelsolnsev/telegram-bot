@@ -1,6 +1,14 @@
 // buildPlayingTeamsMessage.js
 
 const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
+  // Проверка на валидность входных данных
+  if (!Array.isArray(team1)) {
+    team1 = [];
+  }
+  if (!Array.isArray(team2)) {
+    team2 = [];
+  }
+
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
   const emoji = { playing: '⚽', finished: '✅' }[status] || '⚽';
   let title = { playing: 'Команды на поле', finished: '🏁 Итог матча 🏁' }[status] || 'Команды на поле';
@@ -31,17 +39,29 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   // для остальных статусов — из updatedTeams (послематчевая статистика)
   const displayTeam1 = status === 'playing'
     ? team1
-    : (updatedTeams[teamIndex1] || team1);
+    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[teamIndex1]) ? updatedTeams[teamIndex1] : team1);
   const displayTeam2 = status === 'playing'
     ? team2
-    : (updatedTeams[teamIndex2] || team2);
+    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[teamIndex2]) ? updatedTeams[teamIndex2] : team2);
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength) => {
+    // Проверка на null/undefined и приведение к строке
+    if (!name || (typeof name !== 'string' && typeof name !== 'number')) {
+      return 'Unknown'.padEnd(maxLength, ' ');
+    }
+
+    const nameStr = String(name);
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
-    const cleanName = name.replace(emojiRegex, '').trim();
+    const cleanName = nameStr.replace(emojiRegex, '').trim();
+
+    // Если после очистки имя пустое, возвращаем дефолтное значение
+    if (!cleanName) {
+      return 'Unknown'.padEnd(maxLength, ' ');
+    }
+
     const chars = Array.from(cleanName);
     if (chars.length <= maxLength) {
       return cleanName.padEnd(maxLength, ' ');
@@ -75,24 +95,36 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
 
   // Команда 1
   message += `${color1} <b>Команда ${teamIndex1 + 1}</b>\n<code>`;
-  displayTeam1.forEach((player, idx) => {
-    const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
-  });
+  if (Array.isArray(displayTeam1)) {
+    displayTeam1.forEach((player, idx) => {
+      if (player) {
+        const name = player.username || player.name || `Player${idx + 1}`;
+        message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
+      }
+    });
+  }
   message += '</code>\n\n';
 
   // Команда 2
   message += `${color2} <b>Команда ${teamIndex2 + 1}</b>\n<code>`;
-  displayTeam2.forEach((player, idx) => {
-    const name = player.username || player.name;
-    message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
-  });
+  if (Array.isArray(displayTeam2)) {
+    displayTeam2.forEach((player, idx) => {
+      if (player) {
+        const name = player.username || player.name || `Player${idx + 1}`;
+        message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
+      }
+    });
+  }
   message += '</code>';
 
   // Если матч завершён — добавляем счёт и результат
   if (status === 'finished') {
-    const team1Goals = team1.reduce((s, p) => s + (p.goals || 0), 0);
-    const team2Goals = team2.reduce((s, p) => s + (p.goals || 0), 0);
+    const team1Goals = Array.isArray(team1)
+      ? team1.reduce((s, p) => s + ((p && p.goals) ? p.goals : 0), 0)
+      : 0;
+    const team2Goals = Array.isArray(team2)
+      ? team2.reduce((s, p) => s + ((p && p.goals) ? p.goals : 0), 0)
+      : 0;
     const resultText = team1Goals > team2Goals
       ? `🏆 ${color1} побеждает!`
       : team2Goals > team1Goals

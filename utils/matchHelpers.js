@@ -149,8 +149,9 @@ const updatePlayerStats = (
     return {
       ...originalPlayer,
       id: player.id,
-      name: player.name,
-      username: player.username,
+      // Сохраняем name и username, если они есть, иначе используем из originalPlayer
+      name: player.name || originalPlayer.name || 'Unknown',
+      username: player.username || originalPlayer.username || null,
       gamesPlayed: (originalPlayer.gamesPlayed || 0) + 1,
       wins: (originalPlayer.wins || 0) + (isWin ? 1 : 0),
       draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
@@ -245,56 +246,61 @@ const updateTeamsMessage = async (
   allTeamsBase,
   teamStats,
 ) => {
-  const updatedMessage = buildTeamsMessage(
-    allTeamsBase,
-    'Таблица',
-    teamStats,
-    GlobalState.getTeams(),
-    null,
-    false,
-  );
-  const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-  const isTableAllowed = GlobalState.getIsTableAllowed();
-  const playingTeams = GlobalState.getPlayingTeams();
-
-  const buttons = [];
-
-  if (isTableAllowed) {
-    // Если составы объявлены - показываем кнопку выбора команд
-    buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_callback')]);
-  } else {
-    // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
-    buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_blocked')]);
-    buttons.push([Markup.button.callback('📢 Объявить составы', 'announce_teams')]);
-  }
-  // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
-  if (!playingTeams) {
-    buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
-  }
-
-  const inlineKeyboard = Markup.inlineKeyboard(buttons);
-
-  if (lastTeamsMessage) {
-    await safeTelegramCall(ctx, 'editMessageText', [
-      lastTeamsMessage.chatId,
-      lastTeamsMessage.messageId,
+  try {
+    const updatedMessage = buildTeamsMessage(
+      allTeamsBase,
+      'Таблица',
+      teamStats,
+      GlobalState.getTeams(),
       null,
-      updatedMessage,
-      {
-        parse_mode: 'HTML',
-        reply_markup: inlineKeyboard.reply_markup,
-      },
-    ]);
-  } else {
-    const sentMessage = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      updatedMessage,
-      {
-        parse_mode: 'HTML',
-        reply_markup: inlineKeyboard.reply_markup,
-      },
-    ]);
-    GlobalState.setLastTeamsMessageId(ctx.chat.id, sentMessage.message_id);
+      false,
+    );
+    const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
+    const isTableAllowed = GlobalState.getIsTableAllowed();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    const buttons = [];
+
+    if (isTableAllowed) {
+      // Если составы объявлены - показываем кнопку выбора команд
+      buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_callback')]);
+    } else {
+      // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
+      buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_blocked')]);
+      buttons.push([Markup.button.callback('📢 Объявить составы', 'announce_teams')]);
+    }
+    // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
+    if (!playingTeams) {
+      buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
+    }
+
+    const inlineKeyboard = Markup.inlineKeyboard(buttons);
+
+    if (lastTeamsMessage) {
+      await safeTelegramCall(ctx, 'editMessageText', [
+        lastTeamsMessage.chatId,
+        lastTeamsMessage.messageId,
+        null,
+        updatedMessage,
+        {
+          parse_mode: 'HTML',
+          reply_markup: inlineKeyboard.reply_markup,
+        },
+      ]);
+    } else {
+      const sentMessage = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        updatedMessage,
+        {
+          parse_mode: 'HTML',
+          reply_markup: inlineKeyboard.reply_markup,
+        },
+      ]);
+      GlobalState.setLastTeamsMessageId(ctx.chat.id, sentMessage.message_id);
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении сообщения с командами:', error);
+    // Не пробрасываем ошибку дальше, чтобы не сломать выполнение команды
   }
 };
 

@@ -80,10 +80,22 @@ const buildTeamsMessage = (
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength) => {
+    // Проверка на null/undefined и приведение к строке
+    if (!name || (typeof name !== 'string' && typeof name !== 'number')) {
+      return 'Unknown'.padEnd(maxLength, ' ');
+    }
+
+    const nameStr = String(name);
     // Удаляем эмодзи и специальные символы
     // eslint-disable-next-line no-misleading-character-class
     const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
-    const cleanName = name.replace(emojiRegex, '').trim();
+    const cleanName = nameStr.replace(emojiRegex, '').trim();
+
+    // Если после очистки имя пустое, возвращаем дефолтное значение
+    if (!cleanName) {
+      return 'Unknown'.padEnd(maxLength, ' ');
+    }
+
     const chars = Array.from(cleanName);
     if (chars.length <= maxLength) {
       return cleanName.padEnd(maxLength, ' ');
@@ -125,16 +137,23 @@ const buildTeamsMessage = (
   };
 
   message += '<b>Составы:</b>\n';
-  updatedTeams.forEach((updatedTeam, index) => {
-    const teamColor = teamColors[index] || '⚽';
-    message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
+  if (Array.isArray(updatedTeams)) {
+    updatedTeams.forEach((updatedTeam, index) => {
+      if (!Array.isArray(updatedTeam)) {
+        return;
+      }
+      const teamColor = teamColors[index] || '⚽';
+      message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
 
-    updatedTeam.forEach((player, i) => {
-      const displayName = player.username ? player.username : player.name;
-      const rating = player.rating || 0;
-      message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists, player.saves)}\n`;
+      updatedTeam.forEach((player, i) => {
+        if (player) {
+          const displayName = player.username || player.name || `Player${i + 1}`;
+          const rating = player.rating || 0;
+          message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists, player.saves)}\n`;
+        }
+      });
     });
-  });
+  }
 
   return message;
 };
