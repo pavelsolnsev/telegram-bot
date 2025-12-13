@@ -80,7 +80,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
     achievements.push(`🧤 Вратарь (${saves} сейвов)`);
   }
   if (wins === gamesPlayed && gamesPlayed > 0) {
-    achievements.push('🎯 Все матчи выиграны');
+    achievements.push('🥇 Все матчи выиграны');
   }
   if (rating >= 100) {
     achievements.push('💎 Высокий рейтинг');

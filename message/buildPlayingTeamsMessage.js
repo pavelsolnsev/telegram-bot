@@ -132,10 +132,12 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const team2Goals = Array.isArray(team2)
       ? team2.reduce((s, p) => s + ((p && p.goals) ? p.goals : 0), 0)
       : 0;
+    const team1Name = getTeamName(teamIndex1);
+    const team2Name = getTeamName(teamIndex2);
     const resultText = team1Goals > team2Goals
-      ? `🏆 ${color1} побеждает!`
+      ? `🏆 ${color1} ${team1Name} побеждает!`
       : team2Goals > team1Goals
-        ? `🏆 ${color2} побеждает!`
+        ? `🏆 ${color2} ${team2Name} побеждает!`
         : '🤝 Ничья!';
     message += `\n\n📊 <b>Счет:</b> ${color1} ${team1Goals}:${team2Goals} ${color2}\n\n${resultText}`;
   }

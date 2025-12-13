@@ -55,7 +55,7 @@ module.exports = (bot, GlobalState) => {
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
       const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const scoreLine = `📊 Счет: ${color1} ${team1Name} ${m.score1}:${m.score2} ${team2Name} ${color2}`;
+      const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
       const resultText =
         m.score1 > m.score2
           ? `🏆 ${color1} ${team1Name} побеждает!`
@@ -140,7 +140,7 @@ module.exports = (bot, GlobalState) => {
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
       const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const scoreLine = `📊 Счет: ${color1} ${team1Name} ${m.score1}:${m.score2} ${team2Name} ${color2}`;
+      const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
       const resultText =
         m.score1 > m.score2
           ? `🏆 ${color1} ${team1Name} побеждает!`
