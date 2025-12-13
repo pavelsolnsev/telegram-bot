@@ -29,15 +29,19 @@ module.exports = (bot, GlobalState) => {
     await finishMatch(ctx, GlobalState);
   });
 
-  // Обработчик кнопки "🏁 Завершить матч"
+  // Обработчик первого нажатия кнопки "🏁 Завершить матч" (подтверждение)
   bot.action('finish_match', async (ctx) => {
     const ADMIN_ID = GlobalState.getAdminId();
+    const isMatchStarted = GlobalState.getStart();
+    const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
     }
 
-    const isMatchStarted = GlobalState.getStart();
+    // Проверка условий
     if (!isMatchStarted) {
       await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
       const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
@@ -53,14 +57,94 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
+    if (!playingTeams) {
+      await safeAnswerCallback(ctx, '⛔ Нет активного матча для завершения!');
+      const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+      if (chatId) {
+        const message = await safeTelegramCall(ctx, 'sendMessage', [
+          chatId,
+          '⛔ Нет активного матча для завершения!',
+        ]);
+        if (message) {
+          deleteMessageAfterDelay(ctx, message.message_id, 6000);
+        }
+      }
+      return;
+    }
+
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     if (!chatId || chatId < 0) {
       await safeAnswerCallback(ctx, '⚠️ Команда доступна только в личных сообщениях!');
       return;
     }
 
+    // Показываем подтверждающее сообщение с кнопками
+    const confirmMessage = await safeTelegramCall(ctx, 'sendMessage', [
+      chatId,
+      '⚠️ <b>Подтверждение завершения матча</b>\n\n' +
+      'Текущий матч будет завершен, статистика обновлена и сохранена.\n\n' +
+      'Вы уверены, что хотите завершить матч?',
+      {
+        parse_mode: 'HTML',
+        reply_markup: Markup.inlineKeyboard([
+          [
+            Markup.button.callback('✅ Подтвердить', 'finish_execute'),
+            Markup.button.callback('❌ Отмена', 'finish_cancel'),
+          ],
+        ]).reply_markup,
+      },
+    ]);
+
+    // Удаляем сообщение с подтверждением через 30 секунд
+    if (confirmMessage) {
+      setTimeout(() => {
+        safeTelegramCall(ctx, 'deleteMessage', [
+          chatId,
+          confirmMessage.message_id,
+        ]).catch(() => {
+          // Игнорируем ошибки, если сообщение уже удалено
+        });
+      }, 30000);
+    }
+
+    await safeAnswerCallback(ctx, 'Подтвердите завершение матча');
+  });
+
+  // Обработчик подтверждения выполнения команды завершения матча
+  bot.action('finish_execute', async (ctx) => {
+    const ADMIN_ID = GlobalState.getAdminId();
+    if (!ADMIN_ID.includes(ctx.from.id)) {
+      await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+      return;
+    }
+
+    // Удаляем сообщение с подтверждением
+    if (ctx.callbackQuery?.message) {
+      await safeTelegramCall(ctx, 'deleteMessage', [
+        ctx.callbackQuery.message.chat.id,
+        ctx.callbackQuery.message.message_id,
+      ]).catch(() => {
+        // Игнорируем ошибки, если сообщение уже удалено
+      });
+    }
+
     await safeAnswerCallback(ctx, '✅ Завершение матча...');
     await finishMatch(ctx, GlobalState);
+  });
+
+  // Обработчик отмены выполнения команды завершения матча
+  bot.action('finish_cancel', async (ctx) => {
+    // Удаляем сообщение с подтверждением
+    if (ctx.callbackQuery?.message) {
+      await safeTelegramCall(ctx, 'deleteMessage', [
+        ctx.callbackQuery.message.chat.id,
+        ctx.callbackQuery.message.message_id,
+      ]).catch(() => {
+        // Игнорируем ошибки, если сообщение уже удалено
+      });
+    }
+
+    await safeAnswerCallback(ctx, '❌ Завершение матча отменено');
   });
 
   // Команда ksk (текстовый ввод)

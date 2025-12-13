@@ -135,9 +135,9 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     const team1Name = getTeamName(teamIndex1);
     const team2Name = getTeamName(teamIndex2);
     const resultText = team1Goals > team2Goals
-      ? `🏆 ${color1} ${team1Name} побеждает!`
+      ? `🏆 ${color1} ${team1Name}`
       : team2Goals > team1Goals
-        ? `🏆 ${color2} ${team2Name} побеждает!`
+        ? `🏆 ${color2} ${team2Name}`
         : '🤝 Ничья!';
     message += `\n\n📊 <b>Счет:</b> ${color1} ${team1Goals}:${team2Goals} ${color2}\n\n${resultText}`;
   }

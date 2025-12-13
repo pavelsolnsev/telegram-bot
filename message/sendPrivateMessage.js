@@ -8,14 +8,23 @@ const sendPrivateMessage = async (bot, userId, message, options = { parse_mode: 
     const sent = await bot.telegram.sendMessage(userId, message, options);
     return sent;
   } catch (error) {
-    if (error.response?.error_code === 403) {
+    const errorCode = error.response?.error_code;
+    const errorDescription = error.response?.description || '';
+
+    // Обрабатываем известные случаи, когда не нужно пробрасывать ошибку
+    if (errorCode === 403 || errorDescription.includes('bot was blocked')) {
       console.log(`Пользователь ${userId} заблокировал бота`);
-    } else if (error.response?.error_code === 400 && error.response.description.includes('chat not found')) {
-      console.log(`Чат с ID ${userId} не найден`);
-    } else {
-      console.error(`Ошибка при отправке сообщения пользователю ${userId}:`, error);
+      return null;
     }
-    throw error;
+    if (errorCode === 400 && (errorDescription.includes('chat not found') || errorDescription.includes('have no access'))) {
+      console.log(`Чат с ID ${userId} не найден или нет доступа`);
+      return null;
+    }
+
+    // Для других ошибок логируем и возвращаем null вместо проброса ошибки
+    // Это предотвратит падение бота при проблемах с отправкой сообщений
+    console.error(`Ошибка при отправке сообщения пользователю ${userId}:`, error.message || error);
+    return null;
   }
 };
 

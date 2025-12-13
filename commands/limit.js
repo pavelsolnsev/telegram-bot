@@ -47,9 +47,14 @@ module.exports = (bot, GlobalState) => {
       players = players.slice(0, newLimit); // Оставляем только нужное количество игроков в списке
 
       // Отправляем уведомления игрокам, перемещённым в очередь
-      playersToMove.forEach((player) => {
-        sendPrivateMessage(bot, player.id, '⚠️ Вы перемещены в очередь!');
-      });
+      for (const player of playersToMove) {
+        try {
+          await sendPrivateMessage(bot, player.id, '⚠️ Вы перемещены в очередь!');
+        } catch (error) {
+          // Ошибка уже обработана в sendPrivateMessage, просто продолжаем
+          console.log(`Не удалось отправить уведомление игроку ${player.id}`);
+        }
+      }
     } else if (newLimit > MAX_PLAYERS) {
       // Если новый лимит больше текущего
       const availableSlots = newLimit - players.length; // Рассчитываем количество доступных мест
@@ -57,9 +62,14 @@ module.exports = (bot, GlobalState) => {
       players.push(...playersToAdd); // Добавляем их в основной список игроков
 
       // Отправляем уведомления игрокам, перемещённым в основной состав
-      playersToAdd.forEach((player) => {
-        sendPrivateMessage(bot, player.id, '🎉 Вы в основном составе!');
-      });
+      for (const player of playersToAdd) {
+        try {
+          await sendPrivateMessage(bot, player.id, '🎉 Вы в основном составе!');
+        } catch (error) {
+          // Ошибка уже обработана в sendPrivateMessage, просто продолжаем
+          console.log(`Не удалось отправить уведомление игроку ${player.id}`);
+        }
+      }
     }
 
     GlobalState.setMaxPlayers(newLimit);

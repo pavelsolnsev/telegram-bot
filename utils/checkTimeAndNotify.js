@@ -94,11 +94,13 @@ async function checkTimeAndNotify(bot) {
         },
       );
 
-      deleteMessageAfterDelay(
-        { telegram: bot.telegram, chat: { id: groupChatId } },
-        message.message_id,
-        THREE_HOURS_MS,
-      );
+      if (message && message.message_id) {
+        deleteMessageAfterDelay(
+          { telegram: bot.telegram, chat: { id: groupChatId } },
+          message.message_id,
+          THREE_HOURS_MS,
+        );
+      }
 
       // Отправляем личные сообщения игрокам (ошибки здесь не критичны)
       for (const player of players) {
