@@ -5,20 +5,23 @@ const toNumberOrZero = (value) => {
 
 const selectLeaderByMetric = (players, metric, valueKey) => {
   let bestValue = 0;
-  let bestPlayer = null;
+  let bestPlayers = [];
 
+  // Находим максимальное значение
   players.forEach((player) => {
     const value = toNumberOrZero(player[metric]);
     if (value > bestValue) {
       bestValue = value;
-      bestPlayer = player;
+      bestPlayers = [player];
+    } else if (value === bestValue && value > 0) {
+      bestPlayers.push(player);
     }
   });
 
-  if (!bestPlayer || bestValue <= 0) return null;
+  if (bestPlayers.length === 0 || bestValue <= 0) return null;
 
   return {
-    player: bestPlayer,
+    players: bestPlayers,
     [valueKey]: bestValue,
   };
 };

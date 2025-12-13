@@ -131,10 +131,25 @@ function formatPaymentBlock() {
 }
 
 function formatPlayerName(name, maxLength = 12) {
-  // Удаляем эмодзи и специальные символы
+  // Проверка на null/undefined и приведение к строке
+  if (!name || (typeof name !== 'string' && typeof name !== 'number')) {
+    return 'Unknown'.padEnd(maxLength, ' ');
+  }
+
+  const nameStr = String(name);
+  // Удаляем эмодзи и декоративные Unicode-символы:
+  // - Эмодзи (1F000-1FFFF, 2600-27BF, FE00-FEFF, 1F600-1F64F, 1F680-1F6FF, 1F900-1F9FF)
+  // - Математические алфавитные символы (1D400-1D7FF) - декоративные буквы
+  // - Полноширинные символы (FF00-FFEF)
   // eslint-disable-next-line no-misleading-character-class
-  const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
-  const cleanName = name.replace(emojiRegex, '').trim();
+  const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{1D400}-\u{1D7FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{FF00}-\u{FFEF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+  const cleanName = nameStr.replace(emojiRegex, '').trim();
+
+  // Если после очистки имя пустое, возвращаем дефолтное значение
+  if (!cleanName) {
+    return 'Unknown'.padEnd(maxLength, ' ');
+  }
+
   const chars = Array.from(cleanName);
   if (chars.length <= maxLength) return cleanName.padEnd(maxLength, ' ');
   return chars.slice(0, maxLength - 3).join('') + '...';
@@ -195,7 +210,7 @@ const blockRenderers = {
       ? '\n🏆 <b>В игре:</b>\n<code>' +
         players
           .map((p, i) =>
-            formatPlayerLine(i, p.username || p.name, p.rating, p.paid),
+            formatPlayerLine(i, p.username || p.name || `Player${i + 1}`, p.rating, p.paid),
           )
           .join('\n') +
         '</code>\n'
@@ -206,7 +221,7 @@ const blockRenderers = {
       ? '\n📢 <b>Очередь игроков:</b>\n<code>' +
         queue
           .map((p, i) =>
-            formatPlayerLine(i, p.username || p.name, p.rating, p.paid),
+            formatPlayerLine(i, p.username || p.name || `Player${i + 1}`, p.rating, p.paid),
           )
           .join('\n') +
         '</code>\n'

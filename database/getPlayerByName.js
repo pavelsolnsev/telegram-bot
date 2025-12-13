@@ -1,6 +1,18 @@
 const db = require('./database');
 const crypto = require('crypto');
 
+// Функция для удаления эмодзи и декоративных Unicode-символов из строки
+const removeEmoji = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  // Удаляем:
+  // - Эмодзи (1F000-1FFFF, 2600-27BF, FE00-FEFF, 1F600-1F64F, 1F680-1F6FF, 1F900-1F9FF)
+  // - Математические алфавитные символы (1D400-1D7FF) - декоративные буквы
+  // - Полноширинные символы (FF00-FFEF)
+  // eslint-disable-next-line no-misleading-character-class
+  const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{1D400}-\u{1D7FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{FF00}-\u{FFEF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+  return text.replace(emojiRegex, '').trim();
+};
+
 /**
  * Генерирует стабильный ID на основе имени игрока
  * Использует хеш для создания ID в диапазоне 200000-299999
@@ -32,11 +44,16 @@ async function getPlayerByName(playerName, retries = 3) {
       if (rows.length > 0) {
         // Игрок найден, возвращаем его данные
         // Если username пустой, но name совпадает - используем name как username
-        const username = rows[0].username || rows[0].name;
+        // Очищаем эмодзи из данных, полученных из базы данных
+        const rawName = rows[0].name || '';
+        const rawUsername = rows[0].username || '';
+        const cleanName = removeEmoji(rawName) || removeEmoji(rawUsername) || normalizedName;
+        const cleanUsername = removeEmoji(rawUsername) || (rawName ? removeEmoji(rawName) : null);
+
         return {
           id: rows[0].id,
-          name: rows[0].name || username,
-          username: username,
+          name: cleanName,
+          username: cleanUsername,
           found: true,
         };
       }

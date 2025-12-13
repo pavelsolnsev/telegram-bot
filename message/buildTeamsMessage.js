@@ -45,26 +45,29 @@ const buildTeamsMessage = (
       lines.push(`<b>🏅 MVP: ${mvpName}</b>`, '');
     }
 
-    if (leaders?.scorer?.goals > 0 && leaders?.scorer?.player) {
+    if (leaders?.scorer?.goals > 0 && leaders?.scorer?.players && leaders.scorer.players.length > 0) {
+      const scorerNames = leaders.scorer.players.map(player => formatLeader(player)).join(', ');
       lines.push(
         'Голы:',
-        `<b>${formatLeader(leaders.scorer.player)}: ⚽️${leaders.scorer.goals}</b>`,
+        `<b>${scorerNames}: ⚽️${leaders.scorer.goals}</b>`,
         '',
       );
     }
 
-    if (leaders?.assistant?.assists > 0 && leaders?.assistant?.player) {
+    if (leaders?.assistant?.assists > 0 && leaders?.assistant?.players && leaders.assistant.players.length > 0) {
+      const assistantNames = leaders.assistant.players.map(player => formatLeader(player)).join(', ');
       lines.push(
         'Пасы:',
-        `<b>${formatLeader(leaders.assistant.player)}: 🎯${leaders.assistant.assists}</b>`,
+        `<b>${assistantNames}: 🎯${leaders.assistant.assists}</b>`,
         '',
       );
     }
 
-    if (leaders?.goalkeeper?.saves > 0 && leaders?.goalkeeper?.player) {
+    if (leaders?.goalkeeper?.saves > 0 && leaders?.goalkeeper?.players && leaders.goalkeeper.players.length > 0) {
+      const goalkeeperNames = leaders.goalkeeper.players.map(player => formatLeader(player)).join(', ');
       lines.push(
         'Сейвы:',
-        `<b>${formatLeader(leaders.goalkeeper.player)}: 🧤${leaders.goalkeeper.saves}</b>`,
+        `<b>${goalkeeperNames}: 🧤${leaders.goalkeeper.saves}</b>`,
         '',
       );
     }
@@ -86,9 +89,12 @@ const buildTeamsMessage = (
     }
 
     const nameStr = String(name);
-    // Удаляем эмодзи и специальные символы
+    // Удаляем эмодзи и декоративные Unicode-символы:
+    // - Эмодзи (1F000-1FFFF, 2600-27BF, FE00-FEFF, 1F600-1F64F, 1F680-1F6FF, 1F900-1F9FF)
+    // - Математические алфавитные символы (1D400-1D7FF) - декоративные буквы
+    // - Полноширинные символы (FF00-FFEF)
     // eslint-disable-next-line no-misleading-character-class
-    const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+    const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{1D400}-\u{1D7FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{FF00}-\u{FFEF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
     const cleanName = nameStr.replace(emojiRegex, '').trim();
 
     // Если после очистки имя пустое, возвращаем дефолтное значение

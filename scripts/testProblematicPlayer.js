@@ -56,7 +56,7 @@ console.log('📋 Тест 1: buildPlayingTeamsMessage с игроком без 
 try {
   const team1 = [problematicPlayer1, normalPlayer];
   const team2 = [normalPlayer, problematicPlayer2];
-  
+
   const message = buildPlayingTeamsMessage(team1, team2, 0, 1, 'playing', undefined, 1);
   console.log('✅ buildPlayingTeamsMessage отработала успешно');
   console.log('Сообщение содержит:', message.includes('Unknown') || message.includes('Player') ? 'дефолтные имена' : 'ошибку');
@@ -68,7 +68,7 @@ console.log('\n📋 Тест 2: buildPlayingTeamsMessage со статусом f
 try {
   const team1 = [problematicPlayer1, normalPlayer];
   const team2 = [normalPlayer, problematicPlayer2];
-  
+
   const message = buildPlayingTeamsMessage(team1, team2, 0, 1, 'finished', undefined, 1);
   console.log('✅ buildPlayingTeamsMessage (finished) отработала успешно');
   console.log('Сообщение содержит:', message.includes('Unknown') || message.includes('Player') ? 'дефолтные имена' : 'ошибку');
@@ -82,12 +82,12 @@ try {
     [problematicPlayer1, normalPlayer],
     [normalPlayer, problematicPlayer2],
   ];
-  
+
   const updatedTeams = [
     [problematicPlayer1, normalPlayer],
     [normalPlayer, problematicPlayer3],
   ];
-  
+
   const message = buildTeamsMessage(teamsBase, 'Тестовая таблица', {}, updatedTeams);
   console.log('✅ buildTeamsMessage отработала успешно');
   console.log('Сообщение содержит:', message.includes('Unknown') || message.includes('Player') ? 'дефолтные имена' : 'ошибку');
@@ -100,7 +100,7 @@ try {
   // Симулируем ситуацию, когда updatePlayerStats может создать игрока без имени
   const team = [problematicPlayer1];
   const originalTeam = [problematicPlayer1]; // Оба без имени
-  
+
   // Проверяем, что даже если оба без имени, код не упадет
   const testResult = {
     ...originalTeam[0],
@@ -108,7 +108,7 @@ try {
     name: problematicPlayer1.name || originalTeam[0].name || 'Unknown',
     username: problematicPlayer1.username || originalTeam[0].username || null,
   };
-  
+
   console.log('✅ updatePlayerStats логика работает корректно');
   console.log('Результат:', testResult.name === 'Unknown' ? 'используется дефолтное имя' : 'ошибка');
 } catch (error) {
