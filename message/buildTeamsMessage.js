@@ -61,14 +61,14 @@ const buildTeamsMessage = (
 
     if (mvpPlayer) {
       const mvpName = formatLeaderName(mvpPlayer);
-      lines.push(`<b>🏅 MVP: <code>${mvpName}</code></b>`, '');
+      lines.push(`<b>🏅 MVP: ${mvpName}</b>`, '');
     }
 
     if (leaders?.scorer?.goals > 0 && leaders?.scorer?.players && leaders.scorer.players.length > 0) {
       lines.push('Голы:');
       leaders.scorer.players.forEach((player) => {
         const playerName = formatLeaderName(player);
-        lines.push(`<b><code>${playerName}</code>: ⚽️${leaders.scorer.goals}</b>`);
+        lines.push(`<b>${playerName}: ⚽️${leaders.scorer.goals}</b>`);
       });
       lines.push('');
     }
@@ -77,7 +77,7 @@ const buildTeamsMessage = (
       lines.push('Пасы:');
       leaders.assistant.players.forEach((player) => {
         const playerName = formatLeaderName(player);
-        lines.push(`<b><code>${playerName}</code>: 🎯${leaders.assistant.assists}</b>`);
+        lines.push(`<b>${playerName}: 🎯${leaders.assistant.assists}</b>`);
       });
       lines.push('');
     }
@@ -86,7 +86,7 @@ const buildTeamsMessage = (
       lines.push('Сейвы:');
       leaders.goalkeeper.players.forEach((player) => {
         const playerName = formatLeaderName(player);
-        lines.push(`<b><code>${playerName}</code>: 🧤${leaders.goalkeeper.saves}</b>`);
+        lines.push(`<b>${playerName}: 🧤${leaders.goalkeeper.saves}</b>`);
       });
       lines.push('');
     }

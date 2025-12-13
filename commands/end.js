@@ -159,10 +159,30 @@ module.exports = (bot, GlobalState) => {
         );
 
         if (teamMvps.length > 0) {
+          // Функция для форматирования имени MVP команды с сокращением (максимум 16 символов)
+          const formatTeamMvpName = (player) => {
+            const name = player?.username || player?.name || `${player?.first_name || ''} ${player?.last_name || ''}`.trim();
+            if (!name) return 'Unknown';
+
+            const nameStr = String(name);
+            // Удаляем эмодзи и декоративные Unicode-символы
+            // eslint-disable-next-line no-misleading-character-class
+            const emojiRegex = /[\u{1F000}-\u{1FFFF}\u{1D400}-\u{1D7FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FEFF}\u{FF00}-\u{FFEF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/gu;
+            const cleanName = nameStr.replace(emojiRegex, '').trim();
+
+            if (!cleanName) return 'Unknown';
+
+            const chars = Array.from(cleanName);
+            if (chars.length <= 16) {
+              return cleanName;
+            }
+            return chars.slice(0, Math.max(2, 16 - 2)).join('') + '..';
+          };
+
           teamsMessage += '\n<b>Лидеры своих команд</b>\n';
           const teamMvpLines = teamMvps.map((p, idx) => {
             const color = teamColors[idx] || '⚽';
-            const name = p.username || p.name;
+            const name = formatTeamMvpName(p);
             return `${color} MVP: ${name}`;
           }).join('\n');
           teamsMessage += `\n${teamMvpLines}`;
