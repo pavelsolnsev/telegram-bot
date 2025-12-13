@@ -1,3 +1,5 @@
+const { getTeamName } = require('../utils/getTeamName');
+
 const buildTeamsMessage = (
   teamsBase,
   title = 'Составы команд',
@@ -168,7 +170,8 @@ const buildTeamsMessage = (
         return;
       }
       const teamColor = teamColors[index] || '⚽';
-      message += `\n${teamColor} <b>Команда ${index + 1}:</b>\n`;
+      const teamName = getTeamName(index);
+      message += `\n${teamColor} <b>${teamName}:</b>\n`;
 
       updatedTeam.forEach((player, i) => {
         if (player) {

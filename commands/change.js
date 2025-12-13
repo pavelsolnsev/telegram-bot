@@ -3,6 +3,7 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { safeTelegramCall } = require('../utils/telegramUtils');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
+const { getTeamName } = require('../utils/getTeamName');
 
 module.exports = (bot, GlobalState) => {
   // Функция для выполнения замены игроков (общая логика для команды и кнопки)
@@ -161,8 +162,10 @@ module.exports = (bot, GlobalState) => {
       }
 
       // Уведомляем об успешной замене
+      const team1Name = getTeamName(team1);
+      const team2Name = getTeamName(team2);
       const successMessage = await ctx.reply(
-        `✅ Игроки заменены: ${updatedTeams[team1][player1].name} (Команда ${team1 + 1}) ↔ ${updatedTeams[team2][player2].name} (Команда ${team2 + 1})`,
+        `✅ Игроки заменены: ${updatedTeams[team1][player1].name} (${team1Name}) ↔ ${updatedTeams[team2][player2].name} (${team2Name})`,
       );
       deleteMessageAfterDelay(ctx, successMessage.message_id, 3000);
 
@@ -258,9 +261,10 @@ module.exports = (bot, GlobalState) => {
 
     for (let i = 0; i < teams.length; i++) {
       const teamColor = teamColors[i] || '⚽';
+      const teamName = getTeamName(i);
       buttons.push([
         Markup.button.callback(
-          `${teamColor} Команда ${i + 1}`,
+          `${teamColor} ${teamName}`,
           `change_first_team_${i}`,
         ),
       ]);
@@ -338,7 +342,7 @@ module.exports = (bot, GlobalState) => {
         chatId,
         messageId,
         null,
-        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>Команда ${firstTeamIndex + 1}</b>\n\n<b>Выберите игрока из этой команды:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>${getTeamName(firstTeamIndex)}</b>\n\n<b>Выберите игрока из этой команды:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -347,7 +351,7 @@ module.exports = (bot, GlobalState) => {
     } catch (error) {
       const menuMessage = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>Команда ${firstTeamIndex + 1}</b>\n\n<b>Выберите игрока из этой команды:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>${getTeamName(firstTeamIndex)}</b>\n\n<b>Выберите игрока из этой команды:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -400,7 +404,7 @@ module.exports = (bot, GlobalState) => {
         const teamColor = teamColors[i] || '⚽';
         buttons.push([
           Markup.button.callback(
-            `${teamColor} Команда ${i + 1}`,
+            `${teamColor} ${getTeamName(i)}`,
             `change_second_team_${firstTeamIndex}_${firstPlayerIndex}_${i}`,
           ),
         ]);
@@ -499,7 +503,7 @@ module.exports = (bot, GlobalState) => {
         chatId,
         messageId,
         null,
-        `🔄 <b>Выбрана команда:</b> ${secondTeamColor} <b>Команда ${secondTeamIndex + 1}</b>\n<b>Игрок из команды ${firstTeamIndex + 1}:</b> ${firstPlayerName}\n\n<b>Выберите игрока из команды ${secondTeamIndex + 1}:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${secondTeamColor} <b>${getTeamName(secondTeamIndex)}</b>\n<b>Игрок из ${getTeamName(firstTeamIndex)}:</b> ${firstPlayerName}\n\n<b>Выберите игрока из ${getTeamName(secondTeamIndex)}:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -508,7 +512,7 @@ module.exports = (bot, GlobalState) => {
     } catch (error) {
       const menuMessage = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        `🔄 <b>Выбрана команда:</b> ${secondTeamColor} <b>Команда ${secondTeamIndex + 1}</b>\n<b>Игрок из команды ${firstTeamIndex + 1}:</b> ${firstPlayerName}\n\n<b>Выберите игрока из команды ${secondTeamIndex + 1}:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${secondTeamColor} <b>${getTeamName(secondTeamIndex)}</b>\n<b>Игрок из ${getTeamName(firstTeamIndex)}:</b> ${firstPlayerName}\n\n<b>Выберите игрока из ${getTeamName(secondTeamIndex)}:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,

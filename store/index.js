@@ -36,6 +36,7 @@ const GlobalState = (() => {
   let isTableAllowed = false;
   let referee = 'Не назначен';
   let matchMessagesByNumber = {};
+  let teamNames = {}; // Хранит названия команд: { 0: 'Леон', 1: 'Барселона', ... }
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
@@ -60,6 +61,15 @@ const GlobalState = (() => {
     getReferee: () => referee,
     setReferee: (name) => (referee = name),
     resetReferee: () => (referee = 'Не назначен'),
+
+    getTeamNames: () => teamNames,
+    setTeamName: (teamIndex, name) => {
+      if (teamIndex >= 0 && teamIndex < 4) {
+        teamNames[teamIndex] = name;
+      }
+    },
+    getTeamName: (teamIndex) => teamNames[teamIndex] || null,
+    resetTeamNames: () => (teamNames = {}),
 
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => (MAX_PLAYERS = number),

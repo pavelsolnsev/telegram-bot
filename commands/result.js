@@ -2,6 +2,7 @@
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
+const { getTeamName } = require('../utils/getTeamName');
 
 module.exports = (bot, GlobalState) => {
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
@@ -49,24 +50,26 @@ module.exports = (bot, GlobalState) => {
     const sections = results.map((m, i) => {
       const color1 = teamColors[m.teamIndex1] || '⚽';
       const color2 = teamColors[m.teamIndex2] || '⚽';
+      const team1Name = getTeamName(m.teamIndex1);
+      const team2Name = getTeamName(m.teamIndex2);
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
       const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
+      const scoreLine = `📊 Счет: ${color1} ${team1Name} ${m.score1}:${m.score2} ${team2Name} ${color2}`;
       const resultText =
         m.score1 > m.score2
-          ? `🏆 ${color1} побеждает!`
+          ? `🏆 ${color1} ${team1Name} побеждает!`
           : m.score2 > m.score1
-            ? `🏆 ${color2} побеждает!`
+            ? `🏆 ${color2} ${team2Name} побеждает!`
             : '🤝 Ничья!';
 
       return [
         title,
         '',
-        `${color1} Команда ${m.teamIndex1 + 1}`,
+        `${color1} ${team1Name}`,
         `<code>${lines1}</code>`,
         '',
-        `${color2} Команда ${m.teamIndex2 + 1}`,
+        `${color2} ${team2Name}`,
         `<code>${lines2}</code>`,
         '',
         scoreLine,
@@ -132,24 +135,26 @@ module.exports = (bot, GlobalState) => {
     const sections = results.map((m, i) => {
       const color1 = teamColors[m.teamIndex1] || '⚽';
       const color2 = teamColors[m.teamIndex2] || '⚽';
+      const team1Name = getTeamName(m.teamIndex1);
+      const team2Name = getTeamName(m.teamIndex2);
       const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
       const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
       const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
+      const scoreLine = `📊 Счет: ${color1} ${team1Name} ${m.score1}:${m.score2} ${team2Name} ${color2}`;
       const resultText =
         m.score1 > m.score2
-          ? `🏆 ${color1} побеждает!`
+          ? `🏆 ${color1} ${team1Name} побеждает!`
           : m.score2 > m.score1
-            ? `🏆 ${color2} побеждает!`
+            ? `🏆 ${color2} ${team2Name} побеждает!`
             : '🤝 Ничья!';
 
       return [
         title,
         '',
-        `${color1} Команда ${m.teamIndex1 + 1}`,
+        `${color1} ${team1Name}`,
         `<code>${lines1}</code>`,
         '',
-        `${color2} Команда ${m.teamIndex2 + 1}`,
+        `${color2} ${team2Name}`,
         `<code>${lines2}</code>`,
         '',
         scoreLine,

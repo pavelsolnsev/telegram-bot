@@ -5,6 +5,9 @@ const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { locations } = require('../utils/sendPlayerList');
 const { selectLeaders } = require('../utils/selectLeaders');
 const { selectMvp } = require('../utils/selectMvp');
+const { sendPrivateMessage } = require('../message/sendPrivateMessage');
+const { generatePlayerStats } = require('../utils/generatePlayerStats');
+const { getTeamName } = require('../utils/getTeamName');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -132,7 +135,47 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
+      // Отправляем персональную статистику каждому участнику, если это турнир
+      if (currentLocationKey === 'tr' && allTeams.length > 0) {
+        // Отправляем персональную статистику каждому участнику
+        try {
+          for (const player of allPlayers) {
+            // Находим команду игрока
+            let playerTeamIndex = -1;
+            for (let i = 0; i < allTeams.length; i++) {
+              if (allTeams[i].some(p => p.id === player.id)) {
+                playerTeamIndex = i;
+                break;
+              }
+            }
 
+            if (playerTeamIndex >= 0) {
+              const playerStatsMessage = generatePlayerStats(
+                player,
+                playerTeamIndex,
+                teamStats,
+                allTeams,
+                mvpPlayer,
+                teamColors,
+              );
+
+              try {
+                await sendPrivateMessage(bot, player.id, playerStatsMessage, {
+                  parse_mode: 'HTML',
+                });
+                // Небольшая задержка между отправками, чтобы не перегружать API
+                await new Promise(resolve => setTimeout(resolve, 100));
+              } catch (playerError) {
+                // Игнорируем ошибки при отправке отдельным игрокам
+                console.log(`Не удалось отправить статистику игроку ${player.id}:`, playerError.message);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Ошибка при отправке персональной статистики:', error.message);
+          // Не прерываем выполнение, если не удалось отправить статистику
+        }
+      }
 
       // Формируем сообщение с итогами и локацией
       if (listMessageChatId && allTeams.length > 0) {
@@ -251,6 +294,7 @@ module.exports = (bot, GlobalState) => {
       GlobalState.setConsecutiveGames({});
       GlobalState.setIsTableAllowed(false);
       GlobalState.setReferee('Не назначен');
+      GlobalState.resetTeamNames();
 
       const message = await ctx.reply('✅ Сбор успешно завершён!');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);

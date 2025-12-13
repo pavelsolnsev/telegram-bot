@@ -1,5 +1,7 @@
 // buildPlayingTeamsMessage.js
 
+const { getTeamName } = require('../utils/getTeamName');
+
 const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
   // Проверка на валидность входных данных
   if (!Array.isArray(team1)) {
@@ -97,7 +99,8 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   let message = `${messagePrefix}<b>${title}</b>\n\n`;
 
   // Команда 1
-  message += `${color1} <b>Команда ${teamIndex1 + 1}</b>\n<code>`;
+  const team1Name = getTeamName(teamIndex1);
+  message += `${color1} <b>${team1Name}</b>\n<code>`;
   if (Array.isArray(displayTeam1)) {
     displayTeam1.forEach((player, idx) => {
       if (player) {
@@ -109,7 +112,8 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += '</code>\n\n';
 
   // Команда 2
-  message += `${color2} <b>Команда ${teamIndex2 + 1}</b>\n<code>`;
+  const team2Name = getTeamName(teamIndex2);
+  message += `${color2} <b>${team2Name}</b>\n<code>`;
   if (Array.isArray(displayTeam2)) {
     displayTeam2.forEach((player, idx) => {
       if (player) {
