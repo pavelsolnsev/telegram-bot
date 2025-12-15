@@ -203,7 +203,7 @@ module.exports = (bot, GlobalState) => {
     // Добавляем кнопку "Отменить"
     buttons.push([Markup.button.callback('❌ Отменить', 'cancel_select_teams')]);
 
-    await safeAnswerCallback(ctx, `Выбрана команда ${firstTeamIndex + 1}, выберите вторую`);
+    await safeAnswerCallback(ctx, 'Выбрана команда, выберите вторую');
 
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     const messageId = ctx.callbackQuery?.message?.message_id;

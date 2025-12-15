@@ -54,8 +54,8 @@ module.exports = (bot, GlobalState) => {
 
     const color1 = teamColors[safeTeamIndex1] || '⚽';
     const color2 = teamColors[safeTeamIndex2] || '⚽';
-    const team1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
-    const team2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
+    const team1Name = getTeamName(safeTeamIndex1) || 'Команда';
+    const team2Name = getTeamName(safeTeamIndex2) || 'Команда';
     const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
 
     // Безопасный доступ к массивам игроков

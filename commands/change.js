@@ -390,7 +390,7 @@ module.exports = (bot, GlobalState) => {
     // Добавляем кнопку "Отменить"
     buttons.push([Markup.button.callback('❌ Отменить', 'cancel_change_player')]);
 
-    await safeAnswerCallback(ctx, `Выбрана команда ${firstTeamIndex + 1}, выберите игрока`);
+    await safeAnswerCallback(ctx, 'Выбрана команда, выберите игрока');
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     const messageId = ctx.callbackQuery?.message?.message_id;
 
@@ -502,7 +502,7 @@ module.exports = (bot, GlobalState) => {
         chatId,
         messageId,
         null,
-        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>Команда ${firstTeamIndex + 1}</b>\n<b>Игрок:</b> ${firstPlayerName}\n\n<b>Выберите вторую команду:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>${getTeamName(firstTeamIndex)}</b>\n<b>Игрок:</b> ${firstPlayerName}\n\n<b>Выберите вторую команду:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -511,7 +511,7 @@ module.exports = (bot, GlobalState) => {
     } catch (error) {
       const menuMessage = await safeTelegramCall(ctx, 'sendMessage', [
         chatId,
-        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>Команда ${firstTeamIndex + 1}</b>\n<b>Игрок:</b> ${firstPlayerName}\n\n<b>Выберите вторую команду:</b>`,
+        `🔄 <b>Выбрана команда:</b> ${firstTeamColor} <b>${getTeamName(firstTeamIndex)}</b>\n<b>Игрок:</b> ${firstPlayerName}\n\n<b>Выберите вторую команду:</b>`,
         {
           parse_mode: 'HTML',
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -595,7 +595,7 @@ module.exports = (bot, GlobalState) => {
     // Добавляем кнопку "Отменить"
     buttons.push([Markup.button.callback('❌ Отменить', 'cancel_change_player')]);
 
-    await safeAnswerCallback(ctx, `Выбрана команда ${secondTeamIndex + 1}, выберите игрока`);
+    await safeAnswerCallback(ctx, 'Выбрана команда, выберите игрока');
     const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
     const messageId = ctx.callbackQuery?.message?.message_id;
 

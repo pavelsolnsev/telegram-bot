@@ -111,7 +111,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   let message = `${messagePrefix}<b>${title}</b>\n\n`;
 
   // Команда 1
-  const team1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
+  const team1Name = getTeamName(safeTeamIndex1) || 'Команда';
   message += `${color1} <b>${team1Name}</b>\n<code>`;
   if (Array.isArray(displayTeam1)) {
     displayTeam1.forEach((player, idx) => {
@@ -127,7 +127,7 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   message += '</code>\n\n';
 
   // Команда 2
-  const team2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
+  const team2Name = getTeamName(safeTeamIndex2) || 'Команда';
   message += `${color2} <b>${team2Name}</b>\n<code>`;
   if (Array.isArray(displayTeam2)) {
     displayTeam2.forEach((player, idx) => {
@@ -156,8 +156,8 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
           return s + (Number(p.goals) || 0);
         }, 0)
       : 0;
-    const finalTeam1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
-    const finalTeam2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
+    const finalTeam1Name = getTeamName(safeTeamIndex1) || 'Команда';
+    const finalTeam2Name = getTeamName(safeTeamIndex2) || 'Команда';
     const resultText = team1Goals > team2Goals
       ? `🏆 ${color1} ${finalTeam1Name}`
       : team2Goals > team1Goals

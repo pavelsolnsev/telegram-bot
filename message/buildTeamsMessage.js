@@ -214,7 +214,7 @@ const buildTeamsMessage = (
       // Проверка индекса команды
       const safeIndex = Number.isInteger(index) && index >= 0 && index < 4 ? index : 0;
       const teamColor = teamColors[safeIndex] || '⚽';
-      const teamName = getTeamName(safeIndex) || `Команда ${safeIndex + 1}`;
+      const teamName = getTeamName(safeIndex) || 'Команда';
       message += `\n${teamColor} <b>${teamName}:</b>\n`;
 
       updatedTeam.forEach((player, i) => {

@@ -68,7 +68,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   }
   if (isTeamMvp) {
     const teamName = getTeamName(teamIndex);
-    achievements.push(`⭐ MVP команды ${teamName}`);
+    achievements.push(`⭐ MVP команды ${color} ${teamName}`);
   }
   if (goals > 0) {
     achievements.push(`⚽️ Бомбардир (${goals} голов)`);

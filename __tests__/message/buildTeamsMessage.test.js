@@ -18,8 +18,8 @@ describe('buildTeamsMessage', () => {
 
       expect(message).toBeDefined();
       expect(message).toContain('Составы команд');
-      expect(message).toContain('Команда 1:');
-      expect(message).toContain('Команда 2:');
+      expect(message).toContain('Команда:');
+      expect(message).toContain('Команда:');
     });
 
     test('должен использовать кастомный заголовок', () => {
@@ -80,8 +80,8 @@ describe('buildTeamsMessage', () => {
       const message = buildTeamsMessage(mockTeams, 'Составы команд', teamStats, mockTeams);
 
       // Команда 2 должна быть первой (больше очков)
-      const team2Position = message.indexOf('🔵 <b>Команда 2:');
-      const team1Position = message.indexOf('🔴 <b>Команда 1:');
+      const team2Position = message.indexOf('🔵 <b>Команда:');
+      const team1Position = message.indexOf('🔴 <b>Команда:');
 
       // team2 должно быть раньше в контексте таблицы, но после таблицы позиции могут быть другими
       // Просто проверяем что обе команды есть
@@ -142,9 +142,9 @@ describe('buildTeamsMessage', () => {
   describe('Лидеры матча', () => {
     test('должен добавить блок с лучшими игроками по голам/ассистам/сейвам', () => {
       const leaders = {
-        scorer: { player: { username: 'goalKing', name: 'Goal King' }, goals: 5 },
-        assistant: { player: { username: 'assistPro', name: 'Assist Pro' }, assists: 3 },
-        goalkeeper: { player: { username: 'safeHands', name: 'Safe Hands' }, saves: 7 },
+        scorer: { players: [{ username: 'goalKing', name: 'Goal King' }], goals: 5 },
+        assistant: { players: [{ username: 'assistPro', name: 'Assist Pro' }], assists: 3 },
+        goalkeeper: { players: [{ username: 'safeHands', name: 'Safe Hands' }], saves: 7 },
       };
 
       const message = buildTeamsMessage(
@@ -330,8 +330,8 @@ describe('buildTeamsMessage', () => {
       const message = buildTeamsMessage(emptyTeams, 'Пустые команды');
 
       expect(message).toBeDefined();
-      expect(message).toContain('Команда 1:');
-      expect(message).toContain('Команда 2:');
+      expect(message).toContain('Команда:');
+      expect(message).toContain('Команда:');
     });
 
     test('должен обработать команды с одним игроком', () => {
@@ -356,10 +356,9 @@ describe('buildTeamsMessage', () => {
       const message = buildTeamsMessage(fourTeams, '4 команды');
 
       expect(message).toBeDefined();
-      expect(message).toContain('Команда 1:');
-      expect(message).toContain('Команда 2:');
-      expect(message).toContain('Команда 3:');
-      expect(message).toContain('Команда 4:');
+      // Проверяем что команды есть (может быть несколько раз "Команда:")
+      const teamCount = (message.match(/Команда:/g) || []).length;
+      expect(teamCount).toBeGreaterThanOrEqual(4);
     });
   });
 
