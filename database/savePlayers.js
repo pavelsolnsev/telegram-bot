@@ -14,7 +14,19 @@ const removeEmoji = (text) => {
 
 async function savePlayersToDatabase(players) {
   try {
+    // Проверка на валидность входных данных
+    if (!Array.isArray(players)) {
+      console.error('Ошибка: players должен быть массивом:', typeof players);
+      return;
+    }
+
     const values = players.map(player => {
+      // Проверка на валидность объекта игрока
+      if (!player || typeof player !== 'object') {
+        console.error('Ошибка: некорректный объект игрока:', player);
+        return null;
+      }
+
       const {
         id: rawId,
         name: rawName,
@@ -63,7 +75,12 @@ async function savePlayersToDatabase(players) {
       'SELECT id, rating FROM players WHERE id IN (?)',
       [playerIds],
     );
-    const ratingMap = new Map(currentRatings.map(row => [row.id, Number(row.rating) || 0]));
+    // Проверка на валидность результата запроса
+    const safeRatings = Array.isArray(currentRatings) ? currentRatings : [];
+    const ratingMap = new Map(safeRatings.map(row => {
+      if (!row || typeof row !== 'object') return null;
+      return [row.id, Number(row.rating) || 0];
+    }).filter(Boolean));
 
     // Подготавливаем данные для вставки с учетом текущего рейтинга
     const insertValues = values.map(([id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, ratingChange, mvp]) => {

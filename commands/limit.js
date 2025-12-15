@@ -4,12 +4,41 @@ const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^l(\d+)$/i, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде l');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде l');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     let players = GlobalState.getPlayers();
     const queue = GlobalState.getQueue();
     const MAX_PLAYERS = GlobalState.getMaxPlayers();
     const isTeamsDivided = GlobalState.getDivided();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
+    // Проверка на валидность players
+    if (!Array.isArray(players)) {
+      console.error('Ошибка: players не является массивом');
+      return;
+    }
+
+    // Проверка на валидность queue
+    if (!Array.isArray(queue)) {
+      console.error('Ошибка: queue не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -32,8 +61,20 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    const newLimit = Number(ctx.message.text.match(/^l(\d+)$/i)[1]);
-    if (newLimit <= 0) {
+    // Проверка на валидность ctx.message.text
+    if (!ctx.message || !ctx.message.text || typeof ctx.message.text !== 'string') {
+      console.error('Ошибка: некорректный ctx.message.text в команде l');
+      return;
+    }
+
+    const matchResult = ctx.message.text.match(/^l(\d+)$/i);
+    if (!matchResult || matchResult.length < 2) {
+      console.error('Ошибка: некорректный формат команды l');
+      return;
+    }
+
+    const newLimit = Number(matchResult[1]);
+    if (newLimit <= 0 || isNaN(newLimit)) {
       const message = await ctx.reply(
         '⚠️ Лимит должен быть положительным числом!',
       );

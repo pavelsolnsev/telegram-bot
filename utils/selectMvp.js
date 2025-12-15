@@ -12,15 +12,28 @@
  * @returns {Object|null} - игрок MVP или null если массив пуст
  */
 const selectMvp = (players) => {
-  if (!players || players.length === 0) {
+  // Проверка на валидность players
+  if (!Array.isArray(players)) {
+    console.error('Ошибка: players не является массивом в selectMvp');
+    return null;
+  }
+
+  if (players.length === 0) {
     return null;
   }
 
   const getTotalMarks = (player) => {
-    return (player.goals || 0) + (player.assists || 0) + (player.saves || 0);
+    if (!player || typeof player !== 'object') {
+      return 0;
+    }
+    return (Number(player.goals) || 0) + (Number(player.assists) || 0) + (Number(player.saves) || 0);
   };
 
   const candidates = players.reduce((best, player) => {
+    // Пропускаем некорректные объекты игроков
+    if (!player || typeof player !== 'object') {
+      return best;
+    }
     if (!best.length) return [player];
     const topPlayer = best[0];
 

@@ -17,6 +17,12 @@ const {
 module.exports = (bot, GlobalState) => {
   // Команда fn
   bot.hears(/^fn$/i, async (ctx) => {
+    // Проверка на валидность ctx.chat
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде fn');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     if (!(await checkAdminRights(ctx, ADMIN_ID))) return;
     if (!(await checkMatchStarted(ctx, GlobalState.getStart()))) return;
@@ -31,9 +37,21 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик первого нажатия кнопки "🏁 Завершить матч" (подтверждение)
   bot.action('finish_match', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в finish_match');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -112,7 +130,20 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик подтверждения выполнения команды завершения матча
   bot.action('finish_execute', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в finish_execute');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
@@ -154,9 +185,21 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик первого нажатия кнопки KSK (подтверждение)
   bot.action('ksk_confirm', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в ksk_confirm');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     // Проверка прав админа
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -266,6 +309,12 @@ module.exports = (bot, GlobalState) => {
 
   // Команда end - выполняет один шаг, затем предлагает продолжить
   bot.hears(/^end$/i, async (ctx) => {
+    // Проверка на валидность ctx.chat
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде end');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     if (!(await checkAdminRights(ctx, ADMIN_ID))) return;
 
@@ -296,7 +345,20 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "End" из меню управления - работает так же как команда end
   bot.action('end_match', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в end_match');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
@@ -343,7 +405,20 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "Продолжить" для команды end
   bot.action('end_continue', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в end_continue');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;
@@ -391,7 +466,20 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "Остановить" для команды end
   bot.action('end_stop', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в end_stop');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
       return;

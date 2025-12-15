@@ -46,10 +46,16 @@ module.exports = (bot, GlobalState) => {
       return `⚠️ Ошибка: некорректные данные матча №${i + 1}`;
     }
 
-    const color1 = teamColors[m.teamIndex1] || '⚽';
-    const color2 = teamColors[m.teamIndex2] || '⚽';
-    const team1Name = getTeamName(m.teamIndex1);
-    const team2Name = getTeamName(m.teamIndex2);
+    // Проверка индексов команд на валидность (0-3)
+    const teamIndex1 = Number(m.teamIndex1);
+    const teamIndex2 = Number(m.teamIndex2);
+    const safeTeamIndex1 = (Number.isInteger(teamIndex1) && teamIndex1 >= 0 && teamIndex1 < 4) ? teamIndex1 : 0;
+    const safeTeamIndex2 = (Number.isInteger(teamIndex2) && teamIndex2 >= 0 && teamIndex2 < 4) ? teamIndex2 : 0;
+
+    const color1 = teamColors[safeTeamIndex1] || '⚽';
+    const color2 = teamColors[safeTeamIndex2] || '⚽';
+    const team1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
+    const team2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
     const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
 
     // Безопасный доступ к массивам игроков
@@ -87,6 +93,16 @@ module.exports = (bot, GlobalState) => {
   const sendResults = async (ctx, userId) => {
     const results = GlobalState.getMatchResults();
 
+    // Проверка на валидность результатов
+    if (!Array.isArray(results)) {
+      console.error('Ошибка: getMatchResults() вернул не массив:', typeof results);
+      const sent = await sendPrivateMessage(bot, userId, '⚠️ Ошибка при получении результатов матчей.');
+      if (sent && sent.message_id) {
+        deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 30000);
+      }
+      return;
+    }
+
     if (results.length === 0) {
       const sent = await sendPrivateMessage(bot, userId, '📋 Пока нет сыгранных матчей.');
       if (sent && sent.message_id) {
@@ -95,37 +111,8 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    // Собираем текст сообщения
-    const sections = results.map((m, i) => {
-      const color1 = teamColors[m.teamIndex1] || '⚽';
-      const color2 = teamColors[m.teamIndex2] || '⚽';
-      const team1Name = getTeamName(m.teamIndex1);
-      const team2Name = getTeamName(m.teamIndex2);
-      const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
-      const lines1 = m.players1.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const lines2 = m.players2.map((pl, idx) => formatPlayerLine(idx, pl)).join('\n');
-      const scoreLine = `📊 Счет: ${color1} ${m.score1}:${m.score2} ${color2}`;
-      const resultText =
-        m.score1 > m.score2
-          ? `🏆 ${color1} ${team1Name}`
-          : m.score2 > m.score1
-            ? `🏆 ${color2} ${team2Name}`
-            : '🤝 Ничья!';
-
-      return [
-        title,
-        '',
-        `${color1} ${team1Name}`,
-        `<code>${lines1}</code>`,
-        '',
-        `${color2} ${team2Name}`,
-        `<code>${lines2}</code>`,
-        '',
-        scoreLine,
-        '',
-        resultText,
-      ].join('\n');
-    });
+    // Используем безопасную функцию formatMatchSection вместо дублирования кода
+    const sections = results.map((m, i) => formatMatchSection(m, i));
 
     const text = sections.join('\n\n===============\n\n');
 
@@ -152,6 +139,11 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "Результаты"
   bot.action('show_results', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в show_results');
+      return;
+    }
     const userId = ctx.from.id;
 
     await safeAnswerCallback(ctx, '📊 Отправляю результаты в личные сообщения бота');
@@ -179,6 +171,11 @@ module.exports = (bot, GlobalState) => {
   });
 
   bot.hears(/^результаты$/i, async (ctx) => {
+    // Проверка на валидность ctx.chat
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в результаты');
+      return;
+    }
 
     await ctx.deleteMessage().catch(() => {});
 
@@ -195,6 +192,20 @@ module.exports = (bot, GlobalState) => {
     }
 
     const results = GlobalState.getMatchResults();
+
+    // Проверка на валидность результатов
+    if (!Array.isArray(results)) {
+      console.error('Ошибка: getMatchResults() вернул не массив:', typeof results);
+      try {
+        const msg = await ctx.reply('⚠️ Ошибка при получении результатов матчей.');
+        if (msg && msg.message_id) {
+          deleteMessageAfterDelay(ctx, msg.message_id, 30000);
+        }
+      } catch (error) {
+        console.error('Ошибка при отправке сообщения:', error);
+      }
+      return;
+    }
 
     if (results.length === 0) {
       try {

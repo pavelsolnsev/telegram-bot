@@ -5,6 +5,22 @@ const { safeTelegramCall } = require('../utils/telegramUtils');
 
 // Проверка прав администратора
 const checkAdminRights = async (ctx, ADMIN_ID) => {
+  // Проверка на валидность ctx.from и ctx.chat
+  if (!ctx.from || typeof ctx.from.id !== 'number') {
+    console.error('Ошибка: некорректный ctx.from в checkAdminRights');
+    return false;
+  }
+  if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+    console.error('Ошибка: некорректный ctx.chat в checkAdminRights');
+    return false;
+  }
+
+  // Проверка на валидность ADMIN_ID
+  if (!Array.isArray(ADMIN_ID)) {
+    console.error('Ошибка: ADMIN_ID не является массивом');
+    return false;
+  }
+
   await ctx.deleteMessage().catch(() => {});
   if (!ADMIN_ID.includes(ctx.from.id)) {
     const message = await safeTelegramCall(ctx, 'sendMessage', [
@@ -32,12 +48,24 @@ const checkMatchStarted = async (ctx, isMatchStarted) => {
 
 // Определение результата матча
 const getMatchResult = (team1, team2) => {
+  // Проверка на валидность массивов команд
+  if (!Array.isArray(team1) || !Array.isArray(team2)) {
+    console.error('Ошибка: team1 или team2 не являются массивами в getMatchResult');
+    return 'draw'; // Возвращаем ничью как безопасное значение по умолчанию
+  }
+
   const team1Goals = team1.reduce(
-    (sum, player) => sum + (player.goals || 0),
+    (sum, player) => {
+      if (!player || typeof player !== 'object') return sum;
+      return sum + (Number(player.goals) || 0);
+    },
     0,
   );
   const team2Goals = team2.reduce(
-    (sum, player) => sum + (player.goals || 0),
+    (sum, player) => {
+      if (!player || typeof player !== 'object') return sum;
+      return sum + (Number(player.goals) || 0);
+    },
     0,
   );
   return team1Goals > team2Goals
@@ -99,7 +127,32 @@ const updatePlayerStats = (
   teamGoals,
   opponentGoals,
 ) => {
+  // Проверка на валидность массивов
+  if (!Array.isArray(team)) {
+    console.error('Ошибка: team не является массивом в updatePlayerStats');
+    return [];
+  }
+  if (!Array.isArray(originalTeam)) {
+    console.error('Ошибка: originalTeam не является массивом в updatePlayerStats');
+    return [];
+  }
+  if (!Array.isArray(allTeamsBase)) {
+    console.error('Ошибка: allTeamsBase не является массивом в updatePlayerStats');
+    return [];
+  }
+
+  // Проверка индекса команды
+  if (!Number.isInteger(teamIndex) || teamIndex < 0 || teamIndex >= allTeamsBase.length) {
+    console.error('Ошибка: некорректный teamIndex в updatePlayerStats');
+    return [];
+  }
+
   return team.map((player, index) => {
+    // Проверка на валидность объекта игрока
+    if (!player || typeof player !== 'object') {
+      console.error(`Ошибка: некорректный объект игрока в updatePlayerStats (index: ${index})`);
+      return null;
+    }
     const goals = Number(player.goals) || 0;
     const assists = Number(player.assists) || 0;
     const saves = Number(player.saves) || 0;
@@ -166,7 +219,23 @@ const updatePlayerStats = (
 
 // Обновление истории матчей при завершении матча
 const updateMatchHistory = (GlobalState, teamIndex1, teamIndex2) => {
-  const totalTeams = GlobalState.getTeams().length;
+  const teams = GlobalState.getTeams();
+  if (!Array.isArray(teams)) {
+    console.error('Ошибка: teams не является массивом в updateMatchHistory');
+    return;
+  }
+
+  const totalTeams = teams.length;
+
+  // Проверка индексов команд
+  if (!Number.isInteger(teamIndex1) || teamIndex1 < 0 || teamIndex1 >= totalTeams) {
+    console.error('Ошибка: некорректный teamIndex1 в updateMatchHistory');
+    return;
+  }
+  if (!Number.isInteger(teamIndex2) || teamIndex2 < 0 || teamIndex2 >= totalTeams) {
+    console.error('Ошибка: некорректный teamIndex2 в updateMatchHistory');
+    return;
+  }
   if (totalTeams <= 2) {
     return;
   }
@@ -246,6 +315,18 @@ const updateTeamsMessage = async (
   allTeamsBase,
   teamStats,
 ) => {
+  // Проверка на валидность ctx.chat
+  if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+    console.error('Ошибка: некорректный ctx.chat в updateTeamsMessage');
+    return;
+  }
+
+  // Проверка на валидность allTeamsBase
+  if (!Array.isArray(allTeamsBase)) {
+    console.error('Ошибка: allTeamsBase не является массивом в updateTeamsMessage');
+    return;
+  }
+
   try {
     const updatedMessage = buildTeamsMessage(
       allTeamsBase,

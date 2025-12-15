@@ -7,7 +7,6 @@ const { selectLeaders } = require('../utils/selectLeaders');
 const { selectMvp } = require('../utils/selectMvp');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 const { generatePlayerStats } = require('../utils/generatePlayerStats');
-const { getTeamName } = require('../utils/getTeamName');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -29,11 +28,27 @@ module.exports = (bot, GlobalState) => {
 
   bot.hears(/^e!$/i, async (ctx) => {
     try {
+      // Проверка на валидность ctx.from и ctx.chat
+      if (!ctx.from || typeof ctx.from.id !== 'number') {
+        console.error('Ошибка: некорректный ctx.from в команде e!');
+        return;
+      }
+      if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+        console.error('Ошибка: некорректный ctx.chat в команде e!');
+        return;
+      }
+
       const listMessageId = GlobalState.getListMessageId();
       const listMessageChatId = GlobalState.getListMessageChatId();
       const isMatchStarted = GlobalState.getStart();
       const ADMIN_ID = GlobalState.getAdminId();
       const isEndCommandAllowed = GlobalState.getIsEndCommandAllowed();
+
+      // Проверка на валидность ADMIN_ID
+      if (!Array.isArray(ADMIN_ID)) {
+        console.error('Ошибка: ADMIN_ID не является массивом');
+        return;
+      }
 
       // Удаляем сообщение с командой
       await ctx.deleteMessage().catch(() => {});

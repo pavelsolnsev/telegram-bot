@@ -1,8 +1,31 @@
 const GlobalState = (() => {
-  const ADMIN_ID = process.env.ADMIN_ID.split(',').map((id) =>
-    Number(id.trim()),
-  );
-  const GROUP_ID = Number(process.env.ID);
+  // Безопасная инициализация ADMIN_ID с проверкой на существование
+  let ADMIN_ID = [];
+  if (process.env.ADMIN_ID && typeof process.env.ADMIN_ID === 'string') {
+    try {
+      ADMIN_ID = process.env.ADMIN_ID.split(',').map((id) => {
+        const numId = Number(id.trim());
+        return isNaN(numId) ? null : numId;
+      }).filter(id => id !== null);
+    } catch (error) {
+      console.error('Ошибка при парсинге ADMIN_ID:', error);
+      ADMIN_ID = [];
+    }
+  } else {
+    console.warn('ADMIN_ID не установлен в переменных окружения');
+  }
+
+  // Безопасная инициализация GROUP_ID с проверкой на существование
+  let GROUP_ID = null;
+  if (process.env.ID) {
+    GROUP_ID = Number(process.env.ID);
+    if (isNaN(GROUP_ID)) {
+      console.warn('GROUP_ID (process.env.ID) не является валидным числом');
+      GROUP_ID = null;
+    }
+  } else {
+    console.warn('GROUP_ID (process.env.ID) не установлен в переменных окружения');
+  }
 
   let consecutiveGames = {};
   let isMatchStarted = false;

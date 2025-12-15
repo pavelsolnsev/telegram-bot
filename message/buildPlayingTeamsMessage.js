@@ -5,10 +5,22 @@ const { getTeamName } = require('../utils/getTeamName');
 const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
   // Проверка на валидность входных данных
   if (!Array.isArray(team1)) {
+    console.error('Ошибка: team1 не является массивом в buildPlayingTeamsMessage');
     team1 = [];
   }
   if (!Array.isArray(team2)) {
+    console.error('Ошибка: team2 не является массивом в buildPlayingTeamsMessage');
     team2 = [];
+  }
+
+  // Проверка индексов команд
+  const safeTeamIndex1 = Number.isInteger(teamIndex1) && teamIndex1 >= 0 && teamIndex1 < 4 ? teamIndex1 : 0;
+  const safeTeamIndex2 = Number.isInteger(teamIndex2) && teamIndex2 >= 0 && teamIndex2 < 4 ? teamIndex2 : 0;
+
+  // Проверка на валидность updatedTeams
+  if (!Array.isArray(updatedTeams)) {
+    console.error('Ошибка: updatedTeams не является массивом в buildPlayingTeamsMessage');
+    updatedTeams = [];
   }
 
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
@@ -33,18 +45,18 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     // Для неизвестного статуса оставляем дефолтный title из строки выше
   }
 
-  const color1 = teamColors[teamIndex1] || '⚽';
-  const color2 = teamColors[teamIndex2] || '⚽';
+  const color1 = teamColors[safeTeamIndex1] || '⚽';
+  const color2 = teamColors[safeTeamIndex2] || '⚽';
 
   // Выбираем, какие данные брать для отображения
   // для 'playing' — именно переданные team1/team2 (с сброшенными голами),
   // для остальных статусов — из updatedTeams (послематчевая статистика)
   const displayTeam1 = status === 'playing'
     ? team1
-    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[teamIndex1]) ? updatedTeams[teamIndex1] : team1);
+    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[safeTeamIndex1]) ? updatedTeams[safeTeamIndex1] : team1);
   const displayTeam2 = status === 'playing'
     ? team2
-    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[teamIndex2]) ? updatedTeams[teamIndex2] : team2);
+    : (Array.isArray(updatedTeams) && Array.isArray(updatedTeams[safeTeamIndex2]) ? updatedTeams[safeTeamIndex2] : team2);
 
   // Функция для форматирования имени игрока
   const formatPlayerName = (name, maxLength) => {
@@ -99,26 +111,32 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   let message = `${messagePrefix}<b>${title}</b>\n\n`;
 
   // Команда 1
-  const team1Name = getTeamName(teamIndex1);
+  const team1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
   message += `${color1} <b>${team1Name}</b>\n<code>`;
   if (Array.isArray(displayTeam1)) {
     displayTeam1.forEach((player, idx) => {
-      if (player) {
+      if (player && typeof player === 'object') {
         const name = player.username || player.name || `Player${idx + 1}`;
-        message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
+        const goals = Number(player.goals) || 0;
+        const assists = Number(player.assists) || 0;
+        const saves = Number(player.saves) || 0;
+        message += `${formatPlayerLine(idx, name, goals, assists, saves)}\n`;
       }
     });
   }
   message += '</code>\n\n';
 
   // Команда 2
-  const team2Name = getTeamName(teamIndex2);
+  const team2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
   message += `${color2} <b>${team2Name}</b>\n<code>`;
   if (Array.isArray(displayTeam2)) {
     displayTeam2.forEach((player, idx) => {
-      if (player) {
+      if (player && typeof player === 'object') {
         const name = player.username || player.name || `Player${idx + 1}`;
-        message += `${formatPlayerLine(idx, name, player.goals, player.assists, player.saves)}\n`;
+        const goals = Number(player.goals) || 0;
+        const assists = Number(player.assists) || 0;
+        const saves = Number(player.saves) || 0;
+        message += `${formatPlayerLine(idx, name, goals, assists, saves)}\n`;
       }
     });
   }
@@ -127,17 +145,23 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   // Если матч завершён — добавляем счёт и результат
   if (status === 'finished') {
     const team1Goals = Array.isArray(team1)
-      ? team1.reduce((s, p) => s + ((p && p.goals) ? p.goals : 0), 0)
+      ? team1.reduce((s, p) => {
+          if (!p || typeof p !== 'object') return s;
+          return s + (Number(p.goals) || 0);
+        }, 0)
       : 0;
     const team2Goals = Array.isArray(team2)
-      ? team2.reduce((s, p) => s + ((p && p.goals) ? p.goals : 0), 0)
+      ? team2.reduce((s, p) => {
+          if (!p || typeof p !== 'object') return s;
+          return s + (Number(p.goals) || 0);
+        }, 0)
       : 0;
-    const team1Name = getTeamName(teamIndex1);
-    const team2Name = getTeamName(teamIndex2);
+    const finalTeam1Name = getTeamName(safeTeamIndex1) || `Команда ${safeTeamIndex1 + 1}`;
+    const finalTeam2Name = getTeamName(safeTeamIndex2) || `Команда ${safeTeamIndex2 + 1}`;
     const resultText = team1Goals > team2Goals
-      ? `🏆 ${color1} ${team1Name}`
+      ? `🏆 ${color1} ${finalTeam1Name}`
       : team2Goals > team1Goals
-        ? `🏆 ${color2} ${team2Name}`
+        ? `🏆 ${color2} ${finalTeam2Name}`
         : '🤝 Ничья!';
     message += `\n\n📊 <b>Счет:</b> ${color1} ${team1Goals}:${team2Goals} ${color2}\n\n${resultText}`;
   }

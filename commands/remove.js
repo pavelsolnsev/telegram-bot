@@ -4,11 +4,40 @@ const { sendPrivateMessage } = require('../message/sendPrivateMessage'); // До
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^r(\d+)$/i, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде r');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде r');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const players = GlobalState.getPlayers();
     const queue = GlobalState.getQueue();
     const isTeamsDivided = GlobalState.getDivided();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
+    // Проверка на валидность players
+    if (!Array.isArray(players)) {
+      console.error('Ошибка: players не является массивом');
+      return;
+    }
+
+    // Проверка на валидность queue
+    if (!Array.isArray(queue)) {
+      console.error('Ошибка: queue не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     // Проверяем, является ли отправитель администратором
@@ -32,8 +61,20 @@ module.exports = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
+    // Проверка на валидность ctx.message.text
+    if (!ctx.message || !ctx.message.text || typeof ctx.message.text !== 'string') {
+      console.error('Ошибка: некорректный ctx.message.text в команде r');
+      return;
+    }
+
+    const matchResult = ctx.message.text.match(/^r(\d+)$/i);
+    if (!matchResult || matchResult.length < 2) {
+      console.error('Ошибка: некорректный формат команды r');
+      return;
+    }
+
     // Получаем номер игрока из текста команды
-    const playerNumber = Number(ctx.message.text.match(/^r(\d+)$/i)[1]);
+    const playerNumber = Number(matchResult[1]);
 
     // Проверяем, что номер игрока корректен
     if (playerNumber <= 0 || playerNumber > players.length) {

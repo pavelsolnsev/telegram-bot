@@ -9,15 +9,39 @@ const buildTeamsMessage = (
   showRatings = true,
   leaders = null,
 ) => {
+  // Проверка на валидность teamsBase
+  if (!Array.isArray(teamsBase)) {
+    console.error('Ошибка: teamsBase не является массивом в buildTeamsMessage');
+    return '⚠️ Ошибка: некорректные данные команд';
+  }
+
+  // Проверка на валидность teamStats
+  if (!teamStats || typeof teamStats !== 'object') {
+    console.error('Ошибка: teamStats не является объектом в buildTeamsMessage');
+    teamStats = {};
+  }
+
+  // Проверка на валидность updatedTeams
+  if (!Array.isArray(updatedTeams)) {
+    console.error('Ошибка: updatedTeams не является массивом в buildTeamsMessage');
+    updatedTeams = teamsBase; // Используем teamsBase как fallback
+  }
+
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
   // Таблица статистики на основе teamsBase
-  const teamsWithStats = teamsBase.map((team, index) => {
-    const teamKey = `team${index + 1}`;
-    const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
-    const points = stats.wins * 3 + stats.draws * 1;
-    return { team, stats, points, originalIndex: index };
-  });
+  const teamsWithStats = teamsBase
+    .map((team, index) => {
+      // Пропускаем некорректные команды
+      if (!Array.isArray(team)) {
+        return null;
+      }
+      const teamKey = `team${index + 1}`;
+      const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
+      const points = stats.wins * 3 + stats.draws * 1;
+      return { team, stats, points, originalIndex: index };
+    })
+    .filter(Boolean); // Убираем null значения
 
   teamsWithStats.sort((a, b) => b.points - a.points || (b.stats.goalsScored - b.stats.goalsConceded) - (a.stats.goalsScored - a.stats.goalsConceded));
 
@@ -66,31 +90,49 @@ const buildTeamsMessage = (
       lines.push(`<b>🏅 MVP: ${mvpName}</b>`, '');
     }
 
-    if (leaders?.scorer?.goals > 0 && leaders?.scorer?.players && leaders.scorer.players.length > 0) {
-      lines.push('Голы:');
-      leaders.scorer.players.forEach((player) => {
-        const playerName = formatLeaderName(player);
-        lines.push(`<b>${playerName}: ⚽️${leaders.scorer.goals}</b>`);
-      });
-      lines.push('');
-    }
+    // Проверка на валидность leaders
+    if (leaders && typeof leaders === 'object') {
+      if (leaders.scorer && typeof leaders.scorer === 'object' &&
+          Number(leaders.scorer.goals) > 0 &&
+          Array.isArray(leaders.scorer.players) &&
+          leaders.scorer.players.length > 0) {
+        lines.push('Голы:');
+        leaders.scorer.players.forEach((player) => {
+          if (player && typeof player === 'object') {
+            const playerName = formatLeaderName(player);
+            lines.push(`<b>${playerName}: ⚽️${leaders.scorer.goals}</b>`);
+          }
+        });
+        lines.push('');
+      }
 
-    if (leaders?.assistant?.assists > 0 && leaders?.assistant?.players && leaders.assistant.players.length > 0) {
-      lines.push('Пасы:');
-      leaders.assistant.players.forEach((player) => {
-        const playerName = formatLeaderName(player);
-        lines.push(`<b>${playerName}: 🎯${leaders.assistant.assists}</b>`);
-      });
-      lines.push('');
-    }
+      if (leaders.assistant && typeof leaders.assistant === 'object' &&
+          Number(leaders.assistant.assists) > 0 &&
+          Array.isArray(leaders.assistant.players) &&
+          leaders.assistant.players.length > 0) {
+        lines.push('Пасы:');
+        leaders.assistant.players.forEach((player) => {
+          if (player && typeof player === 'object') {
+            const playerName = formatLeaderName(player);
+            lines.push(`<b>${playerName}: 🎯${leaders.assistant.assists}</b>`);
+          }
+        });
+        lines.push('');
+      }
 
-    if (leaders?.goalkeeper?.saves > 0 && leaders?.goalkeeper?.players && leaders.goalkeeper.players.length > 0) {
-      lines.push('Сейвы:');
-      leaders.goalkeeper.players.forEach((player) => {
-        const playerName = formatLeaderName(player);
-        lines.push(`<b>${playerName}: 🧤${leaders.goalkeeper.saves}</b>`);
-      });
-      lines.push('');
+      if (leaders.goalkeeper && typeof leaders.goalkeeper === 'object' &&
+          Number(leaders.goalkeeper.saves) > 0 &&
+          Array.isArray(leaders.goalkeeper.players) &&
+          leaders.goalkeeper.players.length > 0) {
+        lines.push('Сейвы:');
+        leaders.goalkeeper.players.forEach((player) => {
+          if (player && typeof player === 'object') {
+            const playerName = formatLeaderName(player);
+            lines.push(`<b>${playerName}: 🧤${leaders.goalkeeper.saves}</b>`);
+          }
+        });
+        lines.push('');
+      }
     }
 
     if (lines.length > 0) {
@@ -169,15 +211,20 @@ const buildTeamsMessage = (
       if (!Array.isArray(updatedTeam)) {
         return;
       }
-      const teamColor = teamColors[index] || '⚽';
-      const teamName = getTeamName(index);
+      // Проверка индекса команды
+      const safeIndex = Number.isInteger(index) && index >= 0 && index < 4 ? index : 0;
+      const teamColor = teamColors[safeIndex] || '⚽';
+      const teamName = getTeamName(safeIndex) || `Команда ${safeIndex + 1}`;
       message += `\n${teamColor} <b>${teamName}:</b>\n`;
 
       updatedTeam.forEach((player, i) => {
-        if (player) {
+        if (player && typeof player === 'object') {
           const displayName = player.username || player.name || `Player${i + 1}`;
-          const rating = player.rating || 0;
-          message += `${formatPlayerLine(i, displayName, rating, player.goals, player.assists, player.saves)}\n`;
+          const rating = Number(player.rating) || 0;
+          const goals = Number(player.goals) || 0;
+          const assists = Number(player.assists) || 0;
+          const saves = Number(player.saves) || 0;
+          message += `${formatPlayerLine(i, displayName, rating, goals, assists, saves)}\n`;
         }
       });
     });

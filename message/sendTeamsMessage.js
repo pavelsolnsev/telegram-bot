@@ -2,6 +2,18 @@ const { Markup } = require('telegraf');
 const { GlobalState } = require('../store');
 // Функция отправки сообщения с составами команд
 const sendTeamsMessage = async (ctx, message) => {
+  // Проверка на валидность ctx
+  if (!ctx || !ctx.reply) {
+    console.error('Ошибка: некорректный ctx в sendTeamsMessage');
+    return;
+  }
+
+  // Проверка на валидность message
+  if (!message || typeof message !== 'string') {
+    console.error('Ошибка: некорректный message в sendTeamsMessage');
+    return;
+  }
+
   const isTableAllowed = GlobalState.getIsTableAllowed();
   const playingTeams = GlobalState.getPlayingTeams();
 
@@ -27,7 +39,12 @@ const sendTeamsMessage = async (ctx, message) => {
     reply_markup: inlineKeyboard.reply_markup,
   });
 
-  GlobalState.setLastTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
+  // Проверка на валидность sentMessage
+  if (sentMessage && sentMessage.chat && sentMessage.chat.id && sentMessage.message_id) {
+    GlobalState.setLastTeamsMessageId(sentMessage.chat.id, sentMessage.message_id);
+  } else {
+    console.error('Ошибка: некорректный ответ от ctx.reply в sendTeamsMessage');
+  }
 };
 
 module.exports = { sendTeamsMessage };

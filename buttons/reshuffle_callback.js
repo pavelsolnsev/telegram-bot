@@ -8,9 +8,25 @@ const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 
 module.exports = (bot, GlobalState) => {
   bot.action('reshuffle_callback', async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в reshuffle_callback');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в reshuffle_callback');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
     const isTeamCommandAllowed = GlobalState.getIsTeamCommandAllowed();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [
@@ -39,9 +55,21 @@ module.exports = (bot, GlobalState) => {
     }
 
     const numTeams = GlobalState.getLastTeamCount();
-    let players = [...GlobalState.getPlayers()];
+    let players = GlobalState.getPlayers();
 
-    if (!players || players.length === 0) {
+    // Проверка на валидность players
+    if (!Array.isArray(players)) {
+      console.error('Ошибка: players не является массивом');
+      const message = await safeTelegramCall(ctx, 'sendMessage', [
+        ctx.chat.id,
+        '⚠️ Ошибка: некорректные данные игроков!',
+      ]);
+      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+
+    players = [...players];
+
+    if (players.length === 0) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
         '⚠️ Нет игроков для создания команд!',
@@ -78,7 +106,11 @@ module.exports = (bot, GlobalState) => {
 
     try {
       // Получаем ID сообщения из callback_query
-      const messageId = ctx.callbackQuery.message.message_id;
+      const messageId = ctx.callbackQuery?.message?.message_id;
+      if (!messageId) {
+        console.error('Ошибка: не удалось получить message_id из callback_query');
+        return;
+      }
       await safeTelegramCall(ctx, 'editMessageText', [
         ctx.chat.id,
         messageId,

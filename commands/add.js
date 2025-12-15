@@ -53,16 +53,26 @@ const cleanPlayerName = (name, username) => {
 
 // Функция для проверки и создания объекта пользователя
 const validateAndCreateUser = async (ctx, GlobalState) => {
+  // Проверка на валидность ctx.from
+  if (!ctx.from || typeof ctx.from.id !== 'number') {
+    console.error('Ошибка: некорректный ctx.from в validateAndCreateUser');
+    return { error: '⚠️ Ошибка при обработке запроса. Попробуйте позже.' };
+  }
+
   const GROUP_ID = GlobalState.getGroupId();
   const ADMIN_ID = GlobalState.getAdminId();
 
   // Проверка, состоит ли пользователь в группе
   let isMember = false;
-  try {
-    const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
-    isMember = ['member', 'administrator', 'creator'].includes(chatMember.status);
-  } catch (error) {
-    console.error('Ошибка проверки членства в группе:', error);
+  if (GROUP_ID && ctx.telegram) {
+    try {
+      const chatMember = await ctx.telegram.getChatMember(GROUP_ID, ctx.from.id);
+      if (chatMember && chatMember.status) {
+        isMember = ['member', 'administrator', 'creator'].includes(chatMember.status);
+      }
+    } catch (error) {
+      console.error('Ошибка проверки членства в группе:', error);
+    }
   }
 
   if (!isMember) {
@@ -169,8 +179,18 @@ const notifyTeamFormation = async (ctx, bot, GlobalState) => {
 
 module.exports = (bot, GlobalState) => {
   bot.on('text', async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в bot.on(text)');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в bot.on(text)');
+      return;
+    }
+
     // Пропускаем команду reset - она обрабатывается отдельным обработчиком
-    if (/^reset$/i.test(ctx.message.text)) {
+    if (/^reset$/i.test(ctx.message?.text)) {
       return;
     }
 
@@ -188,7 +208,10 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         validationResult.error,
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 10000);
+      if (message && message.message_id) {
+        return deleteMessageAfterDelay(ctx, message.message_id, 10000);
+      }
+      return;
     }
 
     const { user: updatedUser, isAdmin, displayName } = validationResult;

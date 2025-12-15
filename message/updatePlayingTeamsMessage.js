@@ -6,11 +6,37 @@ const _ = require('lodash'); // Импортируем всю библиотек
 
 // Базовая функция обновления сообщения
 const updatePlayingTeamsMessageBase = async (ctx) => {
+  // Проверка на валидность ctx
+  if (!ctx) {
+    console.error('Ошибка: ctx отсутствует в updatePlayingTeamsMessageBase');
+    return;
+  }
+
   const playingTeamsMessageId = GlobalState.getPlayingTeamsMessageId();
   const playingTeams = GlobalState.getPlayingTeams();
 
   if (!playingTeamsMessageId || !playingTeams) {
     console.log('Ошибка: playingTeamsMessageId или playingTeams отсутствуют!');
+    return;
+  }
+
+  // Проверка на валидность playingTeamsMessageId
+  if (!playingTeamsMessageId.chatId || !playingTeamsMessageId.messageId) {
+    console.error('Ошибка: некорректный playingTeamsMessageId');
+    return;
+  }
+
+  // Проверка на валидность playingTeams
+  if (!playingTeams.team1 || !playingTeams.team2 || 
+      typeof playingTeams.teamIndex1 !== 'number' || 
+      typeof playingTeams.teamIndex2 !== 'number') {
+    console.error('Ошибка: некорректная структура playingTeams');
+    return;
+  }
+
+  // Проверка на валидность массивов команд
+  if (!Array.isArray(playingTeams.team1) || !Array.isArray(playingTeams.team2)) {
+    console.error('Ошибка: team1 или team2 не являются массивами');
     return;
   }
 

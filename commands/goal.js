@@ -9,9 +9,31 @@ const { createTeamButtons, createAssistButtons, createSaveButtons } = require('.
 module.exports = (bot, GlobalState) => {
   // Обработчик команды "g <team> <player>" для добавления гола
   bot.hears(/^g(\d+)(\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.match(/^g(\d+)(\d+)$/i);
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде g');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде g');
+      return;
+    }
+
+    const args = ctx.message?.text?.match(/^g(\d+)(\d+)$/i);
+    if (!args || args.length < 3) {
+      console.error('Ошибка: некорректный формат команды g');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -19,7 +41,10 @@ module.exports = (bot, GlobalState) => {
         ctx.chat.id,
         '⛔ У вас нет прав для этой команды.',
       ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      if (message && message.message_id) {
+        return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+      }
+      return;
     }
 
     if (!isMatchStarted) {
@@ -168,11 +193,29 @@ module.exports = (bot, GlobalState) => {
 
   // Добавление сейва через кнопку
   bot.action(/^save_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в save_');
+      return;
+    }
+
+    // Проверка на валидность ctx.match
+    if (!ctx.match || ctx.match.length < 3) {
+      console.error('Ошибка: некорректный ctx.match в save_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const teamIndex = parseInt(ctx.match[1], 10);
     const playerIndex = parseInt(ctx.match[2], 10);
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
@@ -207,9 +250,21 @@ module.exports = (bot, GlobalState) => {
 
   // Показать меню отмены сейва
   bot.action('cancel_save_menu', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в cancel_save_menu');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
@@ -271,9 +326,31 @@ module.exports = (bot, GlobalState) => {
 
   // Отмена сейва
   bot.action(/^cancel_save_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в cancel_save_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в cancel_save_');
+      return;
+    }
+
+    // Проверка на валидность ctx.match
+    if (!ctx.match || ctx.match.length < 3) {
+      console.error('Ошибка: некорректный ctx.match в cancel_save_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
@@ -316,8 +393,20 @@ module.exports = (bot, GlobalState) => {
 
   // Кнопка "Назад" из меню сейвов - возвращает к основному виду
   bot.action('saves_menu_back', async (ctx) => {
+    // Проверка на валидность ctx.from
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в saves_menu_back');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
@@ -381,9 +470,31 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик команды "sv <team> <player>" для добавления сейва
   bot.hears(/^sv(\d+)(\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.match(/^sv(\d+)(\d+)$/i);
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде sv');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде sv');
+      return;
+    }
+
+    const args = ctx.message?.text?.match(/^sv(\d+)(\d+)$/i);
+    if (!args || args.length < 3) {
+      console.error('Ошибка: некорректный формат команды sv');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -442,9 +553,31 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик команды "usv <team> <player>" для удаления сейва
   bot.hears(/^usv(\d+)(\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.match(/^usv(\d+)(\d+)$/i);
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде usv');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде usv');
+      return;
+    }
+
+    const args = ctx.message?.text?.match(/^usv(\d+)(\d+)$/i);
+    if (!args || args.length < 3) {
+      console.error('Ошибка: некорректный формат команды usv');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -511,9 +644,31 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик команды "ug <team> <player>" для удаления гола
   bot.hears(/^ug(\d+)(\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.match(/^ug(\d+)(\d+)$/i);
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде ug');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде ug');
+      return;
+    }
+
+    const args = ctx.message?.text?.match(/^ug(\d+)(\d+)$/i);
+    if (!args || args.length < 3) {
+      console.error('Ошибка: некорректный формат команды ug');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -589,9 +744,31 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик команды "a <team> <player>" для добавления ассиста
   bot.hears(/^a(\d+)(\d+)$/i, async (ctx) => {
-    const args = ctx.message.text.match(/^a(\d+)(\d+)$/i);
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в команде a');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в команде a');
+      return;
+    }
+
+    const args = ctx.message?.text?.match(/^a(\d+)(\d+)$/i);
+    if (!args || args.length < 3) {
+      console.error('Ошибка: некорректный формат команды a');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
     await ctx.deleteMessage().catch(() => {});
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
@@ -718,9 +895,25 @@ module.exports = (bot, GlobalState) => {
   });
   // Обработчик отмены гола у конкретного игрока (должен быть ПЕРЕД обработчиком goal_)
   bot.action(/^cancel_goal_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в cancel_goal');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в cancel_goal');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [
@@ -801,8 +994,24 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик нажатия кнопки "goal_<team>_<player>" для добавления гола
   bot.action(/^goal_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в goal_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в goal_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [
@@ -940,9 +1149,25 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик отмены ассиста у конкретного игрока
   bot.action(/^cancel_assist_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в cancel_assist');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в cancel_assist');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const playingTeams = GlobalState.getPlayingTeams();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [
@@ -1023,8 +1248,24 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик нажатия кнопки "assist_<team>_<player>" для добавления ассиста
   bot.action(/^assist_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в assist_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в assist_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       const message = await safeTelegramCall(ctx, 'sendMessage', [

@@ -9,6 +9,12 @@ const { getTeamName } = require('../utils/getTeamName');
 module.exports = (bot, GlobalState) => {
   // Обработчик заблокированной кнопки "Выбрать команды для матча"
   bot.action('select_teams_blocked', async (ctx) => {
+    // Проверка на валидность ctx.chat
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в select_teams_blocked');
+      return;
+    }
+
     await safeAnswerCallback(ctx, '⚠️ Сначала объявите составы!');
     const message = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
@@ -20,10 +26,32 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "🎯 Выбрать команды для матча"
   bot.action('select_teams_callback', async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в select_teams_callback');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в select_teams_callback');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const playingTeams = GlobalState.getPlayingTeams();
     const teams = GlobalState.getTeams();
     const isTableAllowed = GlobalState.getIsTableAllowed();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
+    // Проверка на валидность teams
+    if (!Array.isArray(teams)) {
+      console.error('Ошибка: teams не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ Нет прав!');
@@ -99,9 +127,37 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик выбора первой команды
   bot.action(/^select_first_team_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в select_first_team_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в select_first_team_');
+      return;
+    }
+
+    // Проверка на валидность ctx.match
+    if (!ctx.match || ctx.match.length < 2) {
+      console.error('Ошибка: некорректный ctx.match в select_first_team_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const teams = GlobalState.getTeams();
     const firstTeamIndex = parseInt(ctx.match[1], 10);
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
+
+    // Проверка на валидность teams
+    if (!Array.isArray(teams)) {
+      console.error('Ошибка: teams не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ Нет прав!');
@@ -179,7 +235,23 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик кнопки "Отменить" при выборе команд
   bot.action('cancel_select_teams', async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в cancel_select_teams');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в cancel_select_teams');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
 
     if (!ADMIN_ID.includes(ctx.from.id)) {
       await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
@@ -219,6 +291,22 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик выбора второй команды и запуск матча
   bot.action(/^select_second_team_(\d+)_(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в select_second_team_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в select_second_team_');
+      return;
+    }
+
+    // Проверка на валидность ctx.match
+    if (!ctx.match || ctx.match.length < 3) {
+      console.error('Ошибка: некорректный ctx.match в select_second_team_');
+      return;
+    }
+
     const firstTeamIndex = parseInt(ctx.match[1], 10);
     const secondTeamIndex = parseInt(ctx.match[2], 10);
 
@@ -401,6 +489,22 @@ module.exports = (bot, GlobalState) => {
 
   // Обработчик выбора комбинации команд (play_teams_XX, например play_teams_12)
   bot.action(/^play_teams_(\d+)(\d+)$/, async (ctx) => {
+    // Проверка на валидность ctx.from и ctx.chat
+    if (!ctx.from || typeof ctx.from.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.from в play_teams_');
+      return;
+    }
+    if (!ctx.chat || typeof ctx.chat.id !== 'number') {
+      console.error('Ошибка: некорректный ctx.chat в play_teams_');
+      return;
+    }
+
+    // Проверка на валидность ctx.match
+    if (!ctx.match || ctx.match.length < 3) {
+      console.error('Ошибка: некорректный ctx.match в play_teams_');
+      return;
+    }
+
     const ADMIN_ID = GlobalState.getAdminId();
     const isMatchStarted = GlobalState.getStart();
     const isStatsInitialized = GlobalState.getIsStatsInitialized();
@@ -408,6 +512,12 @@ module.exports = (bot, GlobalState) => {
     const playingTeams = GlobalState.getPlayingTeams();
     const teamIndex1 = parseInt(ctx.match[1], 10) - 1;
     const teamIndex2 = parseInt(ctx.match[2], 10) - 1;
+
+    // Проверка на валидность ADMIN_ID
+    if (!Array.isArray(ADMIN_ID)) {
+      console.error('Ошибка: ADMIN_ID не является массивом');
+      return;
+    }
     const teams = GlobalState.getTeams();
     const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
 
