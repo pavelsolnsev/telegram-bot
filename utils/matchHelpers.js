@@ -184,7 +184,8 @@ const updatePlayerStats = (
     const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
     const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;
 
-    const winDelta = isShutoutWin ? 3 * mod : isWin ? 2 * mod : 0;
+    const winDelta = isWin ? 2 * mod : 0; // Базовая победа
+    const shutoutWinBonus = isShutoutWin ? 1 * mod : 0; // Дополнительный бонус за сухую победу
     const drawDelta = isDraw ? 0.5 * mod : 0;
 
     // === Штраф за поражение со смягчением ===
@@ -192,10 +193,10 @@ const updatePlayerStats = (
     // Боролся до конца (≥2 действия): -0.4 от штрафа
     const totalActions = goals + assists + saves;
     const loseReduction = isLose ? (goals >= 2 ? 0.5 : totalActions >= 2 ? 0.4 : 0) : 0;
-    const baseLoseDelta = isShutoutLoss ? -1.7 : isLose ? -1.2 : 0;
+    const baseLoseDelta = isShutoutLoss ? -2 : isLose ? -1.5 : 0;
     const loseDelta = baseLoseDelta + loseReduction;
 
-    const delta = goalDelta + assistDelta + saveDelta + goalBonus + assistBonus + cleanSheetBonus + saveBonus + winDelta + drawDelta + loseDelta;
+    const delta = goalDelta + assistDelta + saveDelta + goalBonus + assistBonus + cleanSheetBonus + saveBonus + winDelta + drawDelta + loseDelta + shutoutWinBonus;
 
     const newRating = round1(Math.min(prevRating + delta, 200));
 
@@ -204,11 +205,12 @@ const updatePlayerStats = (
     const ratingAssistsDelta = (originalPlayer.ratingAssistsDelta || 0) + assistDelta + assistBonus;
     const ratingSavesDelta = (originalPlayer.ratingSavesDelta || 0) + saveDelta + saveBonus;
     const ratingCleanSheetsDelta = (originalPlayer.ratingCleanSheetsDelta || 0) + cleanSheetBonus;
-    const ratingWinsDelta = (originalPlayer.ratingWinsDelta || 0) + winDelta;
+    const ratingWinsDelta = (originalPlayer.ratingWinsDelta || 0) + (isWin ? 2 * mod : 0); // Только базовая победа
     const ratingDrawsDelta = (originalPlayer.ratingDrawsDelta || 0) + drawDelta;
     const ratingLossesDelta = (originalPlayer.ratingLossesDelta || 0) + loseDelta;
+    const ratingShutoutWinDelta = (originalPlayer.ratingShutoutWinDelta || 0) + shutoutWinBonus;
     const ratingTournamentDelta = ratingGoalsDelta + ratingAssistsDelta + ratingSavesDelta
-      + ratingCleanSheetsDelta + ratingWinsDelta + ratingDrawsDelta + ratingLossesDelta;
+      + ratingCleanSheetsDelta + ratingWinsDelta + ratingDrawsDelta + ratingLossesDelta + ratingShutoutWinDelta;
 
     // Отслеживание серий побед и непобедимости
     let consecutiveWins = originalPlayer.consecutiveWins || 0;
@@ -251,6 +253,7 @@ const updatePlayerStats = (
       ratingWinsDelta,
       ratingDrawsDelta,
       ratingLossesDelta,
+      ratingShutoutWinDelta,
       ratingTournamentDelta,
       consecutiveWins,
       consecutiveUnbeaten,

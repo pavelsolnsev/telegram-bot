@@ -48,6 +48,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const winsDelta = typeof player.ratingWinsDelta === 'number' ? player.ratingWinsDelta : 0;
   const drawsDelta = typeof player.ratingDrawsDelta === 'number' ? player.ratingDrawsDelta : 0;
   const lossesDelta = typeof player.ratingLossesDelta === 'number' ? player.ratingLossesDelta : 0;
+  const shutoutWinDelta = typeof player.ratingShutoutWinDelta === 'number' ? player.ratingShutoutWinDelta : 0;
   const totalRatingDelta = typeof player.ratingTournamentDelta === 'number'
     ? player.ratingTournamentDelta
     : goalsDelta
@@ -56,7 +57,8 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
       + cleanSheetsDelta
       + winsDelta
       + drawsDelta
-      + lossesDelta;
+      + lossesDelta
+      + shutoutWinDelta;
 
   const formatDelta = (value) => {
     const num = Number(value) || 0;
@@ -69,8 +71,9 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
 
   // Команда и позиция
   const teamName = getTeamName(teamIndex);
-  message += `${color} <b>${teamName}</b> - ${teamPosition} место\n`;
-  message += `Очки команды: ${points} (${stats.wins}В ${stats.draws}Н ${stats.losses}П)\n\n`;
+  const positionEmoji = teamPosition === 1 ? '🥇' : teamPosition === 2 ? '🥈' : teamPosition === 3 ? '🥉' : '📍';
+  message += `${color} <b>${teamName}</b> ${positionEmoji} <b>${teamPosition} место</b>\n`;
+  message += `📊 Очки команды: <b>${points}</b>\n\n`;
 
   // Статистика игрока
   message += '<b>Ваши показатели:</b>\n';
@@ -97,9 +100,6 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   if (savesDelta !== 0) {
     message += `🧤 Сейвы: ${formatDelta(savesDelta)}\n`;
   }
-  if (cleanSheetsDelta !== 0) {
-    message += `🧱 "Сухие" матчи: ${formatDelta(cleanSheetsDelta)}\n`;
-  }
   if (winsDelta !== 0) {
     message += `🏆 Победы: ${formatDelta(winsDelta)}\n`;
   }
@@ -108,6 +108,12 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   }
   if (lossesDelta !== 0) {
     message += `📉 Штрафы за поражения: ${formatDelta(lossesDelta)}\n`;
+  }
+  if (shutoutWinDelta !== 0) {
+    message += `🧹 Сухие победы (3+ гола): ${formatDelta(shutoutWinDelta)}\n`;
+  }
+  if (cleanSheetsDelta !== 0) {
+    message += `🧱 "Сухие" матчи (сейвы + команда не пропустила): ${formatDelta(cleanSheetsDelta)}\n`;
   }
   message += `Общий рейтинг: ${formatDelta(totalRatingDelta)}\n\n`;
 
@@ -125,88 +131,108 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const minGoalsConceded = Math.min(...allTeamGoalsConceded, Infinity);
   const isBestDefense = stats.goalsConceded === minGoalsConceded && minGoalsConceded !== Infinity;
 
+  // Находим команду с наибольшим количеством забитых голов
+  const allTeamGoalsScored = Object.values(teamStats).map(teamStat => teamStat.goalsScored || 0);
+  const maxGoalsScored = Math.max(...allTeamGoalsScored, 0);
+  const isBestAttack = stats.goalsScored === maxGoalsScored && maxGoalsScored > 0;
+
   // Серии побед и непобедимости
   const maxConsecutiveWins = player.maxConsecutiveWins || 0;
   const maxConsecutiveUnbeaten = player.maxConsecutiveUnbeaten || 0;
 
-  // Достижения
-  const achievements = [];
-  if (isTournamentMvp) {
-    achievements.push('🏆 MVP турнира');
-  }
-  if (isTeamMvp) {
-    achievements.push(`⭐ MVP команды ${color}`);
-  }
-
+  // Достижения команды
+  const teamAchievements = [];
   // Позиция команды
   if (teamPosition === 1) {
-    achievements.push('🏅 Чемпион');
+    teamAchievements.push('🏅 Золото');
   } else if (teamPosition === 2) {
-    achievements.push('🥈 Призер');
+    teamAchievements.push('🥈 Серебро');
   } else if (teamPosition === 3) {
-    achievements.push('🎖️ Бронза');
+    teamAchievements.push('🎖️ Бронза');
   }
-
-  // Серии побед
-  if (maxConsecutiveWins >= 3) {
-    achievements.push(`🔥 Серия побед (${maxConsecutiveWins} подряд)`);
-  }
-
-  // Непобедимость
-  if (maxConsecutiveUnbeaten >= 3) {
-    achievements.push(`💪 Непобедимый (${maxConsecutiveUnbeaten} матчей без поражений)`);
-  }
-
   // Надежная защита
   if (isBestDefense) {
-    achievements.push('🛡️ Надежная защита');
+    teamAchievements.push('🛡️ Команда пропустила меньше всего голов');
+  }
+  // Лучшая атака
+  if (isBestAttack) {
+    teamAchievements.push('⚽ Команда забила больше всех голов');
+  }
+  // Серии побед
+  if (maxConsecutiveWins >= 3) {
+    teamAchievements.push(`🔥 Серия побед (${maxConsecutiveWins} подряд)`);
+  }
+  // Непобедимость
+  if (maxConsecutiveUnbeaten >= 3) {
+    teamAchievements.push(`💪 Непобедимые (${maxConsecutiveUnbeaten} матчей без поражений)`);
+  }
+  // Все матчи выиграны
+  if (wins === gamesPlayed && gamesPlayed > 0) {
+    teamAchievements.push('🥇 Все матчи выиграны');
+  }
+
+  // Личные достижения
+  const personalAchievements = [];
+  if (isTournamentMvp) {
+    personalAchievements.push('🏆 MVP турнира');
+  }
+  if (isTeamMvp) {
+    personalAchievements.push(`⭐ MVP команды ${color}`);
   }
 
   // Восходящая звезда (прирост рейтинга)
   if (totalRatingDelta >= 10) {
     const formattedDelta = formatDelta(totalRatingDelta);
-    achievements.push(`📈 Восходящая звезда (${formattedDelta})`);
+    personalAchievements.push(`📈 Восходящая звезда прироста рейтинга (${formattedDelta})`);
   }
 
   // Лучшие игроки турнира
   if (isTopScorer) {
-    achievements.push(`👑 Лучший бомбардир турнира (${goals} голов)`);
+    personalAchievements.push(`👑 Лучший бомбардир турнира (${goals} голов)`);
   }
   if (isTopAssister) {
-    achievements.push(`🎯 Лучший ассистент турнира (${assists} передач)`);
+    personalAchievements.push(`🎯 Лучший ассистент турнира (${assists} передач)`);
   }
   if (isTopGoalkeeper) {
-    achievements.push(`🧤 Лучший вратарь турнира (${saves} сейвов)`);
+    personalAchievements.push(`🧤 Лучший вратарь турнира (${saves} сейвов)`);
   }
 
   // Комбинации
-  if (goals > 0 && assists > 0 && saves > 0) {
-    achievements.push('⚽️🎯🧤 Универсал');
+  const isUniversal = goals > 0 && assists > 0 && saves > 0;
+  if (isUniversal) {
+    personalAchievements.push('⚽️🎯🧤 Универсал - все показатели выше 0');
   }
-  if (goals >= 3 && assists >= 2) {
-    achievements.push('⚽🎯 Двойная угроза');
+  if (goals >= 2 && assists >= 2) {
+    personalAchievements.push('⚽🎯 Двойная угроза - 2+ гола и 2+ передач');
   }
   if (saves >= 2 && goals >= 2) {
-    achievements.push('🧤⚽ Вратарь-бомбардир');
+    personalAchievements.push('🧤⚽ Вратарь-бомбардир - 2+ сейва и 2+ гола');
   }
 
-  // Базовые достижения
-  if (goals > 2) {
-    achievements.push(`⚽️ Бомбардир (${goals} голов)`);
+  // Базовые достижения (не показываем, если есть соответствующие "Лучший ... турнира")
+  if (goals > 2 && !isTopScorer) {
+    personalAchievements.push(`⚽️ Бомбардир - более 2 голов (${goals} голов)`);
   }
-  if (assists > 2) {
-    achievements.push(`🎯 Ассистент (${assists} передач)`);
+  if (assists > 2 && !isTopAssister) {
+    personalAchievements.push(`🎯 Ассистент - более 2 передач (${assists} передач)`);
   }
-  if (saves > 2) {
-    achievements.push(`🧤 Вратарь (${saves} сейвов)`);
-  }
-  if (wins === gamesPlayed && gamesPlayed > 0) {
-    achievements.push('🥇 Все матчи выиграны');
+  if (saves > 2 && !isTopGoalkeeper) {
+    personalAchievements.push(`🧤 Вратарь - более 2 сейвов (${saves} сейвов)`);
   }
 
-  if (achievements.length > 0) {
-    message += '<b>Достижения:</b>\n';
-    achievements.forEach(achievement => {
+  // Выводим достижения команды
+  if (teamAchievements.length > 0) {
+    message += '<b>Достижения команды:</b>\n';
+    teamAchievements.forEach(achievement => {
+      message += `${achievement}\n`;
+    });
+    message += '\n';
+  }
+
+  // Выводим личные достижения
+  if (personalAchievements.length > 0) {
+    message += '<b>Личные достижения:</b>\n';
+    personalAchievements.forEach(achievement => {
       message += `${achievement}\n`;
     });
   }

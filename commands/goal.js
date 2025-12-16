@@ -94,11 +94,6 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
-    ]);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   const handleShowSavesMenu = async (ctx, { skipAnswerCallback = false } = {}) => {
@@ -245,7 +240,7 @@ module.exports = (bot, GlobalState) => {
     team[playerIndex].saves = (team[playerIndex].saves || 0) + 1;
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
-    await safeAnswerCallback(ctx, `🧤 Сэйв добавлен у ${team[playerIndex].username || team[playerIndex].name}`);
+    await safeAnswerCallback(ctx);
   });
 
   // Показать меню отмены сейва
@@ -382,13 +377,7 @@ module.exports = (bot, GlobalState) => {
     team[playerIndex].saves -= 1;
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🧤 Сэйв удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].saves} сейв(ов).`,
-    ]);
-    await safeAnswerCallback(ctx, `✅ Сэйв отменен у ${team[playerIndex].name || team[playerIndex].username}`);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    await safeAnswerCallback(ctx);
   });
 
   // Кнопка "Назад" из меню сейвов - возвращает к основному виду
@@ -635,11 +624,6 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🧤 Сэйв удалён у ${team[playerIndex].username || team[playerIndex].name}. Теперь у него ${team[playerIndex].saves} сейв(ов).`,
-    ]);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик команды "ug <team> <player>" для удаления гола
@@ -734,12 +718,6 @@ module.exports = (bot, GlobalState) => {
 
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `⚽ Гол удалён у ${team[playerIndex].name}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
-    ]);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик команды "a <team> <player>" для добавления ассиста
@@ -818,11 +796,6 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🎯 Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
-    ]);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик команды "ua <team> <player>" для удаления ассиста
@@ -887,11 +860,6 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🎯 Ассист удалён у ${team[playerIndex].username || team[playerIndex].name}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
-    ]);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
   // Обработчик отмены гола у конкретного игрока (должен быть ПЕРЕД обработчиком goal_)
   bot.action(/^cancel_goal_(\d+)_(\d+)$/, async (ctx) => {
@@ -983,13 +951,7 @@ module.exports = (bot, GlobalState) => {
 
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `⚽ Гол удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].goals} гол(ов).`,
-    ]);
-    await safeAnswerCallback(ctx, `✅ Гол отменен у ${team[playerIndex].name || team[playerIndex].username}`);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    await safeAnswerCallback(ctx);
   });
 
   // Обработчик нажатия кнопки "goal_<team>_<player>" для добавления гола
@@ -1073,13 +1035,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `⚽ Гол забил ${team[playerIndex].username} ${team[playerIndex].name}!`,
-    ]);
     await safeAnswerCallback(ctx);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Функция для создания кнопок игроков с голами для отмены
@@ -1237,13 +1193,7 @@ module.exports = (bot, GlobalState) => {
 
     GlobalState.setPlayingTeams(playingTeams);
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🎯 Ассист удалён у ${team[playerIndex].name || team[playerIndex].username}. Теперь у него ${team[playerIndex].assists} ассист(ов).`,
-    ]);
-    await safeAnswerCallback(ctx, `✅ Ассист отменен у ${team[playerIndex].name || team[playerIndex].username}`);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    await safeAnswerCallback(ctx);
   });
 
   // Обработчик нажатия кнопки "assist_<team>_<player>" для добавления ассиста
@@ -1327,13 +1277,7 @@ module.exports = (bot, GlobalState) => {
     GlobalState.setPlayingTeams(playingTeams);
 
     await updatePlayingTeamsMessage(ctx);
-
-    const message = await safeTelegramCall(ctx, 'sendMessage', [
-      ctx.chat.id,
-      `🎯 Ассист у ${team[playerIndex].username || team[playerIndex].name}!`,
-    ]);
     await safeAnswerCallback(ctx);
-    return deleteMessageAfterDelay(ctx, message.message_id, 6000);
   });
 
   // Обработчик кнопки "Управление"

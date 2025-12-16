@@ -22,7 +22,7 @@ bot.hears(/^id$/i, async (ctx) => {
   const username = ctx.from.username
     ? `@${ctx.from.username}`
     : ctx.from.first_name || 'Без имени';
-  await ctx.reply(`Ваш ID44: ${userId}\nИмя: ${username}`);
+  await ctx.reply(`Ваш ID11: ${userId}\nИмя: ${username}`);
 });
 
 bot.hears(/^gr$/i, async (ctx) => {
