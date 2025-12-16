@@ -199,6 +199,37 @@ const updatePlayerStats = (
 
     const newRating = round1(Math.min(prevRating + delta, 200));
 
+    // Накопление дельт рейтинга за турнир
+    const ratingGoalsDelta = (originalPlayer.ratingGoalsDelta || 0) + goalDelta + goalBonus;
+    const ratingAssistsDelta = (originalPlayer.ratingAssistsDelta || 0) + assistDelta + assistBonus;
+    const ratingSavesDelta = (originalPlayer.ratingSavesDelta || 0) + saveDelta + saveBonus;
+    const ratingCleanSheetsDelta = (originalPlayer.ratingCleanSheetsDelta || 0) + cleanSheetBonus;
+    const ratingWinsDelta = (originalPlayer.ratingWinsDelta || 0) + winDelta;
+    const ratingDrawsDelta = (originalPlayer.ratingDrawsDelta || 0) + drawDelta;
+    const ratingLossesDelta = (originalPlayer.ratingLossesDelta || 0) + loseDelta;
+    const ratingTournamentDelta = ratingGoalsDelta + ratingAssistsDelta + ratingSavesDelta
+      + ratingCleanSheetsDelta + ratingWinsDelta + ratingDrawsDelta + ratingLossesDelta;
+
+    // Отслеживание серий побед и непобедимости
+    let consecutiveWins = originalPlayer.consecutiveWins || 0;
+    let consecutiveUnbeaten = originalPlayer.consecutiveUnbeaten || 0;
+    let maxConsecutiveWins = originalPlayer.maxConsecutiveWins || 0;
+    let maxConsecutiveUnbeaten = originalPlayer.maxConsecutiveUnbeaten || 0;
+
+    if (isWin) {
+      consecutiveWins += 1;
+      consecutiveUnbeaten += 1;
+      maxConsecutiveWins = Math.max(maxConsecutiveWins, consecutiveWins);
+      maxConsecutiveUnbeaten = Math.max(maxConsecutiveUnbeaten, consecutiveUnbeaten);
+    } else if (isDraw) {
+      consecutiveWins = 0;
+      consecutiveUnbeaten += 1;
+      maxConsecutiveUnbeaten = Math.max(maxConsecutiveUnbeaten, consecutiveUnbeaten);
+    } else if (isLose) {
+      consecutiveWins = 0;
+      consecutiveUnbeaten = 0;
+    }
+
     return {
       ...originalPlayer,
       id: player.id,
@@ -213,6 +244,18 @@ const updatePlayerStats = (
       assists: (originalPlayer.assists || 0) + assists,
       saves: (originalPlayer.saves || 0) + saves,
       rating: newRating,
+      ratingGoalsDelta,
+      ratingAssistsDelta,
+      ratingSavesDelta,
+      ratingCleanSheetsDelta,
+      ratingWinsDelta,
+      ratingDrawsDelta,
+      ratingLossesDelta,
+      ratingTournamentDelta,
+      consecutiveWins,
+      consecutiveUnbeaten,
+      maxConsecutiveWins,
+      maxConsecutiveUnbeaten,
     };
   });
 };

@@ -317,6 +317,132 @@ describe('matchHelpers', () => {
 
       expect(result[0].rating).toBeLessThanOrEqual(200);
     });
+
+    test('должен отслеживать серию побед', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 1 }];
+      const originalTeam = [{
+        id: 1,
+        rating: 100,
+        gamesPlayed: 2,
+        wins: 2,
+        draws: 0,
+        losses: 0,
+        goals: 2,
+        consecutiveWins: 2,
+        maxConsecutiveWins: 2,
+      }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        true,
+        false,
+        false,
+        allTeamsBase,
+        0,
+        2,
+        0,
+      );
+
+      expect(result[0].consecutiveWins).toBe(3);
+      expect(result[0].maxConsecutiveWins).toBe(3);
+    });
+
+    test('должен сбрасывать серию побед при поражении', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 0 }];
+      const originalTeam = [{
+        id: 1,
+        rating: 100,
+        gamesPlayed: 2,
+        wins: 2,
+        draws: 0,
+        losses: 0,
+        goals: 2,
+        consecutiveWins: 2,
+        maxConsecutiveWins: 2,
+      }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        false,
+        false,
+        true,
+        allTeamsBase,
+        0,
+        0,
+        2,
+      );
+
+      expect(result[0].consecutiveWins).toBe(0);
+      expect(result[0].maxConsecutiveWins).toBe(2); // Максимум сохраняется
+    });
+
+    test('должен отслеживать серию непобедимости (победы + ничьи)', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 1 }];
+      const originalTeam = [{
+        id: 1,
+        rating: 100,
+        gamesPlayed: 2,
+        wins: 1,
+        draws: 1,
+        losses: 0,
+        goals: 2,
+        consecutiveUnbeaten: 2,
+        maxConsecutiveUnbeaten: 2,
+      }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        true,
+        false,
+        false,
+        allTeamsBase,
+        0,
+        2,
+        0,
+      );
+
+      expect(result[0].consecutiveUnbeaten).toBe(3);
+      expect(result[0].maxConsecutiveUnbeaten).toBe(3);
+    });
+
+    test('должен продолжать серию непобедимости при ничьей', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 1 }];
+      const originalTeam = [{
+        id: 1,
+        rating: 100,
+        gamesPlayed: 2,
+        wins: 2,
+        draws: 0,
+        losses: 0,
+        goals: 2,
+        consecutiveWins: 2,
+        consecutiveUnbeaten: 2,
+        maxConsecutiveUnbeaten: 2,
+      }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        false,
+        true,
+        false,
+        allTeamsBase,
+        0,
+        1,
+        1,
+      );
+
+      expect(result[0].consecutiveWins).toBe(0); // Серия побед сброшена
+      expect(result[0].consecutiveUnbeaten).toBe(3); // Серия непобедимости продолжается
+      expect(result[0].maxConsecutiveUnbeaten).toBe(3);
+    });
   });
 });
 
