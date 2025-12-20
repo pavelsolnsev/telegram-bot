@@ -1,0 +1,74 @@
+# Error Handling and Bot Stability
+
+## Core Principle:
+
+**Before implementing any new functionality, always write defensive code to ensure the bot continues working even when errors occur, rather than crashing.**
+
+## Requirements:
+
+1. **Always validate inputs** before processing:
+   - Check if variables exist and have expected types
+   - Validate array/object structures before accessing properties
+   - Handle null/undefined cases gracefully
+
+2. **Use try-catch blocks** for all async operations:
+   - Wrap Telegram API calls in try-catch
+   - Handle database operations with error handling
+   - Never let unhandled promise rejections crash the bot
+
+3. **Graceful degradation**:
+   - If a feature fails, log the error but continue bot operation
+   - Provide fallback values or default behaviors
+   - Inform users about errors when appropriate, but don't crash
+
+4. **Error logging**:
+   - Log errors with sufficient context for debugging
+   - Include user ID, chat ID, and relevant data in error logs
+   - Use appropriate log levels (error, warn, info)
+
+5. **Telegram API error handling**:
+   - Handle rate limits (429) with retries
+   - Handle blocked users (403) gracefully
+   - Handle message not found (400) without crashing
+   - Ignore non-critical errors (message not modified, etc.)
+
+6. **State management**:
+   - Never assume GlobalState properties exist
+   - Validate state before using it
+   - Reset state safely on errors
+
+## Examples:
+
+```javascript
+// ✅ Good: Defensive code with validation
+const sendMessage = async (ctx, text) => {
+  if (!ctx || !ctx.chat || typeof ctx.chat.id !== 'number') {
+    console.error('Invalid context for sendMessage');
+    return null;
+  }
+  
+  try {
+    return await ctx.telegram.sendMessage(ctx.chat.id, text);
+  } catch (error) {
+    const errorCode = error.response?.error_code;
+    if (errorCode === 403) {
+      console.log(`User ${ctx.from?.id} blocked the bot`);
+      return null;
+    }
+    console.error('Error sending message:', error);
+    return null;
+  }
+};
+
+// ❌ Bad: No validation, will crash
+const sendMessage = async (ctx, text) => {
+  return await ctx.telegram.sendMessage(ctx.chat.id, text);
+};
+```
+
+## Remember:
+
+- **The bot must never crash** due to missing data or API errors
+- **Always assume external data can be invalid** (Telegram API, database, user input)
+- **Log errors but continue execution** unless the error is truly fatal
+- **Test error scenarios** when adding new features
