@@ -1,4 +1,5 @@
 
+const { Markup } = require('telegraf');
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
@@ -89,8 +90,43 @@ module.exports = (bot, GlobalState) => {
     ].join('\n');
   };
 
+  // Функция для формирования текста страницы результатов
+  const buildResultsPage = (results, page = 0, matchesPerPage = 6) => {
+    const totalMatches = results.length;
+    const totalPages = Math.ceil(totalMatches / matchesPerPage);
+    const startIndex = page * matchesPerPage;
+    const endIndex = Math.min(startIndex + matchesPerPage, totalMatches);
+    const pageResults = results.slice(startIndex, endIndex);
+
+    const sections = pageResults.map((m, i) => formatMatchSection(m, startIndex + i));
+    const text = sections.join('\n\n===============\n\n');
+
+    return { text, currentPage: page, totalPages, totalMatches };
+  };
+
+  // Функция для создания клавиатуры пагинации
+  const buildPaginationKeyboard = (currentPage, totalPages) => {
+    const buttons = [];
+
+    if (totalPages <= 1) {
+      return Markup.inlineKeyboard([]).reply_markup;
+    }
+
+    if (currentPage > 0) {
+      buttons.push([Markup.button.callback('◀️ Назад', `results_page_${currentPage - 1}`)]);
+    }
+
+    buttons.push([Markup.button.callback(`${currentPage + 1}/${totalPages}`, 'results_page_info')]);
+
+    if (currentPage < totalPages - 1) {
+      buttons.push([Markup.button.callback('Вперед ▶️', `results_page_${currentPage + 1}`)]);
+    }
+
+    return Markup.inlineKeyboard(buttons).reply_markup;
+  };
+
   // Функция для формирования и отправки результатов
-  const sendResults = async (ctx, userId) => {
+  const sendResults = async (ctx, userId, page = 0) => {
     const results = GlobalState.getMatchResults();
 
     // Проверка на валидность результатов
@@ -111,14 +147,15 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    // Используем безопасную функцию formatMatchSection вместо дублирования кода
-    const sections = results.map((m, i) => formatMatchSection(m, i));
-
-    const text = sections.join('\n\n===============\n\n');
+    const { text, currentPage, totalPages } = buildResultsPage(results, page, 6);
+    const keyboard = buildPaginationKeyboard(currentPage, totalPages);
 
     // Отправляем сообщение в личку
     try {
-      const sent = await bot.telegram.sendMessage(userId, text, { parse_mode: 'HTML' });
+      const sent = await bot.telegram.sendMessage(userId, text, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard,
+      });
       if (sent && sent.chat && sent.message_id) {
         GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
         deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
@@ -150,7 +187,7 @@ module.exports = (bot, GlobalState) => {
 
     try {
       // Пытаемся отправить результаты в личку
-      await sendResults(ctx, userId);
+      await sendResults(ctx, userId, 0);
       await safeAnswerCallback(ctx, '✅ Результаты отправлены в личные сообщения!');
     } catch (error) {
       // Если не удалось отправить
@@ -168,6 +205,51 @@ module.exports = (bot, GlobalState) => {
         await safeAnswerCallback(ctx, "⚠️ Ошибка при отправке. Напишите боту команду 'результаты' в личных сообщениях.");
       }
     }
+  });
+
+  // Обработчик пагинации результатов
+  bot.action(/^results_page_(\d+)$/, async (ctx) => {
+    const page = parseInt(ctx.match[1], 10);
+    const userId = ctx.from?.id;
+
+    if (!userId || isNaN(page) || page < 0) {
+      await safeAnswerCallback(ctx, '⚠️ Ошибка при переключении страницы');
+      return;
+    }
+
+    const results = GlobalState.getMatchResults();
+
+    if (!Array.isArray(results) || results.length === 0) {
+      await safeAnswerCallback(ctx, '📋 Пока нет сыгранных матчей.');
+      return;
+    }
+
+    const { text, currentPage, totalPages } = buildResultsPage(results, page, 6);
+    const keyboard = buildPaginationKeyboard(currentPage, totalPages);
+
+    try {
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.callbackQuery.message.message_id,
+        null,
+        text,
+        { parse_mode: 'HTML', reply_markup: keyboard },
+      );
+      await safeAnswerCallback(ctx);
+    } catch (error) {
+      const desc = error?.response?.description || '';
+      if (!desc.includes('message is not modified') && !desc.includes('message to edit not found')) {
+        console.error('Ошибка при переключении страницы результатов:', error);
+        await safeAnswerCallback(ctx, '⚠️ Ошибка при переключении страницы');
+      } else {
+        await safeAnswerCallback(ctx);
+      }
+    }
+  });
+
+  // Обработчик кнопки информации о странице (ничего не делает)
+  bot.action('results_page_info', async (ctx) => {
+    await safeAnswerCallback(ctx);
   });
 
   bot.hears(/^результаты$/i, async (ctx) => {
@@ -219,10 +301,9 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    // Собираем текст сообщения
-    const sections = results.map((m, i) => formatMatchSection(m, i));
-
-    const text = sections.join('\n\n===============\n\n');
+    // Собираем текст сообщения с пагинацией
+    const { text, currentPage, totalPages } = buildResultsPage(results, 0, 6);
+    const keyboard = buildPaginationKeyboard(currentPage, totalPages);
     const last = GlobalState.getLastResultMessageId();
 
     if (last && last.chatId && last.messageId) {
@@ -232,14 +313,14 @@ module.exports = (bot, GlobalState) => {
           last.messageId,
           null,
           text,
-          { parse_mode: 'HTML' },
+          { parse_mode: 'HTML', reply_markup: keyboard },
         );
         deleteMessageAfterDelay(ctx, last.messageId, 120000);
       } catch (err) {
         const desc = err?.response?.description || '';
         if (desc.includes('message to edit not found')) {
           try {
-            const sent = await ctx.reply(text, { parse_mode: 'HTML' });
+            const sent = await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
             if (sent && sent.chat && sent.message_id) {
               GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
               deleteMessageAfterDelay(ctx, sent.message_id, 120000);
@@ -253,7 +334,7 @@ module.exports = (bot, GlobalState) => {
       }
     } else {
       try {
-        const sent = await ctx.reply(text, { parse_mode: 'HTML' });
+        const sent = await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
         if (sent && sent.chat && sent.message_id) {
           GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
           deleteMessageAfterDelay(ctx, sent.message_id, 120000);
@@ -269,7 +350,7 @@ module.exports = (bot, GlobalState) => {
     const startParam = ctx.startPayload;
     if (startParam === 'results') {
       // Пользователь перешел по ссылке для получения результатов
-      await sendResults(ctx, ctx.from.id).catch((error) => {
+      await sendResults(ctx, ctx.from.id, 0).catch((error) => {
         console.error('Ошибка при отправке результатов через start:', error);
       });
     }

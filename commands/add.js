@@ -585,10 +585,6 @@ module.exports = (bot, GlobalState) => {
 
         // Если после очистки имя стало пустым - пропускаем этого игрока
         if (!cleaned.allowed) {
-          console.log(`[+1test] Пропущен тестовый игрок (после очистки эмодзи имя пустое): ${config.description}`, {
-            originalName: config.name,
-            originalUsername: config.username,
-          });
           continue;
         }
 
