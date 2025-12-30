@@ -111,6 +111,9 @@ module.exports = (bot, GlobalState) => {
       const allPlayers = allTeams.flat();
       const leaders = selectLeaders(allPlayers);
 
+      // Находим игроков с желтыми карточками
+      const playersWithYellowCards = allPlayers.filter(player => (player.yellowCards || 0) > 0);
+
       const currentLocationKey = GlobalState.getLocation();
       const loc = locations[currentLocationKey] || locations.prof;
 
@@ -230,6 +233,7 @@ module.exports = (bot, GlobalState) => {
           mvpPlayer,
           false,
           leaders,
+          playersWithYellowCards,
         );
 
         if (teamMvps.length > 0) {

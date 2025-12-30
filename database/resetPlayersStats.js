@@ -16,7 +16,8 @@ async function resetPlayersStats() {
       draws = 0,
       losses = 0,
       rating = 0,
-      mvp = 0
+      mvp = 0,
+      yellow_cards = 0
   `;
 
   try {

@@ -156,6 +156,7 @@ const updatePlayerStats = (
     const goals = Number(player.goals) || 0;
     const assists = Number(player.assists) || 0;
     const saves = Number(player.saves) || 0;
+    const yellowCards = Number(player.yellowCards) || 0;
 
     const originalPlayer = originalTeam[index] || {};
     const basePlayer = allTeamsBase[teamIndex][index] || {};
@@ -166,6 +167,7 @@ const updatePlayerStats = (
     const goalDelta = goals * 0.3 * mod;
     const assistDelta = assists * 0.3 * mod;
     const saveDelta = saves * 0.3 * mod;
+    const yellowCardDelta = yellowCards * -0.3;
 
     // === Голевые бонусы (выбирается максимальный) ===
     // Покер (4+ гола) > Хет-трик (3 гола) > Дубль (2 гола)
@@ -196,7 +198,7 @@ const updatePlayerStats = (
     const baseLoseDelta = isShutoutLoss ? -1.8 : isLose ? -1.3 : 0;
     const loseDelta = baseLoseDelta + loseReduction;
 
-    const delta = goalDelta + assistDelta + saveDelta + goalBonus + assistBonus + cleanSheetBonus + saveBonus + winDelta + drawDelta + loseDelta + shutoutWinBonus;
+    const delta = goalDelta + assistDelta + saveDelta + goalBonus + assistBonus + cleanSheetBonus + saveBonus + winDelta + drawDelta + loseDelta + shutoutWinBonus + yellowCardDelta;
 
     const newRating = round1(Math.min(prevRating + delta, 200));
 
@@ -209,8 +211,9 @@ const updatePlayerStats = (
     const ratingDrawsDelta = (originalPlayer.ratingDrawsDelta || 0) + drawDelta;
     const ratingLossesDelta = (originalPlayer.ratingLossesDelta || 0) + loseDelta;
     const ratingShutoutWinDelta = (originalPlayer.ratingShutoutWinDelta || 0) + shutoutWinBonus;
+    const ratingYellowCardsDelta = (originalPlayer.ratingYellowCardsDelta || 0) + yellowCardDelta;
     const ratingTournamentDelta = ratingGoalsDelta + ratingAssistsDelta + ratingSavesDelta
-      + ratingCleanSheetsDelta + ratingWinsDelta + ratingDrawsDelta + ratingLossesDelta + ratingShutoutWinDelta;
+      + ratingCleanSheetsDelta + ratingWinsDelta + ratingDrawsDelta + ratingLossesDelta + ratingShutoutWinDelta + ratingYellowCardsDelta;
 
     // Отслеживание серий побед и непобедимости
     let consecutiveWins = originalPlayer.consecutiveWins || 0;
@@ -240,11 +243,12 @@ const updatePlayerStats = (
       username: player.username || originalPlayer.username || null,
       gamesPlayed: (originalPlayer.gamesPlayed || 0) + 1,
       wins: (originalPlayer.wins || 0) + (isWin ? 1 : 0),
-      draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
+      ув: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
       losses: (originalPlayer.losses || 0) + (isLose ? 1 : 0),
       goals: (originalPlayer.goals || 0) + goals,
       assists: (originalPlayer.assists || 0) + assists,
       saves: (originalPlayer.saves || 0) + saves,
+      yellowCards: (originalPlayer.yellowCards || 0) + yellowCards,
       rating: newRating,
       ratingGoalsDelta,
       ratingAssistsDelta,
@@ -254,6 +258,7 @@ const updatePlayerStats = (
       ratingDrawsDelta,
       ratingLossesDelta,
       ratingShutoutWinDelta,
+      ratingYellowCardsDelta,
       ratingTournamentDelta,
       consecutiveWins,
       consecutiveUnbeaten,

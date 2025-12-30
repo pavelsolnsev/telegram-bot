@@ -42,7 +42,8 @@ module.exports = (bot, GlobalState) => {
       '• Ничьи (draws)\n' +
       '• Поражения (losses)\n' +
       '• Рейтинг (rating)\n' +
-      '• MVP (mvp)\n\n' +
+      '• MVP (mvp)\n' +
+      '• Жёлтые карточки (yellow_cards)\n\n' +
       '<b>Это действие нельзя отменить!</b>\n\n' +
       'Вы уверены, что хотите продолжить?',
       {

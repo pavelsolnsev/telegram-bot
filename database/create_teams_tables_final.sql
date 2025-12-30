@@ -43,18 +43,3 @@ CREATE TABLE IF NOT EXISTS team_players (
 -- (количество трофеев - побед в турнирах)
 ALTER TABLE teams 
 ADD COLUMN trophies INT DEFAULT 0 AFTER goals_conceded;
-
--- 2. Добавление поля tournament_count в таблицу team_players
--- (количество турниров, которые игрок сыграл за эту команду)
-ALTER TABLE team_players 
-ADD COLUMN tournament_count INT DEFAULT 0 AFTER username;
-
--- 3. Добавление поля is_captain в таблицу team_players
--- (флаг капитана команды: 1 = капитан, 0 = не капитан)
-ALTER TABLE team_players 
-ADD COLUMN is_captain TINYINT(1) DEFAULT 0 AFTER tournament_count;
-
--- 4. Добавление поля is_main_player в таблицу team_players
--- (флаг основного игрока: 1 = основной игрок, 0 = не основной)
-ALTER TABLE team_players 
-ADD COLUMN is_main_player TINYINT(1) DEFAULT 0 AFTER is_captain;
