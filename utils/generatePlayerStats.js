@@ -73,7 +73,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const teamName = getTeamName(teamIndex);
   const positionEmoji = teamPosition === 1 ? '🥇' : teamPosition === 2 ? '🥈' : teamPosition === 3 ? '🥉' : '📍';
   message += `${color} <b>${teamName}</b> ${positionEmoji} <b>${teamPosition} место</b>\n`;
-  message += `📊 Очки команды: <b>${points}</b>\n\n`;
+  message += `Очки команды: <b>${points}</b>\n\n`;
 
   // Статистика игрока
   message += '<b>Ваши показатели:</b>\n';

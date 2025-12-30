@@ -1,6 +1,7 @@
 const { Markup } = require('telegraf');
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const savePlayersToDatabase = require('../database/savePlayers');
+const saveTeamsToDatabase = require('../database/saveTeams');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { locations } = require('../utils/sendPlayerList');
 const { selectLeaders } = require('../utils/selectLeaders');
@@ -148,6 +149,21 @@ module.exports = (bot, GlobalState) => {
           );
           return deleteMessageAfterDelay(ctx, message.message_id, 6000);
         }
+      }
+
+      // Сохраняем команды в базу данных
+      try {
+        const teamNames = GlobalState.getTeamNames();
+        const collectionDate = GlobalState.getCollectionDate() || new Date();
+
+        await saveTeamsToDatabase(allTeams, teamNames, teamStats, collectionDate);
+      } catch (error) {
+        // Не прерываем выполнение, если не удалось сохранить команды
+        // Логируем ошибку, но продолжаем работу
+        console.error(
+          'Ошибка при сохранении команд в базу данных:',
+          error.message,
+        );
       }
 
       // Отправляем персональную статистику каждому участнику, если это турнир
