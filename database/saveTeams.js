@@ -64,9 +64,6 @@ async function saveTeamsToDatabase(teams, teamNames, teamStats, tournamentDate) 
 
     // Определяем места команд в турнире
     const teamPlaces = getTeamPlaces(teamStats, teams.length);
-    const POINTS_FOR_FIRST = 3; // Очки за 1 место
-    const POINTS_FOR_SECOND = 2; // Очки за 2 место
-    const POINTS_FOR_THIRD = 1; // Очки за 3 место
 
     // Обрабатываем каждую команду
     for (let i = 0; i < teams.length; i++) {
@@ -113,15 +110,13 @@ async function saveTeamsToDatabase(teams, teamNames, teamStats, tournamentDate) 
       let teamId;
       let pointsToAdd = 0;
 
-      // Определяем очки для этой команды в зависимости от места
+      // Определяем место команды для трофеев
       const place = teamPlaces[i];
-      if (place === 1) {
-        pointsToAdd = POINTS_FOR_FIRST;
-      } else if (place === 2) {
-        pointsToAdd = POINTS_FOR_SECOND;
-      } else if (place === 3) {
-        pointsToAdd = POINTS_FOR_THIRD;
-      }
+
+      // Рассчитываем очки, заработанные в турнире (3 за победу, 1 за ничью)
+      const tournamentWins = stats.wins || 0;
+      const tournamentDraws = stats.draws || 0;
+      pointsToAdd = tournamentWins * 3 + tournamentDraws * 1;
 
       if (existingTeams && existingTeams.length > 0) {
         // Команда существует - обновляем

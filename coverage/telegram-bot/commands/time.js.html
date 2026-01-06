@@ -175,9 +175,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require("../utils/deleteMessageAfterDelay");</span>
-const { sendPlayerList } = <span class="cstat-no" title="statement not covered" >require("../utils/sendPlayerList");</span>
-const { checkTimeAndNotify } = <span class="cstat-no" title="statement not covered" >require("../utils/checkTimeAndNotify");</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require('../utils/deleteMessageAfterDelay');</span>
+const { sendPlayerList } = <span class="cstat-no" title="statement not covered" >require('../utils/sendPlayerList');</span>
+const { checkTimeAndNotify } = <span class="cstat-no" title="statement not covered" >require('../utils/checkTimeAndNotify');</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >module.exports = <span class="fstat-no" title="function not covered" >(b</span>ot, GlobalState) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  bot.hears(/^t \d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/i, <span class="fstat-no" title="function not covered" >as</span>ync (ctx) =&gt; {</span>
@@ -186,30 +186,30 @@ const { checkTimeAndNotify } = <span class="cstat-no" title="statement not cover
 <span class="cstat-no" title="statement not covered" >    await ctx.deleteMessage().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; {});</span>
     const isTeamsDivided = <span class="cstat-no" title="statement not covered" >GlobalState.getDivided();</span>
 <span class="cstat-no" title="statement not covered" >    if (!ADMIN_ID.includes(ctx.from.id)) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⛔ Нет прав!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⛔ Нет прав!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!isMatchStarted) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Матч не начат!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Матч не начат!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
-    
+&nbsp;
 <span class="cstat-no" title="statement not covered" >    if (isTeamsDivided) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("Игра уже идет!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('Игра уже идет!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
     const userInput = <span class="cstat-no" title="statement not covered" >ctx.message.text.trim().slice(2).trim();</span>
-    const [datePart, timePart] = <span class="cstat-no" title="statement not covered" >userInput.split(" ");</span>
-    const [day, month, year] = <span class="cstat-no" title="statement not covered" >datePart.split(".").map(Number);</span>
-    const [hours, minutes] = <span class="cstat-no" title="statement not covered" >timePart.split(":").map(Number);</span>
+    const [datePart, timePart] = <span class="cstat-no" title="statement not covered" >userInput.split(' ');</span>
+    const [day, month, year] = <span class="cstat-no" title="statement not covered" >datePart.split('.').map(Number);</span>
+    const [hours, minutes] = <span class="cstat-no" title="statement not covered" >timePart.split(':').map(Number);</span>
 &nbsp;
     const newDate = <span class="cstat-no" title="statement not covered" >new Date(year, month - 1, day, hours, minutes);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (isNaN(newDate.getTime())) {</span>
       const message = <span class="cstat-no" title="statement not covered" >await ctx.reply(</span>
-        "⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ"
+        '⚠️ Неверный формат даты! Используй: t ДД.ММ.ГГГГ ЧЧ:ММ',
       );
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
@@ -238,7 +238,7 @@ const { checkTimeAndNotify } = <span class="cstat-no" title="statement not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-03T14:41:13.686Z
+                at 2026-01-03T13:03:25.675Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

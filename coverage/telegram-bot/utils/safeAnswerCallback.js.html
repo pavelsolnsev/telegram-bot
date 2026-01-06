@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/21</span>
+                <span class='fraction'>21/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/18</span>
+                <span class='fraction'>18/18</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -92,72 +92,75 @@
 <a name='L27'></a><a href='#L27'>27</a>
 <a name='L28'></a><a href='#L28'>28</a>
 <a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const delay = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(m</span>s) =&gt; <span class="cstat-no" title="statement not covered" >new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve) =&gt; <span class="cstat-no" title="statement not covered" >setTimeout(resolve, ms))</span>;</span></span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const delay = (ms) =&gt; new Promise((resolve) =&gt; setTimeout(resolve, ms));
 &nbsp;
-const safeAnswerCallback = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (ctx, text, retries = <span class="branch-0 cbranch-no" title="branch not covered" >3)</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  for (let attempt = <span class="cstat-no" title="statement not covered" >1;</span> attempt &lt;= retries; attempt++) {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      return await ctx.answerCbQuery(text);</span>
+const safeAnswerCallback = async (ctx, text, retries = 3) =&gt; {
+  for (let attempt = 1; attempt &lt;= retries; attempt++) {
+    try {
+      return await ctx.answerCbQuery(text);
     } catch (error) {
-      const description = <span class="cstat-no" title="statement not covered" >error?.description || "";</span>
+      const description = error?.description || '';
       // Игнорируем устаревшие callback-запросы
-<span class="cstat-no" title="statement not covered" >      if (error.code === 400 &amp;&amp; description.includes("query is too old")) {</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Callback query устарел, пропускаем ответ: ${text}`);</span>
-<span class="cstat-no" title="statement not covered" >        return null;</span>
+      if (error.code === 400 &amp;&amp; description.includes('query is too old')) {
+        console.warn(`Callback query устарел, пропускаем ответ: ${text}`);
+        return null;
       }
       // Ретрай при rate limit или gateway timeout
-<span class="cstat-no" title="statement not covered" >      if (error.code === 429 || error.code === 504) {</span>
-        const retryAfter = <span class="cstat-no" title="statement not covered" >(error?.response?.parameters?.retry_after || 1) * 1000;</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Error ${error.code} in answerCbQuery, retrying after ${retryAfter}ms (attempt ${attempt}/${retries})`);</span>
-<span class="cstat-no" title="statement not covered" >        await delay(retryAfter);</span>
-<span class="cstat-no" title="statement not covered" >        continue;</span>
+      if (error.code === 429 || error.code === 504) {
+        const retryAfter = (error?.response?.parameters?.retry_after || 1) * 1000;
+        console.warn(`Error ${error.code} in answerCbQuery, retrying after ${retryAfter}ms (attempt ${attempt}/${retries})`);
+        await delay(retryAfter);
+        continue;
       }
       // Логируем и пробрасываем остальные ошибки
-<span class="cstat-no" title="statement not covered" >      console.error(`Error in answerCbQuery (attempt ${attempt}/${retries}):`, error);</span>
-<span class="cstat-no" title="statement not covered" >      if (attempt === retries) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error(`Failed after ${retries} retries: ${error.message}`);</span>
+      console.error(`Error in answerCbQuery (attempt ${attempt}/${retries}):`, error);
+      if (attempt === retries) {
+        throw new Error(`Failed after ${retries} retries: ${error.message}`);
       }
     }
   }
 };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = { safeAnswerCallback };</span></pre></td></tr></table></pre>
+module.exports = { safeAnswerCallback };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-03T14:41:13.686Z
+                at 2026-01-03T13:03:25.675Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
