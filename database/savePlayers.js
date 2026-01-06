@@ -40,6 +40,7 @@ async function savePlayersToDatabase(players) {
         losses: rawLosses,
         rating: rawRating,
         mvp: rawMvp,
+        yellowCards: rawYellowCards,
       } = player;
 
       if (!rawId) {
@@ -60,8 +61,9 @@ async function savePlayersToDatabase(players) {
       const losses = Number(rawLosses) || 0;
       const ratingChange = Number(rawRating) || 0;
       const mvp = Number(rawMvp) || 0;
+      const yellowCards = Number(rawYellowCards) || 0;
 
-      return [id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, ratingChange, mvp];
+      return [id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, ratingChange, mvp, yellowCards];
     }).filter(Boolean); // Убираем null значения
 
     if (values.length === 0) {
@@ -83,14 +85,14 @@ async function savePlayersToDatabase(players) {
     }).filter(Boolean));
 
     // Подготавливаем данные для вставки с учетом текущего рейтинга
-    const insertValues = values.map(([id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, ratingChange, mvp]) => {
+    const insertValues = values.map(([id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, ratingChange, mvp, yellowCards]) => {
       const currentRating = ratingMap.get(id) || 0;
       const newRating = Math.max(currentRating + ratingChange, 0);
-      return [id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, newRating, mvp];
+      return [id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, newRating, mvp, yellowCards];
     });
 
     const query = `
-      INSERT INTO players (id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, rating, mvp)
+      INSERT INTO players (id, name, username, goals, assists, saves, gamesPlayed, wins, draws, losses, rating, mvp, yellow_cards)
       VALUES ?
       ON DUPLICATE KEY UPDATE
         name = VALUES(name),
@@ -103,7 +105,8 @@ async function savePlayersToDatabase(players) {
         draws = draws + VALUES(draws),
         losses = losses + VALUES(losses),
         rating = VALUES(rating),
-        mvp = mvp + VALUES(mvp);
+        mvp = mvp + VALUES(mvp),
+        yellow_cards = yellow_cards + VALUES(yellow_cards);
     `;
 
     await db.query(query, [insertValues]);

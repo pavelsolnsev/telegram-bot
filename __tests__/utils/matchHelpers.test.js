@@ -292,8 +292,8 @@ describe('matchHelpers', () => {
       );
 
       // Shutout win дает больше рейтинга
-      // baseRating=100, mod=0.5, goalDelta=1*0.5*0.5=0.25, winDelta=3*0.5=1.5
-      // delta=1.75, newRating=round1(100+1.75)=101.8
+      // baseRating=100, mod=0.5, goalDelta=1*0.3*0.5=0.15, winDelta=3*0.5=1.5
+      // delta=1.65, newRating=round1(100+1.65)=101.7
       expect(result[0].rating).toBeGreaterThan(101);
       expect(result[0].rating).toBeLessThanOrEqual(102);
     });

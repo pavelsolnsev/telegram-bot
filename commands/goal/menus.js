@@ -3,7 +3,7 @@ const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { buildPlayingTeamsMessage } = require('../../message/buildPlayingTeamsMessage');
-const { createTeamButtons, createAssistButtons } = require('../../buttons/createTeamButtons');
+const { createTeamButtons, createAssistButtons, createYellowCardButtons } = require('../../buttons/createTeamButtons');
 const { createCancelGoalButtons, createCancelAssistButtons } = require('./buttons');
 
 // Обработчик кнопки "Управление"
@@ -72,6 +72,7 @@ const handleManagementMenu = async (ctx, GlobalState) => {
           reply_markup: Markup.inlineKeyboard([
             [Markup.button.callback(endButtonText, 'end_match')],
             [Markup.button.callback('🏁 Завершить матч', 'finish_match')],
+            [Markup.button.callback('🟨 Отметить карточку', 'show_yellow_cards_menu')],
             [Markup.button.callback('⬅️ Назад', 'management_back')],
           ]).reply_markup,
         },
@@ -602,6 +603,194 @@ const handleGoalsMenuBack = async (ctx, GlobalState) => {
   }
 };
 
+// Обработчик кнопки "Отметить желтую карточку" - показывает список игроков
+const handleShowYellowCardsMenu = async (ctx, GlobalState) => {
+  const ADMIN_ID = GlobalState.getAdminId();
+  const isMatchStarted = GlobalState.getStart();
+  const playingTeams = GlobalState.getPlayingTeams();
+
+  // Проверка прав админа
+  if (!ADMIN_ID.includes(ctx.from.id)) {
+    await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+    return;
+  }
+
+  // Проверка условий
+  if (!isMatchStarted) {
+    await safeAnswerCallback(ctx, '⚠️ Матч не начат!');
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
+      ctx.chat.id,
+      '⚠️ Матч не начат!',
+    ]);
+    if (message) {
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+    return;
+  }
+
+  if (!playingTeams) {
+    await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+    const message = await safeTelegramCall(ctx, 'sendMessage', [
+      ctx.chat.id,
+      '⛔ Нет активного матча!',
+    ]);
+    if (message) {
+      deleteMessageAfterDelay(ctx, message.message_id, 6000);
+    }
+    return;
+  }
+
+  const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
+  const team1Buttons = createYellowCardButtons(team1, teamIndex1);
+  const team2Buttons = createYellowCardButtons(team2, teamIndex2);
+
+  // Объединяем кнопки с разделителем
+  const allButtons = [
+    ...team1Buttons,
+    [Markup.button.callback('—', 'noop')],
+    ...team2Buttons,
+    [],
+    [Markup.button.callback('⬅️ Назад к управлению', 'management_menu')],
+  ];
+
+  const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+  const messageId = ctx.callbackQuery?.message?.message_id;
+
+  // Вычисляем номер матча для заголовка
+  const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+  const matchNumber = matchHistoryLength + 1;
+
+  const yellowCardsMenuMessage = buildPlayingTeamsMessage(
+    team1,
+    team2,
+    teamIndex1,
+    teamIndex2,
+    'playing',
+    undefined,
+    matchNumber,
+  );
+
+  try {
+    if (chatId && messageId) {
+      await safeTelegramCall(ctx, 'editMessageText', [
+        chatId,
+        messageId,
+        null,
+        yellowCardsMenuMessage,
+        {
+          parse_mode: 'HTML',
+          reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+        },
+      ]);
+    }
+    await safeAnswerCallback(ctx, '🟨 Выберите игрока');
+  } catch (error) {
+    // Если не удалось отредактировать сообщение, отправляем новое
+    if (chatId) {
+      await safeTelegramCall(ctx, 'sendMessage', [
+        chatId,
+        yellowCardsMenuMessage,
+        {
+          parse_mode: 'HTML',
+          reply_markup: Markup.inlineKeyboard(allButtons).reply_markup,
+        },
+      ]);
+    }
+    await safeAnswerCallback(ctx, '🟨 Выберите игрока');
+  }
+};
+
+// Обработчик выбора игрока для желтой карточки
+const handleYellowCardAction = async (ctx, GlobalState) => {
+  const ADMIN_ID = GlobalState.getAdminId();
+
+  // Проверка прав админа
+  if (!ADMIN_ID.includes(ctx.from.id)) {
+    await safeAnswerCallback(ctx, '⛔ У вас нет прав для этой команды.');
+    return;
+  }
+
+  // Проверка на валидность ctx.match
+  if (!ctx.match || ctx.match.length < 3) {
+    console.error('Ошибка: некорректный ctx.match в handleYellowCardAction');
+    return;
+  }
+
+  const teamIndex = parseInt(ctx.match[1], 10);
+  const playerIndex = parseInt(ctx.match[2], 10);
+  const playingTeams = GlobalState.getPlayingTeams();
+
+  if (!playingTeams) {
+    await safeAnswerCallback(ctx, '⛔ Нет активного матча!');
+    return;
+  }
+
+  const { team1, team2 } = playingTeams;
+  const team = teamIndex === playingTeams.teamIndex1 ? team1 : team2;
+  const player = team[playerIndex];
+
+  if (!player) {
+    await safeAnswerCallback(ctx, '⛔ Игрок не найден!');
+    return;
+  }
+
+  // Добавляем желтую карточку игроку в памяти
+  player.yellowCards = (player.yellowCards || 0) + 1;
+  GlobalState.setPlayingTeams(playingTeams);
+
+  // Возвращаемся к основному меню матча
+  const matchHistoryLength = GlobalState.getMatchHistoryStackLength();
+  const matchNumber = matchHistoryLength + 1;
+
+  const teamsMessage = buildPlayingTeamsMessage(
+    team1,
+    team2,
+    playingTeams.teamIndex1,
+    playingTeams.teamIndex2,
+    'playing',
+    undefined,
+    matchNumber,
+  );
+
+  const chatId = ctx.callbackQuery?.message?.chat?.id || ctx.chat?.id;
+  const messageId = ctx.callbackQuery?.message?.message_id;
+
+  try {
+    if (chatId && messageId) {
+      await safeTelegramCall(ctx, 'editMessageText', [
+        chatId,
+        messageId,
+        null,
+        teamsMessage,
+        {
+          parse_mode: 'HTML',
+          reply_markup: Markup.inlineKeyboard([
+            [Markup.button.callback('⚽ Отметить голы', 'show_goals_menu')],
+            [Markup.button.callback('🎯 Отметить ассист', 'show_assists_menu')],
+            [Markup.button.callback('🧤 Отметить сейв', 'show_saves_menu')],
+            [Markup.button.callback('⏭️ Следующий матч', 'ksk_confirm')],
+            [Markup.button.callback('⚙️ Управление', 'management_menu')],
+          ]).reply_markup,
+        },
+      ]);
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении сообщения:', error);
+  }
+
+  const displayName = player.username ? player.username : player.name;
+  await safeAnswerCallback(ctx, `🟨 ${displayName} получил желтую карточку!`);
+
+  const message = await safeTelegramCall(ctx, 'sendMessage', [
+    ctx.chat.id,
+    `🟨 Игрок <b>${displayName}</b> получил желтую карточку!`,
+    { parse_mode: 'HTML' },
+  ]);
+  if (message) {
+    deleteMessageAfterDelay(ctx, message.message_id, 3000);
+  }
+};
+
 // Обработчик кнопки "Назад" - возвращает к основному меню
 const handleManagementBack = async (ctx, GlobalState) => {
   const ADMIN_ID = GlobalState.getAdminId();
@@ -676,4 +865,6 @@ module.exports = {
   handleAssistsMenuBack,
   handleGoalsMenuBack,
   handleManagementBack,
+  handleShowYellowCardsMenu,
+  handleYellowCardAction,
 };

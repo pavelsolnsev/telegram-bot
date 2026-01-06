@@ -31,6 +31,8 @@ const {
   handleAssistsMenuBack,
   handleGoalsMenuBack,
   handleManagementBack,
+  handleShowYellowCardsMenu,
+  handleYellowCardAction,
 } = require('./menus');
 
 module.exports = (bot, GlobalState) => {
@@ -128,5 +130,13 @@ module.exports = (bot, GlobalState) => {
 
   bot.action('management_back', async (ctx) => {
     await handleManagementBack(ctx, GlobalState);
+  });
+
+  bot.action('show_yellow_cards_menu', async (ctx) => {
+    await handleShowYellowCardsMenu(ctx, GlobalState);
+  });
+
+  bot.action(/^yellow_card_(\d+)_(\d+)$/, async (ctx) => {
+    await handleYellowCardAction(ctx, GlobalState);
   });
 };

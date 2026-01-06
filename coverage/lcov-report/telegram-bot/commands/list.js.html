@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/23</span>
+                <span class='fraction'>0/22</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/23</span>
+                <span class='fraction'>0/22</span>
             </div>
         
             
@@ -120,7 +120,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -161,24 +160,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require("../utils/deleteMessageAfterDelay");</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require('../utils/deleteMessageAfterDelay');</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >module.exports = <span class="fstat-no" title="function not covered" >(b</span>ot, GlobalState) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  bot.hears(/^список$/i, <span class="fstat-no" title="function not covered" >as</span>ync (ctx) =&gt; {</span>
     const isMatchStarted = <span class="cstat-no" title="statement not covered" >GlobalState.getStart();</span>
-    let listMessageId = <span class="cstat-no" title="statement not covered" >GlobalState.getListMessageId();</span>
-    const isTeamsDivided = <span class="cstat-no" title="statement not covered" >GlobalState.getDivided();</span>
+    const listMessageId = <span class="cstat-no" title="statement not covered" >GlobalState.getListMessageId();</span>
     const GROUP_ID = <span class="cstat-no" title="statement not covered" >GlobalState.getGroupId();</span> // Получаем ID группы
 <span class="cstat-no" title="statement not covered" >    await ctx.deleteMessage().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; {});</span>
 &nbsp;
     // Проверяем, что команда отправлена в личку (chat.id &gt; 0 для личных чатов)
 <span class="cstat-no" title="statement not covered" >    if (ctx.chat.id &lt; 0) {</span>
-      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply("Напиши мне в ЛС.");</span>
+      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply('Напиши мне в ЛС.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, msg.message_id);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!isMatchStarted) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Список игроков ещё не создан.");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Список игроков ещё не создан.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
@@ -188,7 +187,7 @@
     // }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!listMessageId || !GROUP_ID) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Список игроков недоступен.");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Список игроков недоступен.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
@@ -197,27 +196,28 @@
       const sentMessage = <span class="cstat-no" title="statement not covered" >await ctx.telegram.forwardMessage(</span>
         ctx.chat.id, // ID личного чата пользователя
         GROUP_ID,    // ID группы, откуда берем сообщение
-        listMessageId // ID сообщения со списком
+        listMessageId, // ID сообщения со списком
       );
 &nbsp;
       // Удаляем пересланное сообщение через 60 секунд
 <span class="cstat-no" title="statement not covered" >      deleteMessageAfterDelay(ctx, sentMessage.message_id, 120000);</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error("Ошибка при пересылке списка:", error);</span>
+<span class="cstat-no" title="statement not covered" >      console.error('Ошибка при пересылке списка:', error);</span>
       const message = <span class="cstat-no" title="statement not covered" >await ctx.reply(</span>
-        "⚠️ Не удалось получить список игроков из группы."
+        '⚠️ Не удалось получить список игроков из группы.',
       );
 <span class="cstat-no" title="statement not covered" >      deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
   });
-};</pre></td></tr></table></pre>
+};
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-03T14:41:13.611Z
+                at 2026-01-03T13:03:25.485Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

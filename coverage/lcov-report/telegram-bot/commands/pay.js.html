@@ -157,7 +157,8 @@
 <a name='L92'></a><a href='#L92'>92</a>
 <a name='L93'></a><a href='#L93'>93</a>
 <a name='L94'></a><a href='#L94'>94</a>
-<a name='L95'></a><a href='#L95'>95</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -251,8 +252,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require("../utils/deleteMessageAfterDelay");</span>
-const { sendPlayerList } = <span class="cstat-no" title="statement not covered" >require("../utils/sendPlayerList");</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { deleteMessageAfterDelay } = <span class="cstat-no" title="statement not covered" >require('../utils/deleteMessageAfterDelay');</span>
+const { sendPlayerList } = <span class="cstat-no" title="statement not covered" >require('../utils/sendPlayerList');</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >module.exports = <span class="fstat-no" title="function not covered" >(b</span>ot, GlobalState) =&gt; {</span>
   // Обработчик команды "p&lt;номер игрока&gt;" (помечает игрока как оплатившего)
@@ -263,30 +265,30 @@ const { sendPlayerList } = <span class="cstat-no" title="statement not covered" 
 <span class="cstat-no" title="statement not covered" >    await ctx.deleteMessage().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; {});</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!ADMIN_ID.includes(ctx.from.id)) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⛔ У вас нет прав для этой команды.");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⛔ У вас нет прав для этой команды.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!isMatchStarted) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Матч не начат!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Матч не начат!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (ctx.chat.id &lt; 0) {</span>
-      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply("Напиши мне в ЛС.");</span>
+      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply('Напиши мне в ЛС.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, msg.message_id);</span>
     }
 &nbsp;
     const playerNumber = <span class="cstat-no" title="statement not covered" >Number(ctx.message.text.match(/^p(\d+)$/i)[1]);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (playerNumber &lt;= 0 || playerNumber &gt; players.length) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Неверный номер игрока!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Неверный номер игрока!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
     const playerIndex = <span class="cstat-no" title="statement not covered" >playerNumber - 1;</span>
     const player = <span class="cstat-no" title="statement not covered" >players[playerIndex];</span>
-    let displayName = <span class="cstat-no" title="statement not covered" >player.username ? `${player.name} (${player.username})` : player.name;</span>
+    const displayName = <span class="cstat-no" title="statement not covered" >player.username ? `${player.name} (${player.username})` : player.name;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!player.paid) {</span>
 <span class="cstat-no" title="statement not covered" >      player.paid = true;</span>
@@ -309,31 +311,31 @@ const { sendPlayerList } = <span class="cstat-no" title="statement not covered" 
 <span class="cstat-no" title="statement not covered" >    await ctx.deleteMessage().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; {});</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!ADMIN_ID.includes(ctx.from.id)) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⛔ У вас нет прав для этой команды.");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⛔ У вас нет прав для этой команды.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (ctx.chat.id &lt; 0) {</span>
-      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply("Напиши мне в ЛС.");</span>
+      const msg = <span class="cstat-no" title="statement not covered" >await ctx.reply('Напиши мне в ЛС.');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, msg.message_id);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!isMatchStarted) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Матч не начат!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Матч не начат!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
     const playerNumber = <span class="cstat-no" title="statement not covered" >Number(ctx.message.text.match(/^u(\d+)$/i)[1]);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (playerNumber &lt;= 0 || playerNumber &gt; players.length) {</span>
-      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply("⚠️ Неверный номер игрока!");</span>
+      const message = <span class="cstat-no" title="statement not covered" >await ctx.reply('⚠️ Неверный номер игрока!');</span>
 <span class="cstat-no" title="statement not covered" >      return deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
 &nbsp;
     const playerIndex = <span class="cstat-no" title="statement not covered" >playerNumber - 1;</span>
     const player = <span class="cstat-no" title="statement not covered" >players[playerIndex];</span>
-    let displayName = <span class="cstat-no" title="statement not covered" >player.username ? `${player.name} (${player.username})` : player.name;</span>
-    
+    const displayName = <span class="cstat-no" title="statement not covered" >player.username ? `${player.name} (${player.username})` : player.name;</span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >    if (player.paid) {</span>
 <span class="cstat-no" title="statement not covered" >      player.paid = false;</span>
 <span class="cstat-no" title="statement not covered" >      GlobalState.setPlayers(players); </span>// Обновляем список игроков
@@ -345,14 +347,15 @@ const { sendPlayerList } = <span class="cstat-no" title="statement not covered" 
 <span class="cstat-no" title="statement not covered" >      deleteMessageAfterDelay(ctx, message.message_id, 6000);</span>
     }
   });
-};</pre></td></tr></table></pre>
+};
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-03T14:41:13.611Z
+                at 2026-01-03T13:03:25.485Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

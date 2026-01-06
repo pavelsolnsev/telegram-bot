@@ -1,6 +1,5 @@
 const sendPrivateMessage = async (bot, userId, message, options = { parse_mode: 'HTML' }) => {
   if (typeof userId === 'number' && userId >= 100000 && userId < 200000) {
-    console.log(`Сообщение не отправлено тестовому игроку с ID ${userId}`);
     return null;
   }
 

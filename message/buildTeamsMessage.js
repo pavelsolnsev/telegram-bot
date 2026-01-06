@@ -8,6 +8,7 @@ const buildTeamsMessage = (
   mvpPlayer = null,
   showRatings = true,
   leaders = null,
+  playersWithYellowCards = null,
 ) => {
   // Проверка на валидность teamsBase
   if (!Array.isArray(teamsBase)) {
@@ -141,6 +142,22 @@ const buildTeamsMessage = (
         lines.pop();
       }
       message += `<b>Лидеры турнира по статистике:</b>\n\n${lines.join('\n')}\n\n`;
+    }
+
+    // Добавляем список игроков с желтыми карточками
+    if (playersWithYellowCards && Array.isArray(playersWithYellowCards) && playersWithYellowCards.length > 0) {
+      message += '<b>🟨 Игроки с желтыми карточками:</b>\n';
+
+      // Сортируем игроков по количеству карточек (от большего к меньшему)
+      const sortedPlayers = [...playersWithYellowCards].sort((a, b) => (b.yellowCards || 0) - (a.yellowCards || 0));
+
+      sortedPlayers.forEach(player => {
+        const displayName = player.username || player.name || 'Unknown';
+        const cardsCount = player.yellowCards || 0;
+        message += `• ${displayName} (${cardsCount})\n`;
+      });
+
+      message += '\n';
     }
   }
 

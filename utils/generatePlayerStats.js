@@ -49,6 +49,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const drawsDelta = typeof player.ratingDrawsDelta === 'number' ? player.ratingDrawsDelta : 0;
   const lossesDelta = typeof player.ratingLossesDelta === 'number' ? player.ratingLossesDelta : 0;
   const shutoutWinDelta = typeof player.ratingShutoutWinDelta === 'number' ? player.ratingShutoutWinDelta : 0;
+  const yellowCardsDelta = typeof player.ratingYellowCardsDelta === 'number' ? player.ratingYellowCardsDelta : 0;
   const totalRatingDelta = typeof player.ratingTournamentDelta === 'number'
     ? player.ratingTournamentDelta
     : goalsDelta
@@ -58,7 +59,8 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
       + winsDelta
       + drawsDelta
       + lossesDelta
-      + shutoutWinDelta;
+      + shutoutWinDelta
+      + yellowCardsDelta;
 
   const formatDelta = (value) => {
     const num = Number(value) || 0;
@@ -73,13 +75,14 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const teamName = getTeamName(teamIndex);
   const positionEmoji = teamPosition === 1 ? '🥇' : teamPosition === 2 ? '🥈' : teamPosition === 3 ? '🥉' : '📍';
   message += `${color} <b>${teamName}</b> ${positionEmoji} <b>${teamPosition} место</b>\n`;
-  message += `📊 Очки команды: <b>${points}</b>\n\n`;
+  message += `Очки команды: <b>${points}</b>\n\n`;
 
   // Статистика игрока
   message += '<b>Ваши показатели:</b>\n';
   message += `⚽️ Голы: ${goals}\n`;
   message += `🎯 Ассисты: ${assists}\n`;
   message += `🧤 Сейвы: ${saves}\n`;
+  message += `🟨 Жёлтые карточки: ${player.yellowCards || 0}\n`;
   message += `⭐ Рейтинг: ${rating > 0 ? '+' : ''}${rating}\n\n`;
 
   // Статистика матчей
@@ -114,6 +117,9 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   }
   if (cleanSheetsDelta !== 0) {
     message += `🧱 "Сухие" матчи (сейвы + команда не пропустила): ${formatDelta(cleanSheetsDelta)}\n`;
+  }
+  if (yellowCardsDelta !== 0) {
+    message += `🟨 Штраф за желтые карточки: ${formatDelta(yellowCardsDelta)}\n`;
   }
   message += `Общий рейтинг: ${formatDelta(totalRatingDelta)}\n\n`;
 

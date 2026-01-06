@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/34</span>
+                <span class='fraction'>0/38</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/33</span>
+                <span class='fraction'>0/37</span>
             </div>
         
             
@@ -123,7 +123,10 @@
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
-<a name='L61'></a><a href='#L61'>61</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -174,7 +177,10 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -183,11 +189,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >require("dotenv").config();</span>
-const { Telegraf } = <span class="cstat-no" title="statement not covered" >require("telegraf");</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >require('dotenv').config();</span>
+const { Telegraf } = <span class="cstat-no" title="statement not covered" >require('telegraf');</span>
 const bot = <span class="cstat-no" title="statement not covered" >new Telegraf(process.env.BOT_TOKEN);</span>
-const { GlobalState } = <span class="cstat-no" title="statement not covered" >require("./store");</span>
-const { checkTimeAndNotify } = <span class="cstat-no" title="statement not covered" >require("./utils/checkTimeAndNotify");</span>
+const { GlobalState } = <span class="cstat-no" title="statement not covered" >require('./store');</span>
+const { checkTimeAndNotify } = <span class="cstat-no" title="statement not covered" >require('./utils/checkTimeAndNotify');</span>
 &nbsp;
 // function sendLogToTelegram(bot, adminId, message) {
 // 	bot.telegram.sendMessage(adminId, `🖥 Лог:\n${message}`);
@@ -206,35 +212,38 @@ const { checkTimeAndNotify } = <span class="cstat-no" title="statement not cover
   const userId = <span class="cstat-no" title="statement not covered" >ctx.from.id;</span>
   const username = <span class="cstat-no" title="statement not covered" >ctx.from.username</span>
     ? `@${ctx.from.username}`
-    : ctx.from.first_name || "Без имени";
-<span class="cstat-no" title="statement not covered" >  await ctx.reply(`Ваш ID: ${userId}\nИмя: ${username}`);</span>
+    : ctx.from.first_name || 'Без имени';
+<span class="cstat-no" title="statement not covered" >  await ctx.reply(`Ваш ID11: ${userId}\nИмя: ${username}`);</span>
 });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >bot.hears(/^gr$/i, <span class="fstat-no" title="function not covered" >as</span>ync (ctx) =&gt; {</span>
   const chatId = <span class="cstat-no" title="statement not covered" >ctx.chat.id;</span>
-  const chatTitle = <span class="cstat-no" title="statement not covered" >ctx.chat.title || "Чат без названия";</span>
+  const chatTitle = <span class="cstat-no" title="statement not covered" >ctx.chat.title || 'Чат без названия';</span>
 <span class="cstat-no" title="statement not covered" >  await ctx.reply(`ID группы: ${chatId}\nНазвание: ${chatTitle}`);</span>
 });
 &nbsp;
 // Подключаем обработчики команд из отдельных файлов
-<span class="cstat-no" title="statement not covered" >require("./commands/startMatch")(bot, GlobalState); </span>// Команда s для начала матча
-<span class="cstat-no" title="statement not covered" >require("./commands/remove")(bot, GlobalState); </span>// Команда r для удаления игроков из списка игроков
-<span class="cstat-no" title="statement not covered" >require("./commands/pay")(bot, GlobalState); </span>// Команда p для оплаты
-<span class="cstat-no" title="statement not covered" >require("./commands/judgeChange")(bot, GlobalState); </span>// Команда для смены судьи
-<span class="cstat-no" title="statement not covered" >require("./commands/team")(bot, GlobalState); </span>// деление команд
-<span class="cstat-no" title="statement not covered" >require("./commands/change")(bot, GlobalState); </span>// замена игрока
-<span class="cstat-no" title="statement not covered" >require("./commands/play")(bot, GlobalState); </span>// начать матч
-<span class="cstat-no" title="statement not covered" >require("./commands/goal")(bot, GlobalState); </span>// отметить гол
-<span class="cstat-no" title="statement not covered" >require("./commands/finish")(bot, GlobalState); </span>// закончить матч
-<span class="cstat-no" title="statement not covered" >require("./commands/list")(bot, GlobalState); </span>// Команда list для проверки списка
-<span class="cstat-no" title="statement not covered" >require("./commands/table")(bot, GlobalState); </span>// Команда для проверки таблицы
-<span class="cstat-no" title="statement not covered" >require("./commands/result")(bot, GlobalState);</span>
-<span class="cstat-no" title="statement not covered" >require("./commands/ready")(bot, GlobalState);</span>
-<span class="cstat-no" title="statement not covered" >require("./commands/time")(bot, GlobalState); </span>// Команда t для смены даты
-<span class="cstat-no" title="statement not covered" >require("./commands/end")(bot, GlobalState); </span>// Команда e! для отмены матча
-<span class="cstat-no" title="statement not covered" >require("./commands/limit")(bot, GlobalState); </span>// Команда l для изменения лимита игроков
-<span class="cstat-no" title="statement not covered" >require("./commands/add")(bot, GlobalState); </span>// Добавление и удаление игроков
-// require("./buttons/reshuffle_callback")(bot, GlobalState);
+<span class="cstat-no" title="statement not covered" >require('./commands/startMatch')(bot, GlobalState); </span>// Команда s для начала матча
+<span class="cstat-no" title="statement not covered" >require('./commands/remove')(bot, GlobalState); </span>// Команда r для удаления игроков из списка игроков
+<span class="cstat-no" title="statement not covered" >require('./commands/pay')(bot, GlobalState); </span>// Команда p для оплаты
+<span class="cstat-no" title="statement not covered" >require('./commands/referee')(bot, GlobalState); </span>// Команда для смены судьи
+<span class="cstat-no" title="statement not covered" >require('./commands/teamname')(bot, GlobalState); </span>// Команда tn для изменения названий команд
+<span class="cstat-no" title="statement not covered" >require('./commands/team')(bot, GlobalState); </span>// деление команд
+<span class="cstat-no" title="statement not covered" >require('./commands/change')(bot, GlobalState); </span>// замена игрока
+<span class="cstat-no" title="statement not covered" >require('./commands/play')(bot, GlobalState); </span>// начать матч
+<span class="cstat-no" title="statement not covered" >require('./commands/goal')(bot, GlobalState); </span>// отметить гол
+<span class="cstat-no" title="statement not covered" >require('./commands/finish')(bot, GlobalState); </span>// закончить матч
+<span class="cstat-no" title="statement not covered" >require('./commands/list')(bot, GlobalState); </span>// Команда list для проверки списка
+<span class="cstat-no" title="statement not covered" >require('./commands/table')(bot, GlobalState); </span>// Команда для проверки таблицы
+<span class="cstat-no" title="statement not covered" >require('./commands/result')(bot, GlobalState);</span>
+<span class="cstat-no" title="statement not covered" >require('./commands/ready')(bot, GlobalState);</span>
+<span class="cstat-no" title="statement not covered" >require('./commands/time')(bot, GlobalState); </span>// Команда t для смены даты
+<span class="cstat-no" title="statement not covered" >require('./commands/end')(bot, GlobalState); </span>// Команда e! для отмены матча
+<span class="cstat-no" title="statement not covered" >require('./commands/limit')(bot, GlobalState); </span>// Команда l для изменения лимита игроков
+<span class="cstat-no" title="statement not covered" >require('./commands/reset')(bot, GlobalState); </span>// Обнуление статистики игроков в БД
+<span class="cstat-no" title="statement not covered" >require('./commands/add')(bot, GlobalState); </span>// Добавление и удаление игроков
+<span class="cstat-no" title="statement not covered" >require('./buttons/reshuffle_callback')(bot, GlobalState); </span>// Обработчик кнопки перемешивания
+<span class="cstat-no" title="statement not covered" >require('./buttons/select_teams_callback')(bot, GlobalState); </span>// Обработчик кнопки выбора команд
 // Запуск бота
 <span class="cstat-no" title="statement not covered" >bot.launch();</span>
 &nbsp;
@@ -242,7 +251,7 @@ const { checkTimeAndNotify } = <span class="cstat-no" title="statement not cover
 <span class="cstat-no" title="statement not covered" >setInterval(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >checkTimeAndNotify(bot),</span> 60000); </span>// Передаем объект bot
 &nbsp;
 // Логирование успешного запуска бота
-<span class="cstat-no" title="statement not covered" >console.log("Бот запущен!");</span>
+<span class="cstat-no" title="statement not covered" >console.log('Бот запущен!');</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -250,7 +259,7 @@ const { checkTimeAndNotify } = <span class="cstat-no" title="statement not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-03T14:41:13.686Z
+                at 2026-01-03T13:03:25.675Z
             </div>
         <script src="../prettify.js"></script>
         <script>
