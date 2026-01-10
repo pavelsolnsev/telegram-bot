@@ -195,7 +195,7 @@ const updatePlayerStats = (
     // Боролся до конца (≥2 действия): -0.4 от штрафа
     const totalActions = goals + assists + saves;
     const loseReduction = isLose ? (goals >= 2 ? 0.5 : totalActions >= 2 ? 0.4 : 0) : 0;
-    const baseLoseDelta = isShutoutLoss ? -1.8 : isLose ? -1.3 : 0;
+    const baseLoseDelta = isShutoutLoss ? -2 : isLose ? -1.5 : 0;
     const loseDelta = baseLoseDelta + loseReduction;
 
     const delta = goalDelta + assistDelta + saveDelta + goalBonus + assistBonus + cleanSheetBonus + saveBonus + winDelta + drawDelta + loseDelta + shutoutWinBonus + yellowCardDelta;
