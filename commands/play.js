@@ -66,6 +66,7 @@ module.exports = (bot, GlobalState) => {
       goals: 0,
       saves: 0,
       assists: 0,
+      yellowCards: 0,
     }));
 
     const team1 = resetGoals(teams[teamIndex1]);

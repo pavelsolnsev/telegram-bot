@@ -243,7 +243,7 @@ const updatePlayerStats = (
       username: player.username || originalPlayer.username || null,
       gamesPlayed: (originalPlayer.gamesPlayed || 0) + 1,
       wins: (originalPlayer.wins || 0) + (isWin ? 1 : 0),
-      ув: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
+      draws: (originalPlayer.draws || 0) + (isDraw ? 1 : 0),
       losses: (originalPlayer.losses || 0) + (isLose ? 1 : 0),
       goals: (originalPlayer.goals || 0) + goals,
       assists: (originalPlayer.assists || 0) + assists,

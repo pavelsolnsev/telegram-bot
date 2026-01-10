@@ -125,12 +125,39 @@ module.exports = (bot, GlobalState) => {
       const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
       try {
-        const playersWithMvp = allPlayers.map((player) => ({
-          ...player,
-          mvp: player.id === mvpPlayer?.id ? 1 : 0,
-        }));
+        // Применяем бонусы за MVP к рейтингу игроков
+        // +1 за общий MVP турнира, +0.5 за MVP команды (если не получил общий MVP)
+        const playersWithMvpBonus = allPlayers.map((player) => {
+          if (!player || !player.id) return player;
 
-        await savePlayersToDatabase(playersWithMvp);
+          const isTournamentMvp = player.id === mvpPlayer?.id;
+          // Находим, является ли игрок MVP своей команды
+          let playerTeamIndex = -1;
+          for (let i = 0; i < allTeams.length; i++) {
+            if (allTeams[i] && allTeams[i].some((p) => p && p.id === player.id)) {
+              playerTeamIndex = i;
+              break;
+            }
+          }
+
+          const teamMvp = playerTeamIndex >= 0 && playerTeamIndex < teamMvps.length ? teamMvps[playerTeamIndex] : null;
+          const isTeamMvp = teamMvp && player.id === teamMvp.id && !isTournamentMvp;
+
+          let mvpBonus = 0;
+          if (isTournamentMvp) {
+            mvpBonus = 1.0; // +1 за общий MVP турнира
+          } else if (isTeamMvp) {
+            mvpBonus = 0.5; // +0.5 за MVP команды (только если не получил общий MVP)
+          }
+
+          return {
+            ...player,
+            mvp: isTournamentMvp ? 1 : 0,
+            rating: (player.rating || 0) + mvpBonus,
+          };
+        });
+
+        await savePlayersToDatabase(playersWithMvpBonus);
         GlobalState.appendToPlayersHistory(allPlayers);
       } catch (error) {
         if (error.code === 'ECONNRESET') {

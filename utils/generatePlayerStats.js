@@ -79,10 +79,18 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
 
   // Статистика игрока
   message += '<b>Ваши показатели:</b>\n';
-  message += `⚽️ Голы: ${goals}\n`;
-  message += `🎯 Ассисты: ${assists}\n`;
-  message += `🧤 Сейвы: ${saves}\n`;
-  message += `🟨 Жёлтые карточки: ${player.yellowCards || 0}\n`;
+  if (goals > 0) {
+    message += `⚽️ Голы: ${goals}\n`;
+  }
+  if (assists > 0) {
+    message += `🎯 Ассисты: ${assists}\n`;
+  }
+  if (saves > 0) {
+    message += `🧤 Сейвы: ${saves}\n`;
+  }
+  if ((player.yellowCards || 0) > 0) {
+    message += `🟨 Жёлтые карточки: ${player.yellowCards || 0}\n`;
+  }
   message += `⭐ Рейтинг: ${rating > 0 ? '+' : ''}${rating}\n\n`;
 
   // Статистика матчей
@@ -120,6 +128,12 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   }
   if (yellowCardsDelta !== 0) {
     message += `🟨 Штраф за желтые карточки: ${formatDelta(yellowCardsDelta)}\n`;
+  }
+  // Бонусы за MVP
+  if (isTournamentMvp) {
+    message += `🏆 Бонус за MVP турнира: ${formatDelta(1.0)}\n`;
+  } else if (isTeamMvp) {
+    message += `⭐ Бонус за MVP команды: ${formatDelta(0.5)}\n`;
   }
   message += `Общий рейтинг: ${formatDelta(totalRatingDelta)}\n\n`;
 

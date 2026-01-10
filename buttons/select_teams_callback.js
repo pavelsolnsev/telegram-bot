@@ -387,6 +387,7 @@ module.exports = (bot, GlobalState) => {
     const resetGoals = (team) => team.map(player => ({
       ...player,
       goals: 0,
+      yellowCards: 0,
     }));
 
     const team1 = resetGoals(teams[firstTeamIndex]);
@@ -585,6 +586,7 @@ module.exports = (bot, GlobalState) => {
     const resetGoals = (team) => team.map(player => ({
       ...player,
       goals: 0,
+      yellowCards: 0,
     }));
 
     const team1 = resetGoals(teams[teamIndex1]);
