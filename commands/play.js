@@ -3,6 +3,7 @@ const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessag
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { safeTelegramCall } = require('../utils/telegramUtils');
+const { createTeamManagementButtons } = require('../utils/createTeamManagementButtons');
 
 module.exports = (bot, GlobalState) => {
   bot.hears(/^pl(\d+)(\d+)$/i, async (ctx) => {
@@ -117,24 +118,7 @@ module.exports = (bot, GlobalState) => {
           teamsMessageWithButtons,
           {
             parse_mode: 'HTML',
-            reply_markup: (() => {
-              const isTableAllowed = GlobalState.getIsTableAllowed();
-              const playingTeams = GlobalState.getPlayingTeams();
-              const buttons = [];
-              if (isTableAllowed) {
-                // Если составы объявлены - показываем кнопку выбора команд
-                buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_callback')]);
-              } else {
-                // Если составы не объявлены - показываем кнопку выбора команд (заблокированную) и кнопку объявления
-                buttons.push([Markup.button.callback('🎯 Выбрать команды для матча', 'select_teams_blocked')]);
-                buttons.push([Markup.button.callback('📢 Объявить составы', 'announce_teams')]);
-              }
-              // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
-              if (!playingTeams) {
-                buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
-              }
-              return Markup.inlineKeyboard(buttons).reply_markup;
-            })(),
+            reply_markup: createTeamManagementButtons(GlobalState),
           },
         ]);
       } catch (error) {

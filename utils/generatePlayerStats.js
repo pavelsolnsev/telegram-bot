@@ -2,7 +2,7 @@ const { selectMvp } = require('./selectMvp');
 const { getTeamName } = require('./getTeamName');
 
 // Генерация персональной статистики игрока
-const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, teamColors) => {
+const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, teamColors, collectionDate) => {
   const teamKey = `team${teamIndex + 1}`;
   const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
   const color = teamColors[teamIndex] || '⚽';
@@ -69,7 +69,15 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
     return `${sign}${rounded}`;
   };
 
-  let message = '<b>📊 Ваша статистика турнира</b>\n\n';
+  // Форматируем дату турнира
+  let dateStr = '';
+  if (collectionDate) {
+    const day = String(collectionDate.getDate()).padStart(2, '0');
+    const month = String(collectionDate.getMonth() + 1).padStart(2, '0');
+    const year = collectionDate.getFullYear();
+    dateStr = ` ${day}.${month}.${year}`;
+  }
+  let message = `<b>📊 Ваша статистика турнира${dateStr}</b>\n\n`;
 
   // Команда и позиция
   const teamName = getTeamName(teamIndex);
