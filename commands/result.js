@@ -4,6 +4,8 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 const { getTeamName } = require('../utils/getTeamName');
+const { manageResultMessage, getPreviousResultMessage, updateResultMessageTimer } = require('../utils/manageUserMessage');
+const { safeTelegramCall } = require('../utils/telegramUtils');
 
 module.exports = (bot, GlobalState) => {
   const teamColors = ['🔴', '🔵', '🟢', '🟡'];
@@ -150,15 +152,49 @@ module.exports = (bot, GlobalState) => {
     const { text, currentPage, totalPages } = buildResultsPage(results, page, 6);
     const keyboard = buildPaginationKeyboard(currentPage, totalPages);
 
+    // Проверяем, есть ли предыдущее сообщение результатов
+    const previousMessage = getPreviousResultMessage(userId);
+
     // Отправляем сообщение в личку
     try {
-      const sent = await bot.telegram.sendMessage(userId, text, {
-        parse_mode: 'HTML',
-        reply_markup: keyboard,
-      });
+      let sent;
+      if (previousMessage && previousMessage.chatId && previousMessage.messageId) {
+        // Пытаемся отредактировать предыдущее сообщение
+        try {
+          await bot.telegram.editMessageText(
+            previousMessage.chatId,
+            previousMessage.messageId,
+            null,
+            text,
+            { parse_mode: 'HTML', reply_markup: keyboard },
+          );
+          // Используем предыдущее сообщение и обновляем таймер
+          sent = { message_id: previousMessage.messageId, chat: { id: previousMessage.chatId } };
+          updateResultMessageTimer(userId, previousMessage.chatId, previousMessage.messageId, { telegram: bot.telegram, chat: { id: previousMessage.chatId } });
+        } catch (error) {
+          // Если не удалось отредактировать, отправляем новое
+          sent = await bot.telegram.sendMessage(userId, text, {
+            parse_mode: 'HTML',
+            reply_markup: keyboard,
+          });
+        }
+      } else {
+        // Отправляем новое сообщение
+        sent = await bot.telegram.sendMessage(userId, text, {
+          parse_mode: 'HTML',
+          reply_markup: keyboard,
+        });
+      }
+
       if (sent && sent.chat && sent.message_id) {
         GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
-        deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
+        // Если это редактирование существующего сообщения, обновляем таймер
+        // Иначе создаем новую запись с таймером
+        if (previousMessage && previousMessage.chatId === sent.chat.id && previousMessage.messageId === sent.message_id) {
+          updateResultMessageTimer(userId, sent.chat.id, sent.message_id, { telegram: bot.telegram, chat: { id: sent.chat.id } });
+        } else {
+          manageResultMessage(userId, sent.chat.id, sent.message_id, { telegram: bot.telegram, chat: { id: sent.chat.id } });
+        }
       }
     } catch (error) {
       // Ошибка уже обработана в sendPrivateMessage для известных случаев
@@ -235,6 +271,8 @@ module.exports = (bot, GlobalState) => {
         text,
         { parse_mode: 'HTML', reply_markup: keyboard },
       );
+      // Обновляем таймер удаления при редактировании через пагинацию
+      updateResultMessageTimer(userId, ctx.chat.id, ctx.callbackQuery.message.message_id, ctx);
       await safeAnswerCallback(ctx);
     } catch (error) {
       const desc = error?.response?.description || '';
@@ -304,31 +342,36 @@ module.exports = (bot, GlobalState) => {
     // Собираем текст сообщения с пагинацией
     const { text, currentPage, totalPages } = buildResultsPage(results, 0, 6);
     const keyboard = buildPaginationKeyboard(currentPage, totalPages);
-    const last = GlobalState.getLastResultMessageId();
+    const userId = ctx.from.id;
+    const previousMessage = getPreviousResultMessage(userId);
 
-    if (last && last.chatId && last.messageId) {
+    // Проверяем, есть ли предыдущее сообщение результатов для этого пользователя
+    if (previousMessage && previousMessage.chatId === ctx.chat.id && previousMessage.messageId) {
       try {
-        await ctx.telegram.editMessageText(
-          last.chatId,
-          last.messageId,
+        await safeTelegramCall(ctx, 'editMessageText', [
+          previousMessage.chatId,
+          previousMessage.messageId,
           null,
           text,
           { parse_mode: 'HTML', reply_markup: keyboard },
-        );
-        deleteMessageAfterDelay(ctx, last.messageId, 120000);
+        ]);
+        // Обновляем таймер удаления при редактировании
+        updateResultMessageTimer(userId, previousMessage.chatId, previousMessage.messageId, ctx);
+        GlobalState.setLastResultMessageId(previousMessage.chatId, previousMessage.messageId);
       } catch (err) {
         const desc = err?.response?.description || '';
-        if (desc.includes('message to edit not found')) {
+        if (desc.includes('message to edit not found') || desc.includes('message is not modified')) {
+          // Если сообщение не найдено или не изменено, отправляем новое
           try {
             const sent = await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
             if (sent && sent.chat && sent.message_id) {
               GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
-              deleteMessageAfterDelay(ctx, sent.message_id, 120000);
+              manageResultMessage(userId, sent.chat.id, sent.message_id, ctx);
             }
           } catch (replyError) {
             console.error('Ошибка при отправке результата:', replyError);
           }
-        } else if (!desc.includes('message is not modified')) {
+        } else {
           console.error('Ошибка редактирования результата:', err);
         }
       }
@@ -337,7 +380,7 @@ module.exports = (bot, GlobalState) => {
         const sent = await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
         if (sent && sent.chat && sent.message_id) {
           GlobalState.setLastResultMessageId(sent.chat.id, sent.message_id);
-          deleteMessageAfterDelay(ctx, sent.message_id, 120000);
+          manageResultMessage(userId, sent.chat.id, sent.message_id, ctx);
         }
       } catch (replyError) {
         console.error('Ошибка при отправке результата:', replyError);

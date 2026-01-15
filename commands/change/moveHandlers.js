@@ -312,7 +312,7 @@ const registerMoveHandlers = (bot, GlobalState) => {
 
     // Получаем информацию о неравномерном распределении
     const distribution = checkUnevenDistribution(teams);
-    
+
     // Показываем список команд с меньшим количеством игроков (исключая исходную)
     const buttons = [];
     for (let i = 0; i < teams.length; i++) {

@@ -20,7 +20,7 @@ const createTeamManagementButtons = (GlobalState) => {
   // Кнопка "Сменить игрока" показывается всегда, когда матч не идет (независимо от isTableAllowed)
   if (!playingTeams) {
     buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
-    
+
     // Показываем кнопку перемещения только при неравномерном распределении
     if (Array.isArray(teams) && teams.length > 0) {
       const distribution = checkUnevenDistribution(teams);

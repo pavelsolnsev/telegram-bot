@@ -27,8 +27,8 @@ const updatePlayingTeamsMessageBase = async (ctx) => {
   }
 
   // Проверка на валидность playingTeams
-  if (!playingTeams.team1 || !playingTeams.team2 || 
-      typeof playingTeams.teamIndex1 !== 'number' || 
+  if (!playingTeams.team1 || !playingTeams.team2 ||
+      typeof playingTeams.teamIndex1 !== 'number' ||
       typeof playingTeams.teamIndex2 !== 'number') {
     console.error('Ошибка: некорректная структура playingTeams');
     return;

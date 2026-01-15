@@ -146,15 +146,15 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
   if (status === 'finished') {
     const team1Goals = Array.isArray(team1)
       ? team1.reduce((s, p) => {
-          if (!p || typeof p !== 'object') return s;
-          return s + (Number(p.goals) || 0);
-        }, 0)
+        if (!p || typeof p !== 'object') return s;
+        return s + (Number(p.goals) || 0);
+      }, 0)
       : 0;
     const team2Goals = Array.isArray(team2)
       ? team2.reduce((s, p) => {
-          if (!p || typeof p !== 'object') return s;
-          return s + (Number(p.goals) || 0);
-        }, 0)
+        if (!p || typeof p !== 'object') return s;
+        return s + (Number(p.goals) || 0);
+      }, 0)
       : 0;
     const finalTeam1Name = getTeamName(safeTeamIndex1) || 'Команда';
     const finalTeam2Name = getTeamName(safeTeamIndex2) || 'Команда';

@@ -19,11 +19,11 @@ const checkUnevenDistribution = (teams) => {
   }
 
   // Находим команду с максимальным и минимальным количеством игроков
-  const maxTeam = teamSizes.reduce((max, current) => 
-    current.size > max.size ? current : max
+  const maxTeam = teamSizes.reduce((max, current) =>
+    current.size > max.size ? current : max,
   );
-  const minTeam = teamSizes.reduce((min, current) => 
-    current.size < min.size ? current : min
+  const minTeam = teamSizes.reduce((min, current) =>
+    current.size < min.size ? current : min,
   );
 
   const difference = maxTeam.size - minTeam.size;

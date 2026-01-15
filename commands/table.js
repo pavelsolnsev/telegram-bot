@@ -2,6 +2,8 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
+const { manageTableMessage, getPreviousTableMessage, updateTableMessageTimer } = require('../utils/manageUserMessage');
+const { safeTelegramCall } = require('../utils/telegramUtils');
 
 module.exports = (bot, GlobalState) => {
   // Функция для формирования и отправки таблицы
@@ -75,9 +77,38 @@ module.exports = (bot, GlobalState) => {
         showRatings,
       );
 
-      const sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: 'HTML' });
-      if (sent && sent.message_id) {
-        deleteMessageAfterDelay({ telegram: bot.telegram, chat: { id: userId } }, sent.message_id, 120000);
+      // Проверяем, есть ли предыдущее сообщение таблицы
+      const previousMessage = getPreviousTableMessage(userId);
+
+      let sent;
+      if (previousMessage && previousMessage.chatId && previousMessage.messageId) {
+        // Пытаемся отредактировать предыдущее сообщение
+        try {
+          await bot.telegram.editMessageText(
+            previousMessage.chatId,
+            previousMessage.messageId,
+            null,
+            tableMessage,
+            { parse_mode: 'HTML' },
+          );
+          // Используем предыдущее сообщение и обновляем таймер
+          sent = { message_id: previousMessage.messageId, chat: { id: previousMessage.chatId } };
+          updateTableMessageTimer(userId, previousMessage.chatId, previousMessage.messageId, { telegram: bot.telegram, chat: { id: previousMessage.chatId } });
+        } catch (error) {
+          // Если не удалось отредактировать, отправляем новое
+          sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: 'HTML' });
+          if (sent && sent.message_id) {
+            const chatId = sent.chat?.id || userId;
+            manageTableMessage(userId, chatId, sent.message_id, { telegram: bot.telegram, chat: { id: chatId } });
+          }
+        }
+      } else {
+        // Отправляем новое сообщение
+        sent = await sendPrivateMessage(bot, userId, tableMessage, { parse_mode: 'HTML' });
+        if (sent && sent.message_id) {
+          const chatId = sent.chat?.id || userId;
+          manageTableMessage(userId, chatId, sent.message_id, { telegram: bot.telegram, chat: { id: chatId } });
+        }
       }
     } catch (error) {
       console.error('Ошибка при формировании таблицы:', error);
@@ -159,10 +190,38 @@ module.exports = (bot, GlobalState) => {
         showRatings,
       );
 
-      // Отправляем сообщение
-      const sentMessage = await ctx.reply(tableMessage, { parse_mode: 'HTML' });
+      // Проверяем, есть ли предыдущее сообщение таблицы
+      const userId = ctx.from.id;
+      const previousMessage = getPreviousTableMessage(userId);
 
-      deleteMessageAfterDelay(ctx, sentMessage.message_id, 120000);
+      let sentMessage;
+      if (previousMessage && previousMessage.chatId === ctx.chat.id && previousMessage.messageId) {
+        // Пытаемся отредактировать предыдущее сообщение
+        try {
+          await safeTelegramCall(ctx, 'editMessageText', [
+            previousMessage.chatId,
+            previousMessage.messageId,
+            null,
+            tableMessage,
+            { parse_mode: 'HTML' },
+          ]);
+          // Используем предыдущее сообщение и обновляем таймер
+          sentMessage = { message_id: previousMessage.messageId, chat: { id: previousMessage.chatId } };
+          updateTableMessageTimer(userId, previousMessage.chatId, previousMessage.messageId, ctx);
+        } catch (error) {
+          // Если не удалось отредактировать, отправляем новое
+          sentMessage = await ctx.reply(tableMessage, { parse_mode: 'HTML' });
+          if (sentMessage && sentMessage.message_id) {
+            manageTableMessage(userId, ctx.chat.id, sentMessage.message_id, ctx);
+          }
+        }
+      } else {
+        // Отправляем новое сообщение
+        sentMessage = await ctx.reply(tableMessage, { parse_mode: 'HTML' });
+        if (sentMessage && sentMessage.message_id) {
+          manageTableMessage(userId, ctx.chat.id, sentMessage.message_id, ctx);
+        }
+      }
     } catch (error) {
       console.error('Ошибка при формировании таблицы:', error);
       const message = await ctx.reply('⚠️ Не удалось сформировать таблицу.');
