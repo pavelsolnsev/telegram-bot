@@ -114,7 +114,7 @@ const updateTeamStats = (
 const round1 = (n) => Math.round(n * 10) / 10;
 
 // Модификатор роста рейтинга (более консервативный)
-const growthModifier = (baseRating) => Math.max(0.2, 0.8 - baseRating / 250);
+const growthModifier = (baseRating) => Math.max(0.2, 1 - baseRating / 250);
 
 // Обновление статистики игрока
 const updatePlayerStats = (
@@ -189,7 +189,7 @@ const updatePlayerStats = (
 
     const winDelta = isWin ? 1.8 * mod : 0; // Базовая победа
     const shutoutWinBonus = isShutoutWin ? 0.7 * mod : 0; // Дополнительный бонус за сухую победу
-    const drawDelta = isDraw ? 1.3 * mod : 0;
+    const drawDelta = isDraw ? 0.3 * mod : 0;
 
     // === Штраф за поражение со смягчением ===
     // Герой проигравших (≥2 гола): -0.5 от штрафа
