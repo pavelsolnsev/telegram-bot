@@ -334,29 +334,9 @@ module.exports = (bot, GlobalState) => {
         }
       }
 
-      // Сбрасываем состояние
-      GlobalState.setPlayers([]);
-      GlobalState.setQueue([]);
-      GlobalState.setCollectionDate(null);
-      GlobalState.setMaxPlayers(20);
-      GlobalState.setStart(false);
-      GlobalState.setNotificationSent(false);
-      GlobalState.setTeams([]);
-      GlobalState.setTeamStats({});
-      GlobalState.setPlayingTeams(null);
-      GlobalState.setPlayingTeamsMessageId(null, null);
-      GlobalState.setLastTeamCount(null);
-      GlobalState.setLastTeamsMessageId(null);
-      GlobalState.setDivided(false);
-      GlobalState.setIsStatsInitialized(false);
-      GlobalState.setIsMatchFinished(false);
-      GlobalState.setIsEndCommandAllowed(true);
-      GlobalState.setIsTeamCommandAllowed(true);
-      GlobalState.setMatchHistory({});
-      GlobalState.setConsecutiveGames({});
-      GlobalState.setIsTableAllowed(false);
-      GlobalState.setReferee('Не назначен');
-      GlobalState.resetTeamNames();
+      // Полностью сбрасываем турнирное состояние в памяти,
+      // но сохраняем результаты матчей до старта нового турнира.
+      GlobalState.resetTournamentState({ preserveMatchResults: true });
 
       const message = await ctx.reply('✅ Сбор успешно завершён!');
       deleteMessageAfterDelay(ctx, message.message_id, 6000);

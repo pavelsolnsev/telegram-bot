@@ -109,6 +109,9 @@ const GlobalState = (() => {
     setLastResultMessageId: (chatId, messageId) => {
       lastResultMessage = { chatId, messageId };
     },
+    clearLastResultMessageId: () => {
+      lastResultMessage = null;
+    },
     getIsEndCommandAllowed: () => isEndCommandAllowed,
     setIsEndCommandAllowed: (status) => (isEndCommandAllowed = status),
     getIsTeamCommandAllowed: () => isTeamCommandAllowed,
@@ -191,6 +194,53 @@ const GlobalState = (() => {
     },
     clearMatchMessagesByNumber: () => {
       matchMessagesByNumber = {};
+    },
+
+    /**
+     * Полный сброс турнирного состояния в памяти.
+     * По умолчанию сохраняет результаты матчей (matchResults),
+     * чтобы они оставались доступными до старта нового турнира.
+     */
+    resetTournamentState: ({ preserveMatchResults = true } = {}) => {
+      consecutiveGames = {};
+      isMatchStarted = false;
+      isMatchFinished = false;
+      isTeamsDivided = false;
+      isStatsInitialized = false;
+      isEndCommandAllowed = true;
+      isTeamCommandAllowed = true;
+      MAX_PLAYERS = 20;
+
+      players = [];
+      teamsBase = [];
+      queue = [];
+      teams = [];
+      collectionDate = null;
+      notificationSent = false;
+      listMessageId = null;
+      listMessageChatId = null;
+      lastTeamCount = null;
+      lastTeamsMessage = null;
+      playingTeams = null;
+      playingTeamsMessageId = null;
+      teamStats = {};
+      allPlayersHistory = [];
+
+      matchHistory = {};
+      lastMatchIndex = {};
+      location = null;
+      teamCount = 0;
+      matchHistoryStack = [];
+
+      if (!preserveMatchResults) {
+        matchResults = [];
+      }
+      lastResultMessage = null;
+
+      isTableAllowed = false;
+      referee = 'Не назначен';
+      matchMessagesByNumber = {};
+      teamNames = {};
     },
   };
 

@@ -57,8 +57,10 @@ module.exports = (bot, GlobalState) => {
 
     const color1 = teamColors[safeTeamIndex1] || '⚽';
     const color2 = teamColors[safeTeamIndex2] || '⚽';
-    const team1Name = getTeamName(safeTeamIndex1) || 'Команда';
-    const team2Name = getTeamName(safeTeamIndex2) || 'Команда';
+    const savedTeamName1 = typeof m.teamName1 === 'string' ? m.teamName1.trim() : '';
+    const savedTeamName2 = typeof m.teamName2 === 'string' ? m.teamName2.trim() : '';
+    const team1Name = savedTeamName1 || getTeamName(safeTeamIndex1) || 'Команда';
+    const team2Name = savedTeamName2 || getTeamName(safeTeamIndex2) || 'Команда';
     const title = `✅ 🏁 Итог матча №${i + 1} 🏁`;
 
     // Безопасный доступ к массивам игроков

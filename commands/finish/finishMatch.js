@@ -50,9 +50,19 @@ const finishMatch = async (ctx, GlobalState) => {
     0,
   );
 
+  const teamNames = GlobalState.getTeamNames ? GlobalState.getTeamNames() : {};
+  const teamName1 = teamNames && typeof teamNames[teamIndex1] === 'string'
+    ? teamNames[teamIndex1]
+    : null;
+  const teamName2 = teamNames && typeof teamNames[teamIndex2] === 'string'
+    ? teamNames[teamIndex2]
+    : null;
+
   GlobalState.addMatchResult({
     teamIndex1,
     teamIndex2,
+    teamName1,
+    teamName2,
     score1: team1Goals,
     score2: team2Goals,
     players1: team1.map((p) => ({
@@ -198,9 +208,19 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     0,
   );
 
+  const teamNames = GlobalState.getTeamNames ? GlobalState.getTeamNames() : {};
+  const teamName1 = teamNames && typeof teamNames[teamIndex1] === 'string'
+    ? teamNames[teamIndex1]
+    : null;
+  const teamName2 = teamNames && typeof teamNames[teamIndex2] === 'string'
+    ? teamNames[teamIndex2]
+    : null;
+
   GlobalState.addMatchResult({
     teamIndex1,
     teamIndex2,
+    teamName1,
+    teamName2,
     score1: team1Goals,
     score2: team2Goals,
     players1: team1.map((p) => ({
