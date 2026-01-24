@@ -2,7 +2,6 @@
 // Использование: node scripts/testProblematicPlayer.js
 
 require('dotenv').config();
-const { GlobalState } = require('../store');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessage');
 

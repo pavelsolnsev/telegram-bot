@@ -7,7 +7,6 @@ const getPlayerByName = require('../../database/getPlayerByName');
 const { validateAndCreateUser, cleanPlayerName } = require('./validation');
 const { notifyTeamFormation } = require('./notifications');
 const { addPlayer, removePlayer, addPlayerByButton, removePlayerByButton } = require('./playerManagement');
-const { containsEmojiOrUnicode } = require('./validation');
 
 module.exports = (bot, GlobalState) => {
   bot.on('text', async (ctx) => {

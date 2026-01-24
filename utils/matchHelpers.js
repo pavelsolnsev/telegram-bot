@@ -388,8 +388,6 @@ const updateTeamsMessage = async (
       false,
     );
     const lastTeamsMessage = GlobalState.getLastTeamsMessageId();
-    const isTableAllowed = GlobalState.getIsTableAllowed();
-    const playingTeams = GlobalState.getPlayingTeams();
 
     const inlineKeyboard = { reply_markup: createTeamManagementButtons(GlobalState) };
 
