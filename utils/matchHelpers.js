@@ -1,4 +1,3 @@
-const { Markup } = require('telegraf');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../utils/telegramUtils');
