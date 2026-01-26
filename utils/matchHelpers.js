@@ -171,24 +171,24 @@ const updatePlayerStats = (
 
     // === Голевые бонусы (выбирается максимальный) ===
     // Покер (4+ гола) > Хет-трик (3 гола) > Дубль (2 гола)
-    const goalBonus = goals >= 4 ? 0.7 * mod : goals >= 3 ? 0.3 * mod : goals >= 2 ? 0.2 * mod : 0;
+    const goalBonus = goals >= 4 ? 0.7 * mod : goals >= 3 ? 0.4 * mod : goals >= 2 ? 0.3 * mod : 0;
 
-    // === Ассистентский бонус ===
-    // Плеймейкер (3+ ассистов)
-    const assistBonus = assists >= 3 ? 0.3 * mod : 0;
+    // === Ассистентский бонус (выбирается максимальный) ===
+    // Плеймейкер (4+ ассистов) > Ассист-мастер (3 ассиста) > Ассист (2 ассиста)
+    const assistBonus = assists >= 4 ? 0.7 * mod : assists >= 3 ? 0.4 * mod : assists >= 2 ? 0.3 * mod : 0;
 
-    // === Вратарские бонусы ===
+    // === Вратарские бонусы (выбирается максимальный) ===
     // Сухарь (сейвы > 0 И команда не пропустила)
     const cleanSheetBonus = (saves > 0 && opponentGoals === 0) ? 0.3 * mod : 0;
-    // Супер-вратарь (4+ сейвов) > Стена (2+ сейвов)
-    const saveBonus = saves >= 4 ? 0.7 * mod : saves >= 2 ? 0.3 * mod : 0;
+    // Супер-вратарь (4+ сейвов) > Вратарь (3 сейва) > Стена (2 сейва)
+    const saveBonus = saves >= 4 ? 0.7 * mod : saves >= 3 ? 0.4 * mod : saves >= 2 ? 0.3 * mod : 0;
 
     const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
     const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;
 
     const winDelta = isWin ? 1.8 * mod : 0; // Базовая победа
-    const shutoutWinBonus = isShutoutWin ? 0.7 * mod : 0; // Дополнительный бонус за сухую победу
-    const drawDelta = isDraw ? 0.3 * mod : 0;
+    const shutoutWinBonus = isShutoutWin ? 0.5 * mod : 0; // Дополнительный бонус за сухую победу
+    const drawDelta = isDraw ? 0.5 * mod : 0;
 
     // === Штраф за поражение со смягчением ===
     // Герой проигравших (≥2 гола): -0.5 от штрафа
