@@ -223,7 +223,8 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   } else if (isTeamMvp) {
     message += `⭐ Бонус за MVP команды: ${formatDelta(mvpBonus)}\n`;
   }
-  message += `Общий рейтинг: ${formatDelta(displayRatingDelta)}\n\n`;
+  message += `Общий рейтинг: ${formatDelta(displayRatingDelta)}\n`;
+  message += '<i>Иногда может расходиться на ±0.1 с рейтингом в таблице из-за округлений.</i>\n\n';
 
   // Находим лучших игроков по голам, ассистам и сейвам среди всех игроков
   const allPlayers = allTeams.flat();
