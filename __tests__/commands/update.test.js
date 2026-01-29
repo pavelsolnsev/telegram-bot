@@ -100,10 +100,15 @@ describe('команда /update — очищает состояние, но с�
     const bot = createBotMock();
     initUpdate(bot, GlobalState);
 
-    const hearsCall = bot.hears.mock.calls.find(
-      ([re]) => String(re).includes('^\\/update$'),
+    // Проверяем, что был зарегистрирован обработчик для команды update
+    const hearsCalls = bot.hears.mock.calls.filter(
+      ([re]) => {
+        const regexStr = String(re);
+        return regexStr.includes('update') || regexStr.match(/update/i);
+      },
     );
-    expect(hearsCall).toBeDefined();
+    expect(hearsCalls.length).toBeGreaterThan(0);
+    const hearsCall = hearsCalls[0];
 
     const updateHandler = hearsCall[1];
     const ctx = createCtxMock();

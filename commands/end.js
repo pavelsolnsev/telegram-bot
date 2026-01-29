@@ -124,10 +124,11 @@ module.exports = (bot, GlobalState) => {
       const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);
       const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
+      let playersWithMvpBonus;
       try {
         // Применяем бонусы за MVP к рейтингу игроков
         // +1 за общий MVP турнира, +0.5 за MVP команды (если не получил общий MVP)
-        const playersWithMvpBonus = allPlayers.map((player) => {
+        playersWithMvpBonus = allPlayers.map((player) => {
           if (!player || !player.id) return player;
 
           const isTournamentMvp = player.id === mvpPlayer?.id;
@@ -198,13 +199,14 @@ module.exports = (bot, GlobalState) => {
 
       // Отправляем персональную статистику каждому участнику, если это турнир
       if (currentLocationKey === 'tr' && allTeams.length > 0) {
-        // Отправляем персональную статистику каждому участнику
+        // Отправляем персональную статистику каждому участнику (используем playersWithMvpBonus — рейтинг с учётом MVP, как в БД)
         try {
-          for (const player of allPlayers) {
+          for (const player of playersWithMvpBonus) {
+            if (!player || !player.id) continue;
             // Находим команду игрока
             let playerTeamIndex = -1;
             for (let i = 0; i < allTeams.length; i++) {
-              if (allTeams[i].some(p => p.id === player.id)) {
+              if (allTeams[i].some(p => p && p.id === player.id)) {
                 playerTeamIndex = i;
                 break;
               }
@@ -218,6 +220,8 @@ module.exports = (bot, GlobalState) => {
                 allTeams,
                 mvpPlayer,
                 teamColors,
+                GlobalState.getCollectionDate?.(),
+                teamsBase,
               );
 
               try {
@@ -304,9 +308,9 @@ module.exports = (bot, GlobalState) => {
           `${teamsMessage}\n\n` +
           '🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
           '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
-          '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
-          'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n\n' +
-          'Чтобы просмотреть историю матчей, напишите <b>«результаты»</b> в личные сообщения <a href="http://t.me/football_ramen_bot">боту</a>.\n\n' +
+          'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
+          '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
+          'Чтобы просмотреть историю матчей, напишите <a href="http://t.me/football_ramen_bot">боту</a> <b>«результаты»</b> в личном сообщении.\n\n' +
           (currentLocationKey === 'tr' ? '' : paymentReminder);
 
         try {

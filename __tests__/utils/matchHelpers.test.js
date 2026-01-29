@@ -274,6 +274,62 @@ describe('matchHelpers', () => {
       expect(result[0].rating).toBeLessThan(100);
     });
 
+    test('должен считать базовый штраф и смягчение поражения отдельно (герой проигравших)', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 2, assists: 0, saves: 0 }];
+      const originalTeam = [{ id: 1, rating: 100, gamesPlayed: 1, wins: 0, draws: 0, losses: 1, goals: 0 }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        false, // isWin
+        false, // isDraw
+        true, // isLose
+        allTeamsBase,
+        0, // teamIndex
+        2, // teamGoals
+        3, // opponentGoals
+      );
+
+      const player = result[0];
+      // Обычное поражение: baseLoseDelta = -1.3
+      // Герой проигравших (2+ гола): heroReduction = +0.5
+      // Итоговый штраф: -1.3 + 0.5 = -0.8
+      expect(player.ratingLossesBaseDelta).toBeCloseTo(-1.3, 5);
+      expect(player.ratingLossesHeroReduction).toBeCloseTo(0.5, 5);
+      expect(player.ratingLossesFighterReduction || 0).toBeCloseTo(0, 5);
+      expect(player.ratingLossesReduction).toBeCloseTo(0.5, 5);
+      expect(player.ratingLossesDelta).toBeCloseTo(-0.8, 5);
+    });
+
+    test('должен считать базовый штраф и смягчение поражения отдельно (боролся до конца)', () => {
+      const team = [{ id: 1, name: 'Player1', goals: 0, assists: 1, saves: 1 }];
+      const originalTeam = [{ id: 1, rating: 100, gamesPlayed: 1, wins: 0, draws: 0, losses: 1, goals: 0 }];
+      const allTeamsBase = [[{ id: 1, rating: 100 }]];
+
+      const result = updatePlayerStats(
+        team,
+        originalTeam,
+        false, // isWin
+        false, // isDraw
+        true, // isLose
+        allTeamsBase,
+        0, // teamIndex
+        1, // teamGoals
+        2, // opponentGoals
+      );
+
+      const player = result[0];
+      // Обычное поражение: baseLoseDelta = -1.3
+      // Боролся до конца (2+ результативных действия): fighterReduction = +0.4
+      // Итоговый штраф: -1.3 + 0.4 = -0.9
+      expect(player.ratingLossesBaseDelta).toBeCloseTo(-1.3, 5);
+      expect(player.ratingLossesHeroReduction || 0).toBeCloseTo(0, 5);
+      expect(player.ratingLossesFighterReduction).toBeCloseTo(0.4, 5);
+      expect(player.ratingLossesReduction).toBeCloseTo(0.4, 5);
+      expect(player.ratingLossesDelta).toBeCloseTo(-0.9, 5);
+    });
+
     test('должен обработать shutout win', () => {
       const team = [{ id: 1, name: 'Player1', goals: 1 }];
       const originalTeam = [{ id: 1, rating: 100, gamesPlayed: 5, wins: 3, draws: 1, losses: 1, goals: 5 }];

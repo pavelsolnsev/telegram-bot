@@ -8,7 +8,7 @@ describe('generatePlayerStats', () => {
       goals: 3,
       assists: 1,
       saves: 2,
-      rating: 110.3,
+      rating: 10.8,
       wins: 2,
       draws: 1,
       losses: 0,
@@ -47,6 +47,8 @@ describe('generatePlayerStats', () => {
       allTeams,
       mvpPlayer,
       teamColors,
+      undefined,
+      undefined,
     );
 
     expect(message).toContain('<b>Разбор рейтинга:</b>');
@@ -60,7 +62,41 @@ describe('generatePlayerStats', () => {
     expect(message).toContain('🤝 Ничьи: +0.5');
     expect(message).not.toContain('📉 Штрафы за поражения:');
     expect(message).toContain('🧹 Сухие победы (3+ гола): +1');
-    expect(message).toContain('Общий рейтинг: +10.3');
+    expect(message).toContain('⭐ Бонус за MVP команды: +0.5');
+    expect(message).toContain('Общий рейтинг: +15.1');
+  });
+
+  test('должен выводить "⭐ Рейтинг" и "Общий рейтинг" одинаково (прирост за турнир + MVP)', () => {
+    const player = {
+      id: 1,
+      name: 'Player1',
+      goals: 3,
+      wins: 0,
+      draws: 0,
+      losses: 2,
+      gamesPlayed: 2,
+      ratingGoalsDelta: 1.2,
+      ratingLossesDelta: -2.1,
+      ratingTournamentDelta: -0.9,
+    };
+    const teamStats = {
+      team1: { wins: 0, losses: 2, draws: 0, games: 2, goalsScored: 2, goalsConceded: 5 },
+      team2: { wins: 2, losses: 0, draws: 0, games: 2, goalsScored: 5, goalsConceded: 2 },
+    };
+    const allTeams = [[player], [{ id: 2, name: 'P2', goals: 0 }]];
+    const mvpPlayer = player;
+
+    const message = generatePlayerStats(
+      player,
+      0,
+      teamStats,
+      allTeams,
+      mvpPlayer,
+      ['🔴', '🔵'],
+    );
+
+    expect(message).toContain('⭐ Рейтинг с MVP турнира: +0.1');
+    expect(message).toContain('Общий рейтинг: +0.1');
   });
 
   test('не должен показывать строки с нулевыми значениями в разделе "Разбор рейтинга"', () => {
@@ -174,6 +210,45 @@ describe('generatePlayerStats', () => {
     expect(ratingBreakdownSection).toContain('Общий рейтинг:');
   });
 
+  test('должен показывать базовый штраф и смягчение поражений отдельно в разборе рейтинга', () => {
+    const player = {
+      id: 1,
+      name: 'Player1',
+      goals: 0,
+      ratingGoalsDelta: 0,
+      ratingAssistsDelta: 0,
+      ratingSavesDelta: 0,
+      ratingCleanSheetsDelta: 0,
+      ratingWinsDelta: 0,
+      ratingDrawsDelta: 0,
+      // Базовый штраф за два поражения: -2.6
+      ratingLossesBaseDelta: -2.6,
+      // Смягчение за 2+ гола (герой проигравших): +0.5
+      ratingLossesHeroReduction: 0.5,
+      ratingLossesFighterReduction: 0,
+      ratingLossesReduction: 0.5,
+      // Итоговый штраф: -2.1
+      ratingLossesDelta: -2.1,
+      ratingShutoutWinDelta: 0,
+      ratingYellowCardsDelta: 0,
+      ratingTournamentDelta: -2.1,
+    };
+
+    const message = generatePlayerStats(
+      player,
+      0,
+      {},
+      [[player]],
+      null,
+      ['🔴'],
+    );
+
+    const ratingBreakdownIndex = message.indexOf('<b>Разбор рейтинга:</b>');
+    const ratingBreakdownSection = message.substring(ratingBreakdownIndex);
+
+    expect(ratingBreakdownSection).toContain('📉 Штрафы за поражения: -2.1 (смягчено за 2+ гола)');
+  });
+
   test('должен показывать достижения позиции команды', () => {
     const player = {
       id: 1,
@@ -187,7 +262,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player], [{ id: 2, goals: 1 }], [{ id: 3, goals: 0 }]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message).toContain('🏅 Золото');
     expect(message).toContain('<b>Достижения команды:</b>');
@@ -205,7 +280,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴'], undefined, undefined);
 
     expect(message).toContain('🔥 Серия побед (4 подряд)');
     expect(message).toContain('<b>Достижения команды:</b>');
@@ -223,7 +298,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴'], undefined, undefined);
 
     expect(message).toContain('💪 Непобедимые (5 матчей без поражений)');
     expect(message).toContain('<b>Достижения команды:</b>');
@@ -240,9 +315,9 @@ describe('generatePlayerStats', () => {
       team3: { wins: 2, losses: 1, draws: 0, games: 3, goalsScored: 5, goalsConceded: 3 },
     };
 
-    const message1 = generatePlayerStats(topScorer, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
-    const message2 = generatePlayerStats(topAssister, 1, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
-    const message3 = generatePlayerStats(topGoalkeeper, 2, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message1 = generatePlayerStats(topScorer, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
+    const message2 = generatePlayerStats(topAssister, 1, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
+    const message3 = generatePlayerStats(topGoalkeeper, 2, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message1).toContain('👑 Лучший бомбардир турнира (5 голов)');
     expect(message2).toContain('🎯 Лучший ассистент турнира (4 передач)');
@@ -282,9 +357,9 @@ describe('generatePlayerStats', () => {
       team3: { wins: 2, losses: 1, draws: 0, games: 3, goalsScored: 5, goalsConceded: 3 },
     };
 
-    const message1 = generatePlayerStats(topScorer, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
-    const message2 = generatePlayerStats(topAssister, 1, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
-    const message3 = generatePlayerStats(topGoalkeeper, 2, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message1 = generatePlayerStats(topScorer, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
+    const message2 = generatePlayerStats(topAssister, 1, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
+    const message3 = generatePlayerStats(topGoalkeeper, 2, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message1).toContain('👑 Лучший бомбардир турнира (8 голов)');
     expect(message1).not.toContain('⚽️ Бомбардир (8 голов)');
@@ -299,14 +374,17 @@ describe('generatePlayerStats', () => {
       id: 1,
       name: 'Player1',
       goals: 5,
-      ratingTournamentDelta: 15.5,
+      rating: 15.5,
+      ratingGoalsDelta: 10.0,
+      ratingWinsDelta: 5.5,
     };
+    const betterPlayer = { id: 2, name: 'Player2', goals: 6, assists: 0, saves: 0 };
     const teamStats = {
       team1: { wins: 3, losses: 0, draws: 0, games: 3, goalsScored: 10, goalsConceded: 2 },
     };
-    const allTeams = [[player]];
+    const allTeams = [[player, betterPlayer]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴'], undefined, undefined);
 
     expect(message).toContain('📈 Восходящая звезда прироста рейтинга (+15.5)');
   });
@@ -324,7 +402,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player], [{ id: 2 }], [{ id: 3 }]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message).toContain('🛡️ Команда пропустила меньше всего голов');
   });
@@ -342,7 +420,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player], [{ id: 2 }], [{ id: 3 }]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message).toContain('⚽ Команда забила больше всех голов');
   });
@@ -363,7 +441,7 @@ describe('generatePlayerStats', () => {
     };
     const allTeams = [[player], [{ id: 2, goals: 2 }], [{ id: 3, goals: 1 }]];
 
-    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢']);
+    const message = generatePlayerStats(player, 0, teamStats, allTeams, null, ['🔴', '🔵', '🟢'], undefined, undefined);
 
     expect(message).toContain('<b>Достижения команды:</b>');
     expect(message).toContain('<b>Личные достижения:</b>');

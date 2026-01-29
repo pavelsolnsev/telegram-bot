@@ -13,8 +13,7 @@ const announceTeams = async (ctx, GlobalState) => {
   // Отправляем уведомление в группу
   const groupId = GlobalState.getGroupId();
   const text =
-    'Составы команд готовы! Чтобы их просмотреть, отправьте команду <b>«таблица»</b> в личные сообщения ' +
-    '<a href="http://t.me/football_ramen_bot">боту</a>.\n\n' +
+    'Составы команд готовы! Чтобы их просмотреть, отправьте команду <b>«таблица»</b> <a href="http://t.me/football_ramen_bot">боту</a> в личном сообщении.\n\n' +
     'Для просмотра истории сыгранных матчей используйте команду <b>«результаты»</b>.';
 
   await ctx.telegram.sendMessage(groupId, text, {

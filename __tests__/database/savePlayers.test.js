@@ -51,6 +51,7 @@ describe('savePlayersToDatabase', () => {
       0, // losses
       5, // rating (5 base + 0 change)
       1, // mvp
+      0, // yellowCards
     ]);
   });
 });

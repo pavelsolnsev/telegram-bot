@@ -194,7 +194,12 @@ const updatePlayerStats = (
     // Герой проигравших (≥2 гола): -0.5 от штрафа
     // Боролся до конца (≥2 действия): -0.4 от штрафа
     const totalActions = goals + assists + saves;
-    const loseReduction = isLose ? (goals >= 2 ? 0.5 : totalActions >= 2 ? 0.4 : 0) : 0;
+    // Разделяем смягчение поражения на два типа, чтобы в статистике было понятно «за что»:
+    // 1) Герой проигравших — 2+ гола в матче
+    // 2) Боролся до конца — 2+ результативных действия (голы/ассисты/сейвы), если не выполнено условие героя проигравших
+    const heroLossReduction = isLose && goals >= 2 ? 0.5 : 0;
+    const fighterLossReduction = isLose && goals < 2 && totalActions >= 2 ? 0.4 : 0;
+    const loseReduction = heroLossReduction + fighterLossReduction;
     const baseLoseDelta = isShutoutLoss ? -1.8 : isLose ? -1.3 : 0;
     const loseDelta = baseLoseDelta + loseReduction;
 
@@ -207,8 +212,12 @@ const updatePlayerStats = (
     const ratingAssistsDelta = (originalPlayer.ratingAssistsDelta || 0) + assistDelta + assistBonus;
     const ratingSavesDelta = (originalPlayer.ratingSavesDelta || 0) + saveDelta + saveBonus;
     const ratingCleanSheetsDelta = (originalPlayer.ratingCleanSheetsDelta || 0) + cleanSheetBonus;
-    const ratingWinsDelta = (originalPlayer.ratingWinsDelta || 0) + (isWin ? 2 * mod : 0);
+    const ratingWinsDelta = (originalPlayer.ratingWinsDelta || 0) + (isWin ? 1.8 * mod : 0);
     const ratingDrawsDelta = (originalPlayer.ratingDrawsDelta || 0) + drawDelta;
+    const ratingLossesBaseDelta = (originalPlayer.ratingLossesBaseDelta || 0) + baseLoseDelta;
+    const ratingLossesHeroReduction = (originalPlayer.ratingLossesHeroReduction || 0) + heroLossReduction;
+    const ratingLossesFighterReduction = (originalPlayer.ratingLossesFighterReduction || 0) + fighterLossReduction;
+    const ratingLossesReduction = ratingLossesHeroReduction + ratingLossesFighterReduction;
     const ratingLossesDelta = (originalPlayer.ratingLossesDelta || 0) + loseDelta;
     const ratingShutoutWinDelta = (originalPlayer.ratingShutoutWinDelta || 0) + shutoutWinBonus;
     const ratingYellowCardsDelta = (originalPlayer.ratingYellowCardsDelta || 0) + yellowCardDelta;
@@ -256,6 +265,10 @@ const updatePlayerStats = (
       ratingCleanSheetsDelta,
       ratingWinsDelta,
       ratingDrawsDelta,
+      ratingLossesBaseDelta,
+      ratingLossesHeroReduction,
+      ratingLossesFighterReduction,
+      ratingLossesReduction,
       ratingLossesDelta,
       ratingShutoutWinDelta,
       ratingYellowCardsDelta,

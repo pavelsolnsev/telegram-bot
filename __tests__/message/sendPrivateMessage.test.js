@@ -91,10 +91,9 @@ describe('sendPrivateMessage', () => {
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await expect(
-        sendPrivateMessage(mockBot, 200001, 'Сообщение'),
-      ).rejects.toEqual(error);
+      const result = await sendPrivateMessage(mockBot, 200001, 'Сообщение');
 
+      expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith(
         'Пользователь 200001 заблокировал бота',
       );
@@ -113,12 +112,11 @@ describe('sendPrivateMessage', () => {
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await expect(
-        sendPrivateMessage(mockBot, 200001, 'Сообщение'),
-      ).rejects.toEqual(error);
+      const result = await sendPrivateMessage(mockBot, 200001, 'Сообщение');
 
+      expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Чат с ID 200001 не найден',
+        'Чат с ID 200001 не найден или нет доступа',
       );
 
       consoleSpy.mockRestore();
@@ -135,25 +133,23 @@ describe('sendPrivateMessage', () => {
 
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      await expect(
-        sendPrivateMessage(mockBot, 200001, 'Сообщение'),
-      ).rejects.toEqual(error);
+      const result = await sendPrivateMessage(mockBot, 200001, 'Сообщение');
 
+      expect(result).toBeNull();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Ошибка при отправке сообщения пользователю 200001:',
-        error,
+        'Internal Server Error',
       );
 
       consoleErrorSpy.mockRestore();
     });
 
-    test('должен пробросить ошибку дальше', async () => {
+    test('должен вернуть null при ошибке', async () => {
       const error = new Error('Test error');
       mockBot.telegram.sendMessage.mockRejectedValue(error);
 
-      await expect(
-        sendPrivateMessage(mockBot, 200001, 'Сообщение'),
-      ).rejects.toThrow('Test error');
+      const result = await sendPrivateMessage(mockBot, 200001, 'Сообщение');
+      expect(result).toBeNull();
     });
   });
 });

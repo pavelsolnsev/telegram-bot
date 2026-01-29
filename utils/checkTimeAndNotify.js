@@ -45,8 +45,8 @@ async function checkTimeAndNotify(bot) {
         '  • Остаться на совместное фото в конце матча\n' +
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
         '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
-        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
-        'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n';
+        'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n';
 
       groupMessageText = commonText;
       privateMessageText = commonText;
@@ -74,8 +74,8 @@ async function checkTimeAndNotify(bot) {
         '  • Остаться на совместное фото в конце матча\n' +
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
         '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
-        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
         'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
         additionalInfo;
 
       groupMessageText = baseText;

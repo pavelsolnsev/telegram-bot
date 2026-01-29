@@ -2,7 +2,7 @@ const { selectMvp } = require('./selectMvp');
 const { getTeamName } = require('./getTeamName');
 
 // Генерация персональной статистики игрока
-const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, teamColors, collectionDate) => {
+const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, teamColors, collectionDate, teamsBase) => {
   const teamKey = `team${teamIndex + 1}`;
   const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
   const color = teamColors[teamIndex] || '⚽';
@@ -34,7 +34,6 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const goals = player.goals || 0;
   const assists = player.assists || 0;
   const saves = player.saves || 0;
-  const rating = player.rating || 0;
   const wins = player.wins || 0;
   const draws = player.draws || 0;
   const losses = player.losses || 0;
@@ -48,8 +47,28 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const winsDelta = typeof player.ratingWinsDelta === 'number' ? player.ratingWinsDelta : 0;
   const drawsDelta = typeof player.ratingDrawsDelta === 'number' ? player.ratingDrawsDelta : 0;
   const lossesDelta = typeof player.ratingLossesDelta === 'number' ? player.ratingLossesDelta : 0;
+  const lossesBaseDelta = typeof player.ratingLossesBaseDelta === 'number' ? player.ratingLossesBaseDelta : 0;
+  const lossesHeroReductionDelta = typeof player.ratingLossesHeroReduction === 'number' ? player.ratingLossesHeroReduction : 0;
+  const lossesFighterReductionDelta = typeof player.ratingLossesFighterReduction === 'number' ? player.ratingLossesFighterReduction : 0;
+  const lossesReductionRawDelta = typeof player.ratingLossesReduction === 'number' ? player.ratingLossesReduction : 0;
+  // Для старых данных, где не было раздельных полей, используем общее значение ratingLossesReduction
+  const lossesReductionDelta = (lossesHeroReductionDelta || lossesFighterReductionDelta)
+    ? lossesHeroReductionDelta + lossesFighterReductionDelta
+    : lossesReductionRawDelta;
   const shutoutWinDelta = typeof player.ratingShutoutWinDelta === 'number' ? player.ratingShutoutWinDelta : 0;
   const yellowCardsDelta = typeof player.ratingYellowCardsDelta === 'number' ? player.ratingYellowCardsDelta : 0;
+
+  // Компоненты штрафа за поражения для пересчёта прироста рейтинга
+  const lossesBaseComponent = lossesBaseDelta || lossesDelta;
+  let lossesReductionComponent = 0;
+  if (lossesHeroReductionDelta || lossesFighterReductionDelta) {
+    // Новая схема: отдельно герой проигравших и «боролся до конца»
+    lossesReductionComponent = lossesHeroReductionDelta + lossesFighterReductionDelta;
+  } else if (lossesReductionRawDelta) {
+    // Старые данные: только общее смягчение
+    lossesReductionComponent = lossesReductionRawDelta;
+  }
+
   const totalRatingDelta = typeof player.ratingTournamentDelta === 'number'
     ? player.ratingTournamentDelta
     : goalsDelta
@@ -58,7 +77,8 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
       + cleanSheetsDelta
       + winsDelta
       + drawsDelta
-      + lossesDelta
+      + lossesBaseComponent
+      + lossesReductionComponent
       + shutoutWinDelta
       + yellowCardsDelta;
 
@@ -68,6 +88,51 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
     const sign = rounded > 0 ? '+' : '';
     return `${sign}${rounded}`;
   };
+
+  let mvpBonus = 0;
+  if (isTournamentMvp) {
+    mvpBonus = 1.0;
+  } else if (isTeamMvp) {
+    mvpBonus = 0.5;
+  }
+
+  // Отображаемый рейтинг за турнир должен совпадать с суммой видимых строк разбора
+  // Суммируем ОКРУГЛЁННЫЕ компоненты (как в formatDelta), включая бонус за MVP
+  let displayRatingDelta = 0;
+  const addToDisplayDelta = (value) => {
+    const num = Number(value) || 0;
+    if (!num) return;
+    const rounded = Math.round(num * 10) / 10;
+    displayRatingDelta += rounded;
+  };
+
+  addToDisplayDelta(goalsDelta);
+  addToDisplayDelta(assistsDelta);
+  addToDisplayDelta(savesDelta);
+  addToDisplayDelta(cleanSheetsDelta);
+  addToDisplayDelta(winsDelta);
+  addToDisplayDelta(drawsDelta);
+  // В разборе штраф за поражения показывается одной строкой — используем итоговый штраф
+  addToDisplayDelta(lossesDelta);
+  addToDisplayDelta(shutoutWinDelta);
+  addToDisplayDelta(yellowCardsDelta);
+  addToDisplayDelta(mvpBonus);
+
+  // Вычисляем модификатор роста рейтинга (на основе базового рейтинга из начала турнира)
+  let baseRating = null;
+  if (teamsBase && Array.isArray(teamsBase[teamIndex])) {
+    const basePlayer = teamsBase[teamIndex].find(p => p && p.id === player.id);
+    if (basePlayer) {
+      baseRating = Number(basePlayer.rating) || 0;
+    }
+  }
+  // Если не нашли в teamsBase, пытаемся вычислить из текущего рейтинга
+  if (baseRating === null) {
+    const currentRating = Number(player.rating) || 0;
+    baseRating = Math.max(0, currentRating - mvpBonus - totalRatingDelta);
+  }
+  const growthModifier = (rating) => Math.max(0.2, 1 - rating / 250);
+  const mod = growthModifier(baseRating);
 
   // Форматируем дату турнира
   let dateStr = '';
@@ -99,7 +164,14 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   if ((player.yellowCards || 0) > 0) {
     message += `🟨 Жёлтые карточки: ${player.yellowCards || 0}\n`;
   }
-  message += `⭐ Рейтинг: ${rating > 0 ? '+' : ''}${rating}\n\n`;
+  if (isTournamentMvp) {
+    message += `⭐ Рейтинг с MVP турнира: ${formatDelta(displayRatingDelta)}\n`;
+  } else if (isTeamMvp) {
+    message += `⭐ Рейтинг с MVP команды: ${formatDelta(displayRatingDelta)}\n`;
+  } else {
+    message += `⭐ Рейтинг: ${formatDelta(displayRatingDelta)}\n`;
+  }
+  message += `⚡ Mod: ${mod.toFixed(2)}\n\n`;
 
   // Статистика матчей
   message += '<b>Результаты:</b>\n';
@@ -126,7 +198,15 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
     message += `🤝 Ничьи: ${formatDelta(drawsDelta)}\n`;
   }
   if (lossesDelta !== 0) {
-    message += `📉 Штрафы за поражения: ${formatDelta(lossesDelta)}\n`;
+    let reductionNote = '';
+    if (lossesHeroReductionDelta) {
+      reductionNote = ' (смягчено за 2+ гола)';
+    } else if (lossesFighterReductionDelta) {
+      reductionNote = ' (смягчено за 2+ результативных действия)';
+    } else if (lossesReductionDelta) {
+      reductionNote = ' (смягчено)';
+    }
+    message += `📉 Штрафы за поражения: ${formatDelta(lossesDelta)}${reductionNote}\n`;
   }
   if (shutoutWinDelta !== 0) {
     message += `🧹 Сухие победы (3+ гола): ${formatDelta(shutoutWinDelta)}\n`;
@@ -137,13 +217,13 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   if (yellowCardsDelta !== 0) {
     message += `🟨 Штраф за желтые карточки: ${formatDelta(yellowCardsDelta)}\n`;
   }
-  // Бонусы за MVP
+  // Бонусы за MVP — включаем в сумму разбора, чтобы «Рейтинг» и «Общий рейтинг» совпадали
   if (isTournamentMvp) {
-    message += `🏆 Бонус за MVP турнира: ${formatDelta(1.0)}\n`;
+    message += `🏆 Бонус за MVP турнира: ${formatDelta(mvpBonus)}\n`;
   } else if (isTeamMvp) {
-    message += `⭐ Бонус за MVP команды: ${formatDelta(0.5)}\n`;
+    message += `⭐ Бонус за MVP команды: ${formatDelta(mvpBonus)}\n`;
   }
-  message += `Общий рейтинг: ${formatDelta(totalRatingDelta)}\n\n`;
+  message += `Общий рейтинг: ${formatDelta(displayRatingDelta)}\n\n`;
 
   // Находим лучших игроков по голам, ассистам и сейвам среди всех игроков
   const allPlayers = allTeams.flat();
@@ -203,15 +283,13 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   const personalAchievements = [];
   if (isTournamentMvp) {
     personalAchievements.push('🏆 MVP турнира');
-  }
-  if (isTeamMvp) {
+  } else if (isTeamMvp) {
     personalAchievements.push(`⭐ MVP команды ${color}`);
   }
 
-  // Восходящая звезда (прирост рейтинга)
-  if (totalRatingDelta >= 10) {
-    const formattedDelta = formatDelta(totalRatingDelta);
-    personalAchievements.push(`📈 Восходящая звезда прироста рейтинга (${formattedDelta})`);
+  // Восходящая звезда (прирост рейтинга = сумма разбора + MVP)
+  if (displayRatingDelta >= 10) {
+    personalAchievements.push(`📈 Восходящая звезда прироста рейтинга (${formatDelta(displayRatingDelta)})`);
   }
 
   // Лучшие игроки турнира
