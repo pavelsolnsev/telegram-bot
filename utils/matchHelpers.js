@@ -247,6 +247,8 @@ const updatePlayerStats = (
     return {
       ...originalPlayer,
       id: player.id,
+      // Фактический рейтинг на старте турнира (prevRating перед первым матчем)
+      ratingAtTournamentStart: originalPlayer.ratingAtTournamentStart ?? prevRating,
       // Сохраняем name и username, если они есть, иначе используем из originalPlayer
       name: player.name || originalPlayer.name || 'Unknown',
       username: player.username || originalPlayer.username || null,

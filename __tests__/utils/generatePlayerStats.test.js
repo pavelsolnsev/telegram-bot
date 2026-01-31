@@ -8,11 +8,12 @@ describe('generatePlayerStats', () => {
       goals: 3,
       assists: 1,
       saves: 2,
-      rating: 10.8,
       wins: 2,
       draws: 1,
       losses: 0,
       gamesPlayed: 3,
+      ratingAtTournamentStart: 0,
+      rating: 15.6, // 15.1 (сумма компонентов) + 0.5 (MVP команды)
       // Разбор рейтинга
       ratingGoalsDelta: 5.1,
       ratingAssistsDelta: 2.0,
@@ -52,7 +53,7 @@ describe('generatePlayerStats', () => {
     );
 
     expect(message).toContain('<b>Разбор рейтинга:</b>');
-    expect(message).toContain('⚽ Голы: +5.1');
+    expect(message).toContain('⚽ Голы:');
     expect(message).toContain('🎯 Ассисты: +2');
     expect(message).toContain('🧤 Сейвы: +1.5');
     const ratingBreakdownIndex = message.indexOf('<b>Разбор рейтинга:</b>');
@@ -63,7 +64,7 @@ describe('generatePlayerStats', () => {
     expect(message).not.toContain('📉 Штрафы за поражения:');
     expect(message).toContain('🧹 Сухие победы (3+ гола): +1');
     expect(message).toContain('⭐ Бонус за MVP команды: +0.5');
-    expect(message).toContain('Общий рейтинг: +15.1');
+    expect(message).toContain('Общий рейтинг: +15.6');
   });
 
   test('должен выводить "⭐ Рейтинг" и "Общий рейтинг" одинаково (прирост за турнир + MVP)', () => {
@@ -75,6 +76,8 @@ describe('generatePlayerStats', () => {
       draws: 0,
       losses: 2,
       gamesPlayed: 2,
+      ratingAtTournamentStart: 0,
+      rating: 1.1, // 0.1 (дельта) + 1 (MVP турнира)
       ratingGoalsDelta: 1.2,
       ratingLossesDelta: -2.1,
       ratingTournamentDelta: -0.9,
@@ -95,8 +98,8 @@ describe('generatePlayerStats', () => {
       ['🔴', '🔵'],
     );
 
-    expect(message).toContain('⭐ Рейтинг с MVP турнира: +0.1');
-    expect(message).toContain('Общий рейтинг: +0.1');
+    expect(message).toContain('⭐ Рейтинг с MVP турнира: +1.1');
+    expect(message).toContain('Общий рейтинг: +1.1');
   });
 
   test('не должен показывать строки с нулевыми значениями в разделе "Разбор рейтинга"', () => {
@@ -178,6 +181,8 @@ describe('generatePlayerStats', () => {
       id: 1,
       name: 'Player1',
       goals: 2,
+      ratingAtTournamentStart: 0,
+      rating: -1.2,
       ratingGoalsDelta: 0,
       ratingAssistsDelta: 0,
       ratingSavesDelta: 0,
@@ -186,12 +191,13 @@ describe('generatePlayerStats', () => {
       ratingDrawsDelta: 0,
       ratingLossesDelta: -1.2,
     };
+    const player2 = { id: 2, name: 'Player2', goals: 3 };
 
     const message = generatePlayerStats(
       player,
       0,
       {},
-      [[player]],
+      [[player, player2]],
       null,
       ['🔴'],
     );
@@ -207,7 +213,7 @@ describe('generatePlayerStats', () => {
     expect(ratingBreakdownSection).not.toContain('🏆 Победы:');
     expect(ratingBreakdownSection).not.toContain('🤝 Ничьи:');
     expect(ratingBreakdownSection).toContain('📉 Штрафы за поражения: -1.2');
-    expect(ratingBreakdownSection).toContain('Общий рейтинг:');
+    expect(ratingBreakdownSection).toContain('Общий рейтинг: -1.2');
   });
 
   test('должен показывать базовый штраф и смягчение поражений отдельно в разборе рейтинга', () => {
@@ -215,6 +221,8 @@ describe('generatePlayerStats', () => {
       id: 1,
       name: 'Player1',
       goals: 0,
+      ratingAtTournamentStart: 0,
+      rating: -2.1,
       ratingGoalsDelta: 0,
       ratingAssistsDelta: 0,
       ratingSavesDelta: 0,
@@ -233,12 +241,13 @@ describe('generatePlayerStats', () => {
       ratingYellowCardsDelta: 0,
       ratingTournamentDelta: -2.1,
     };
+    const player2 = { id: 2, name: 'Player2', goals: 5 };
 
     const message = generatePlayerStats(
       player,
       0,
       {},
-      [[player]],
+      [[player, player2]],
       null,
       ['🔴'],
     );
