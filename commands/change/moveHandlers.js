@@ -3,7 +3,6 @@ const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { getTeamName } = require('../../utils/getTeamName');
-const { checkUnevenDistribution } = require('../../utils/checkUnevenDistribution');
 const { movePlayer } = require('../../utils/movePlayer');
 
 // Регистрация обработчиков для перемещения игроков
@@ -104,48 +103,41 @@ const registerMoveHandlers = (bot, GlobalState) => {
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    if (!teams || teams.length === 0) {
-      await safeAnswerCallback(ctx, '⚠️ Команды еще не сформированы!');
+    if (!teams || teams.length < 2) {
+      await safeAnswerCallback(ctx, '⚠️ Нужно минимум 2 команды для перемещения!');
       const message = await safeTelegramCall(ctx, 'sendMessage', [
         ctx.chat.id,
-        '⚠️ Команды еще не сформированы!',
+        '⚠️ Нужно минимум 2 команды для перемещения игроков!',
       ]);
       return deleteMessageAfterDelay(ctx, message.message_id, 6000);
     }
 
-    // Проверяем неравномерное распределение
-    const distribution = checkUnevenDistribution(teams);
-    if (!distribution.isUneven) {
-      await safeAnswerCallback(ctx, '✅ Распределение равномерное, перемещение не требуется');
-      const message = await safeTelegramCall(ctx, 'sendMessage', [
-        ctx.chat.id,
-        '✅ Распределение игроков равномерное, перемещение не требуется',
-      ]);
-      return deleteMessageAfterDelay(ctx, message.message_id, 6000);
-    }
-
-    // Показываем список команд с большим количеством игроков для выбора
+    // Показываем список ВСЕХ команд для выбора (откуда переместить игрока)
     const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     const buttons = [];
+    const teamsList = [];
 
-    // Показываем только команду с максимальным количеством игроков
-    const maxTeamIndex = distribution.maxTeamIndex;
-    const maxTeamColor = teamColors[maxTeamIndex] || '⚽';
-    const maxTeamName = getTeamName(maxTeamIndex);
-    buttons.push([
-      Markup.button.callback(
-        `${maxTeamColor} ${maxTeamName} (${distribution.maxTeamSize} игроков)`,
-        `move_from_team_${maxTeamIndex}`,
-      ),
-    ]);
+    for (let i = 0; i < teams.length; i++) {
+      if (teams[i] && teams[i].length > 0) {
+        const teamColor = teamColors[i] || '⚽';
+        const teamName = getTeamName(i);
+        teamsList.push(`${teamColor} ${teamName} (${teams[i].length} игроков)`);
+        buttons.push([
+          Markup.button.callback(
+            `${teamColor} ${teamName} (${teams[i].length} игроков)`,
+            `move_from_team_${i}`,
+          ),
+        ]);
+      }
+    }
 
     // Добавляем кнопку "Отменить"
     buttons.push([Markup.button.callback('❌ Отменить', 'cancel_move_player')]);
 
-    await safeAnswerCallback(ctx, 'Выберите команду с лишним игроком');
+    await safeAnswerCallback(ctx, 'Выберите команду, из которой переместить игрока');
     const menuMessage = await safeTelegramCall(ctx, 'sendMessage', [
       ctx.chat.id,
-      `↔️ <b>Перемещение игрока</b>\n\n<b>Выберите команду с лишним игроком:</b>\n${maxTeamColor} ${maxTeamName} (${distribution.maxTeamSize} игроков)`,
+      `↔️ <b>Перемещение игрока</b>\n\n<b>Выберите команду, из которой переместить игрока:</b>\n${teamsList.join('\n')}`,
       {
         parse_mode: 'HTML',
         reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
@@ -310,13 +302,10 @@ const registerMoveHandlers = (bot, GlobalState) => {
     const player = teams[fromTeamIndex][playerIndex];
     const playerName = player.username ? player.username : player.name;
 
-    // Получаем информацию о неравномерном распределении
-    const distribution = checkUnevenDistribution(teams);
-
-    // Показываем список команд с меньшим количеством игроков (исключая исходную)
+    // Показываем список ВСЕХ остальных команд как целевые (любая команда кроме исходной)
     const buttons = [];
     for (let i = 0; i < teams.length; i++) {
-      if (i !== fromTeamIndex && teams[i].length === distribution.minTeamSize) {
+      if (i !== fromTeamIndex && teams[i]) {
         const teamColor = teamColors[i] || '⚽';
         buttons.push([
           Markup.button.callback(

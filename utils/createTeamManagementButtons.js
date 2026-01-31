@@ -1,5 +1,4 @@
 const { Markup } = require('telegraf');
-const { checkUnevenDistribution } = require('./checkUnevenDistribution');
 
 // Функция для создания кнопок управления командами
 const createTeamManagementButtons = (GlobalState) => {
@@ -21,12 +20,9 @@ const createTeamManagementButtons = (GlobalState) => {
   if (!playingTeams) {
     buttons.push([Markup.button.callback('🔄 Сменить игрока', 'change_player_callback')]);
 
-    // Показываем кнопку перемещения только при неравномерном распределении
-    if (Array.isArray(teams) && teams.length > 0) {
-      const distribution = checkUnevenDistribution(teams);
-      if (distribution.isUneven) {
-        buttons.push([Markup.button.callback('↔️ Переместить игрока', 'move_player_callback')]);
-      }
+    // Показываем кнопку перемещения когда есть минимум 2 команды для перемещения между ними
+    if (Array.isArray(teams) && teams.length >= 2) {
+      buttons.push([Markup.button.callback('↔️ Переместить игрока', 'move_player_callback')]);
     }
   }
 
