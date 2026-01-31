@@ -24,6 +24,11 @@ const createTeamManagementButtons = (GlobalState) => {
     if (Array.isArray(teams) && teams.length >= 2) {
       buttons.push([Markup.button.callback('↔️ Переместить игрока', 'move_player_callback')]);
     }
+
+    // Кнопка распределения игроков - когда есть команды
+    if (Array.isArray(teams) && teams.length > 0) {
+      buttons.push([Markup.button.callback('👥 Распределить игроков', 'distribute_players_callback')]);
+    }
   }
 
   return Markup.inlineKeyboard(buttons).reply_markup;
