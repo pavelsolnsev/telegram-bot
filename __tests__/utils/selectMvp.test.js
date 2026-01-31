@@ -15,6 +15,14 @@ describe('selectMvp', () => {
   });
 
   describe('выбор по общему количеству меток', () => {
+    test('сейвы учитываются с весом 0.85 — 6 голов выигрывают у 5 голов + 1 сейва', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 6, assists: 0, saves: 0 }; // 6.0
+      const playerB = { id: 2, name: 'PlayerB', goals: 5, assists: 0, saves: 1 }; // 5 + 0.85 = 5.85
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(1); // PlayerA — голы важнее сейвов
+    });
+
     test('игрок с большим количеством меток должен стать MVP (4 метки vs 3 гола)', () => {
       const playerA = { id: 1, name: 'PlayerA', goals: 3, assists: 0, saves: 0 }; // 3 метки
       const playerB = { id: 2, name: 'PlayerB', goals: 2, assists: 1, saves: 1 }; // 4 метки
@@ -154,13 +162,122 @@ describe('selectMvp', () => {
     });
   });
 
-  describe('полное равенство - случайный выбор', () => {
-    test('при полном равенстве статистики должен вернуть одного из кандидатов', () => {
+  describe('приоритет очков команды при равных метках, голах, ассистах и сейвах', () => {
+    test('при равной статистике приоритет у игрока из команды с большим числом очков', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
+      const allTeams = [[playerA], [playerB]];
+      const teamStats = {
+        0: { wins: 1, draws: 0, losses: 1 }, // 3 очка
+        1: { wins: 2, draws: 0, losses: 0 }, // 6 очков
+      };
+
+      const result = selectMvp([playerA, playerB], { allTeams, teamStats });
+      expect(result.id).toBe(2); // PlayerB — команда с 6 очками
+    });
+
+    test('без options очки команды не учитываются — переход к приросту рейтинга и далее', () => {
       const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1 };
       const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
 
       const result = selectMvp([playerA, playerB]);
-      expect([1, 2]).toContain(result.id); // Должен быть один из них
+      expect([1, 2]).toContain(result.id);
+    });
+  });
+
+  describe('приоритет прироста рейтинга при равных метках и очках команды', () => {
+    test('при равной статистике приоритет у игрока с большим ratingTournamentDelta', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, ratingTournamentDelta: 2.1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1, ratingTournamentDelta: 3.5 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(2); // PlayerB — больший прирост рейтинга
+    });
+
+    test('цепочка: очки команды равны — сравниваем прирост рейтинга', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, ratingTournamentDelta: 1.0 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1, ratingTournamentDelta: 2.5 };
+      const allTeams = [[playerA], [playerB]];
+      const teamStats = {
+        0: { wins: 1, draws: 0 },
+        1: { wins: 1, draws: 0 },
+      };
+
+      const result = selectMvp([playerA, playerB], { allTeams, teamStats });
+      expect(result.id).toBe(2); // PlayerB — больше прирост рейтинга при равных очках команды
+    });
+
+    test('прирост рейтинга 0 vs отсутствие поля — оба считаются 0, переход к следующим критериям', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, ratingTournamentDelta: 0 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(1); // Детерминированный выбор по меньшему id
+    });
+  });
+
+  describe('разница мячей команды при равных очках', () => {
+    test('при равных очках приоритет у игрока из команды с лучшей разницей мячей', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
+      const allTeams = [[playerA], [playerB]];
+      const teamStats = {
+        0: { wins: 2, draws: 0, losses: 1, goalsScored: 5, goalsConceded: 3 }, // +2
+        1: { wins: 2, draws: 0, losses: 1, goalsScored: 7, goalsConceded: 2 }, // +5
+      };
+
+      const result = selectMvp([playerA, playerB], { allTeams, teamStats });
+      expect(result.id).toBe(2);
+    });
+  });
+
+  describe('приоритет по жёлтым карточкам (меньше = лучше)', () => {
+    test('при равной статистике приоритет игроку без жёлтых карточек', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, yellowCards: 1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1, yellowCards: 0 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(2);
+    });
+  });
+
+  describe('приоритет по личным победам', () => {
+    test('при равной статистике приоритет игроку с большим числом побед', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, wins: 1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1, wins: 2 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(2);
+    });
+  });
+
+  describe('приоритет по рейтингу на старте турнира', () => {
+    test('при равной статистике приоритет игроку с более высоким рейтингом на старте', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1, ratingAtTournamentStart: 20 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1, ratingAtTournamentStart: 50 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(2);
+    });
+  });
+
+  describe('полное равенство - детерминированный выбор по id', () => {
+    test('при полном равенстве возвращается игрок с меньшим id', () => {
+      const playerA = { id: 1, name: 'PlayerA', goals: 1, assists: 1, saves: 1 };
+      const playerB = { id: 2, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
+
+      const result = selectMvp([playerA, playerB]);
+      expect(result.id).toBe(1);
+    });
+
+    test('выбор стабилен при многократном вызове', () => {
+      const playerA = { id: 10, name: 'PlayerA', goals: 1, assists: 1, saves: 1 };
+      const playerB = { id: 5, name: 'PlayerB', goals: 1, assists: 1, saves: 1 };
+
+      for (let i = 0; i < 10; i++) {
+        const result = selectMvp([playerA, playerB]);
+        expect(result.id).toBe(5);
+      }
     });
   });
 

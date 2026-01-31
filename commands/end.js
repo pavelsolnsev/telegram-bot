@@ -119,7 +119,7 @@ module.exports = (bot, GlobalState) => {
 
 
       // Находим лучшего игрока (MVP)
-      const mvpPlayer = selectMvp(allPlayers);
+      const mvpPlayer = selectMvp(allPlayers, { allTeams, teamStats });
 
       const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);
       const teamColors = ['🔴', '🔵', '🟢', '🟡'];
