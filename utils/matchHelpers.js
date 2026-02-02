@@ -166,7 +166,7 @@ const updatePlayerStats = (
 
     const goalDelta = goals * 0.3 * mod;
     const assistDelta = assists * 0.3 * mod;
-    const saveDelta = saves * 0.3 * mod;
+    const saveDelta = saves * 0.2 * mod; // Уменьшено на 20% относительно голов и ассистов
     const yellowCardDelta = yellowCards * -0.3;
 
     // === Голевые бонусы (выбирается максимальный) ===
@@ -179,9 +179,9 @@ const updatePlayerStats = (
 
     // === Вратарские бонусы (выбирается максимальный) ===
     // Сухарь (сейвы > 0 И команда не пропустила)
-    const cleanSheetBonus = (saves > 0 && opponentGoals === 0) ? 0.3 * mod : 0;
+    const cleanSheetBonus = (saves > 0 && opponentGoals === 0) ? 0.2 * mod : 0; // Уменьшено на 20% относительно голов и ассистов
     // Супер-вратарь (4+ сейвов) > Вратарь (3 сейва) > Стена (2 сейва)
-    const saveBonus = saves >= 4 ? 0.7 * mod : saves >= 3 ? 0.4 * mod : saves >= 2 ? 0.3 * mod : 0;
+    const saveBonus = saves >= 4 ? 0.5 * mod : saves >= 3 ? 0.3 * mod : saves >= 2 ? 0.2 * mod : 0; // Уменьшено на 20% относительно голов и ассистов
 
     const isShutoutWin = isWin && teamGoals >= 3 && opponentGoals === 0;
     const isShutoutLoss = isLose && opponentGoals >= 3 && teamGoals === 0;

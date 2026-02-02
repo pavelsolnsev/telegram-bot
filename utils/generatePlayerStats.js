@@ -227,13 +227,17 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
     message += `🤝 Ничьи: ${formatDelta(getComponent('draws'))}\n`;
   }
   if (getComponent('losses') !== 0) {
+    // Смягчение штрафа за поражение (см. matchHelpers.js):
+    // — Герой проигравших: 2+ гола в матче → +0.5 к штрафу
+    // — Боролся до конца: голов < 2, но (голы + ассисты + сейвы) в матче ≥ 2 → +0.4 к штрафу
+    // — Иначе для старых данных без разбивки показываем общее «смягчено»
     let reductionNote = '';
     if (lossesHeroReductionDelta) {
-      reductionNote = ' (смягчено за 2+ гола)';
+      reductionNote = ' (	Поражение + в этом матче 2+ гола у игрока)';
     } else if (lossesFighterReductionDelta) {
-      reductionNote = ' (смягчено за 2+ результативных действия)';
+      reductionNote = ' (Поражение + голов < 2, но голы + ассисты + сейвы в матче ≥ 2)';
     } else if (lossesReductionDelta) {
-      reductionNote = ' (смягчено)';
+      reductionNote = ' (смягчено, данные без разбивки)';
     }
     message += `📉 Штрафы за поражения: ${formatDelta(getComponent('losses'))}${reductionNote}\n`;
   }
@@ -306,7 +310,7 @@ const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, 
   }
   // Все матчи выиграны
   if (wins === gamesPlayed && gamesPlayed > 0) {
-    teamAchievements.push('🥇 Все матчи выиграны');
+    teamAchievements.push('💯 Все матчи выиграны');
   }
 
   // Личные достижения

@@ -255,7 +255,7 @@ describe('generatePlayerStats', () => {
     const ratingBreakdownIndex = message.indexOf('<b>Разбор рейтинга:</b>');
     const ratingBreakdownSection = message.substring(ratingBreakdownIndex);
 
-    expect(ratingBreakdownSection).toContain('📉 Штрафы за поражения: -2.1 (смягчено за 2+ гола)');
+    expect(ratingBreakdownSection).toContain('📉 Штрафы за поражения: -2.1 (смягчено за 2+ гола в матче)');
   });
 
   test('должен показывать достижения позиции команды', () => {
