@@ -309,7 +309,7 @@ module.exports = (bot, GlobalState) => {
           '🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
           '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
           'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
-          '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
+          '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/rmsfootball">VK RmsFootball</a>\n\n' +
           'Чтобы просмотреть историю матчей, напишите <a href="http://t.me/football_ramen_bot">боту</a> <b>«результаты»</b> в личном сообщении.\n\n' +
           (currentLocationKey === 'tr' ? '' : paymentReminder);
 

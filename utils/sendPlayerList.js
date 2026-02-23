@@ -201,7 +201,7 @@ const blockRenderers = {
     '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
     '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
     'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
-    '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n\n' +
+    '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/rmsfootball">VK RmsFootball</a>\n\n' +
     '🕹 <b>Управление записью:</b>\n' +
     "- <b>Записаться:</b> Напишите '+' или нажмите '⚽ Играть'\n" +
     "- <b>Выйти:</b> Напишите '-' или нажмите '🚶 Выйти'\n",

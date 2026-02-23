@@ -46,7 +46,7 @@ async function checkTimeAndNotify(bot) {
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
         '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
         'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
-        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n';
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/rmsfootball">VK RmsFootball</a>\n';
 
       groupMessageText = commonText;
       privateMessageText = commonText;
@@ -75,7 +75,7 @@ async function checkTimeAndNotify(bot) {
         '\n🌐 <b>Рейтинг игроков:</b> <a href="https://football.pavelsolntsev.ru">football.pavelsolntsev.ru</a>\n' +
         '🏆 <b>Список команд:</b> <a href="https://football.pavelsolntsev.ru/tournament/">football.pavelsolntsev.ru/tournament</a>\n' +
         'ℹ️ <b>Информация:</b> <a href="https://football.pavelsolntsev.ru/info">football.pavelsolntsev.ru/info</a>\n' +
-        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/ramafootball">VK RamaFootball</a>\n' +
+        '📣 <b>Группа ВКонтакте:</b> <a href="https://vk.com/rmsfootball">VK RmsFootball</a>\n' +
         additionalInfo;
 
       groupMessageText = baseText;
@@ -90,7 +90,7 @@ async function checkTimeAndNotify(bot) {
         {
           parse_mode: 'HTML',
           link_preview_options: {
-            url: 'https://vk.com/ramafootball',
+            url: 'https://vk.com/rmsfootball',
             prefer_large_media: true,
           },
         },
@@ -110,7 +110,7 @@ async function checkTimeAndNotify(bot) {
           await sendPrivateMessage(bot, player.id, privateMessageText, {
             parse_mode: 'HTML',
             link_preview_options: {
-              url: 'https://vk.com/ramafootball',
+              url: 'https://vk.com/rmsfootball',
               prefer_large_media: true,
             },
           });
