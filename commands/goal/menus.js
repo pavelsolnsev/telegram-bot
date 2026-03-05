@@ -5,6 +5,7 @@ const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { buildPlayingTeamsMessage } = require('../../message/buildPlayingTeamsMessage');
 const { createTeamButtons, createAssistButtons, createYellowCardButtons } = require('../../buttons/createTeamButtons');
 const { createCancelGoalButtons, createCancelAssistButtons } = require('./buttons');
+const { getTeamColor } = require('../../utils/getTeamColor');
 
 // Обработчик кнопки "Управление"
 const handleManagementMenu = async (ctx, GlobalState) => {
@@ -137,9 +138,8 @@ const handleCancelGoalMenu = async (ctx, GlobalState) => {
   }
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const color1 = teamColors[teamIndex1] || '⚽';
-  const color2 = teamColors[teamIndex2] || '⚽';
+  const color1 = getTeamColor(teamIndex1);
+  const color2 = getTeamColor(teamIndex2);
 
   // Создаем кнопки для игроков с голами
   const team1Buttons = createCancelGoalButtons(team1, teamIndex1, color1);
@@ -422,9 +422,8 @@ const handleCancelAssistMenu = async (ctx, GlobalState) => {
   }
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const color1 = teamColors[teamIndex1] || '⚽';
-  const color2 = teamColors[teamIndex2] || '⚽';
+  const color1 = getTeamColor(teamIndex1);
+  const color2 = getTeamColor(teamIndex2);
 
   // Создаем кнопки для игроков с ассистами
   const team1Buttons = createCancelAssistButtons(team1, teamIndex1, color1);

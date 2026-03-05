@@ -1,6 +1,7 @@
 // buildPlayingTeamsMessage.js
 
 const { getTeamName } = require('../utils/getTeamName');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status = 'playing', updatedTeams = [], matchNumber = null) => {
   // Проверка на валидность входных данных
@@ -23,7 +24,6 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     updatedTeams = [];
   }
 
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
   const emoji = { playing: '⚽', finished: '✅' }[status] || '⚽';
   let title = { playing: 'Команды на поле', finished: '🏁 Итог матча 🏁' }[status] || 'Команды на поле';
 
@@ -45,8 +45,8 @@ const buildPlayingTeamsMessage = (team1, team2, teamIndex1, teamIndex2, status =
     // Для неизвестного статуса оставляем дефолтный title из строки выше
   }
 
-  const color1 = teamColors[safeTeamIndex1] || '⚽';
-  const color2 = teamColors[safeTeamIndex2] || '⚽';
+  const color1 = getTeamColor(safeTeamIndex1);
+  const color2 = getTeamColor(safeTeamIndex2);
 
   // Выбираем, какие данные брать для отображения
   // для 'playing' — именно переданные team1/team2 (с сброшенными голами),

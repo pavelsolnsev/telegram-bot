@@ -1,4 +1,5 @@
 const { getTeamName } = require('../utils/getTeamName');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 const buildTeamsMessage = (
   teamsBase,
@@ -28,8 +29,6 @@ const buildTeamsMessage = (
     updatedTeams = teamsBase; // Используем teamsBase как fallback
   }
 
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-
   // Таблица статистики на основе teamsBase
   const teamsWithStats = teamsBase
     .map((team, index) => {
@@ -52,7 +51,7 @@ const buildTeamsMessage = (
 
   teamsWithStats.forEach((teamData, position) => {
     const { stats, points, originalIndex } = teamData;
-    const teamColor = teamColors[originalIndex] || '⚽';
+    const teamColor = getTeamColor(originalIndex);
     const place = (position + 1).toString().padStart(2, ' ');
     const teamName = `${teamColor}`.padEnd(3, ' ');
     const goalDifference = stats.goalsScored - stats.goalsConceded;
@@ -230,7 +229,7 @@ const buildTeamsMessage = (
       }
       // Проверка индекса команды
       const safeIndex = Number.isInteger(index) && index >= 0 && index < 4 ? index : 0;
-      const teamColor = teamColors[safeIndex] || '⚽';
+      const teamColor = getTeamColor(safeIndex);
       const teamName = getTeamName(safeIndex) || 'Команда';
       message += `\n${teamColor} <b>${teamName}:</b>\n`;
 

@@ -6,6 +6,7 @@ const { updatePlayingTeamsMessage } = require('../../message/updatePlayingTeamsM
 const { buildPlayingTeamsMessage } = require('../../message/buildPlayingTeamsMessage');
 const { createSaveButtons } = require('../../buttons/createTeamButtons');
 const { createCancelSaveButtons } = require('./buttons');
+const { getTeamColor } = require('../../utils/getTeamColor');
 
 // Обработчик команды "sv <team> <player>" для добавления сейва
 const handleSaveCommand = async (ctx, GlobalState) => {
@@ -353,9 +354,8 @@ const handleCancelSaveMenu = async (ctx, GlobalState) => {
   }
 
   const { team1, team2, teamIndex1, teamIndex2 } = playingTeams;
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const color1 = teamColors[teamIndex1] || '⚽';
-  const color2 = teamColors[teamIndex2] || '⚽';
+  const color1 = getTeamColor(teamIndex1);
+  const color2 = getTeamColor(teamIndex2);
   const team1Buttons = createCancelSaveButtons(team1, teamIndex1, color1);
   const team2Buttons = createCancelSaveButtons(team2, teamIndex2, color2);
   const allButtons = [...team1Buttons, ...team2Buttons];

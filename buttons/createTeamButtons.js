@@ -1,8 +1,8 @@
 const { Markup } = require('telegraf');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 const createTeamButtons = (team, teamIndex) => {
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const teamColor = teamColors[teamIndex] || '⚽'; // Цвет команды
+  const teamColor = getTeamColor(teamIndex);
 
   const buttons = team.map((player, index) => {
     const displayName = player.username
@@ -23,8 +23,7 @@ const createTeamButtons = (team, teamIndex) => {
 };
 
 const createAssistButtons = (team, teamIndex) => {
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const teamColor = teamColors[teamIndex] || '⚽'; // Цвет команды
+  const teamColor = getTeamColor(teamIndex);
 
   const buttons = team.map((player, index) => {
     const displayName = player.username
@@ -45,8 +44,7 @@ const createAssistButtons = (team, teamIndex) => {
 };
 
 const createSaveButtons = (team, teamIndex) => {
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const teamColor = teamColors[teamIndex] || '⚽'; // Цвет команды
+  const teamColor = getTeamColor(teamIndex);
 
   const buttons = team.map((player, index) => {
     const displayName = player.username
@@ -67,8 +65,7 @@ const createSaveButtons = (team, teamIndex) => {
 };
 
 const createYellowCardButtons = (team, teamIndex) => {
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-  const teamColor = teamColors[teamIndex] || '⚽'; // Цвет команды
+  const teamColor = getTeamColor(teamIndex);
 
   const buttons = team.map((player, index) => {
     const displayName = player.username

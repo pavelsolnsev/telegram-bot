@@ -5,6 +5,7 @@ const { safeTelegramCall } = require('../utils/telegramUtils');
 const { buildPlayingTeamsMessage } = require('../message/buildPlayingTeamsMessage');
 const { buildTeamsMessage } = require('../message/buildTeamsMessage');
 const { getTeamName } = require('../utils/getTeamName');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик заблокированной кнопки "Выбрать команды для матча"
@@ -94,11 +95,10 @@ module.exports = (bot, GlobalState) => {
     }
 
     // Показываем список всех команд для выбора первой команды
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     const buttons = [];
 
     for (let i = 0; i < teams.length; i++) {
-      const teamColor = teamColors[i] || '⚽';
+      const teamColor = getTeamColor(i);
       buttons.push([
         Markup.button.callback(
           `${teamColor} ${getTeamName(i)}`,
@@ -183,14 +183,13 @@ module.exports = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const firstTeamColor = teamColors[firstTeamIndex] || '⚽';
+    const firstTeamColor = getTeamColor(firstTeamIndex);
 
     // Показываем список команд для выбора второй команды (исключая первую)
     const buttons = [];
     for (let i = 0; i < teams.length; i++) {
       if (i !== firstTeamIndex) {
-        const teamColor = teamColors[i] || '⚽';
+        const teamColor = getTeamColor(i);
         buttons.push([
           Markup.button.callback(
             `${teamColor} ${getTeamName(i)}`,

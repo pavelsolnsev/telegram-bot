@@ -60,6 +60,7 @@ const GlobalState = (() => {
   let referee = 'Не назначен';
   let matchMessagesByNumber = {};
   let teamNames = {}; // Хранит названия команд: { 0: 'Леон', 1: 'Барселона', ... }
+  let teamColors = {}; // Хранит цвета команд: { 0: '🔴', 1: '⚪️', ... }
 
   const Store = {
     getConsecutiveGames: () => consecutiveGames,
@@ -93,6 +94,14 @@ const GlobalState = (() => {
     },
     getTeamName: (teamIndex) => teamNames[teamIndex] || null,
     resetTeamNames: () => (teamNames = {}),
+    getTeamColors: () => teamColors,
+    setTeamColor: (teamIndex, color) => {
+      if (teamIndex >= 0 && teamIndex < 4) {
+        teamColors[teamIndex] = color;
+      }
+    },
+    getTeamColor: (teamIndex) => teamColors[teamIndex] || null,
+    resetTeamColors: () => (teamColors = {}),
 
     getMaxPlayers: () => MAX_PLAYERS,
     setMaxPlayers: (number) => (MAX_PLAYERS = number),
@@ -241,6 +250,7 @@ const GlobalState = (() => {
       referee = 'Не назначен';
       matchMessagesByNumber = {};
       teamNames = {};
+      teamColors = {};
     },
   };
 

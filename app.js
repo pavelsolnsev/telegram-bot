@@ -37,6 +37,7 @@ require('./commands/remove')(bot, GlobalState); // Команда r для уд�
 require('./commands/pay')(bot, GlobalState); // Команда p для оплаты
 require('./commands/referee')(bot, GlobalState); // Команда для смены судьи
 require('./commands/teamname')(bot, GlobalState); // Команда tn для изменения названий команд
+require('./commands/teamcolor')(bot, GlobalState); // Команда tc для изменения цветов команд
 require('./commands/team')(bot, GlobalState); // деление команд
 require('./commands/change')(bot, GlobalState); // замена и перемещение игрока
 require('./commands/play')(bot, GlobalState); // начать матч

@@ -3,6 +3,7 @@ const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { getTeamName } = require('../../utils/getTeamName');
+const { getTeamColor } = require('../../utils/getTeamColor');
 const { swapPlayers } = require('../../utils/swapPlayers');
 
 // Регистрация обработчиков для обмена игроков
@@ -114,11 +115,10 @@ const registerSwapHandlers = (bot, GlobalState) => {
     }
 
     // Показываем список всех команд для выбора первой команды
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     const buttons = [];
 
     for (let i = 0; i < teams.length; i++) {
-      const teamColor = teamColors[i] || '⚽';
+      const teamColor = getTeamColor(i);
       const teamName = getTeamName(i);
       buttons.push([
         Markup.button.callback(
@@ -195,8 +195,7 @@ const registerSwapHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const firstTeamColor = teamColors[firstTeamIndex] || '⚽';
+    const firstTeamColor = getTeamColor(firstTeamIndex);
 
     // Показываем список игроков первой команды
     const buttons = [];
@@ -294,8 +293,7 @@ const registerSwapHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const firstTeamColor = teamColors[firstTeamIndex] || '⚽';
+    const firstTeamColor = getTeamColor(firstTeamIndex);
     const firstPlayer = teams[firstTeamIndex][firstPlayerIndex];
     const firstPlayerName = firstPlayer.username ? firstPlayer.username : firstPlayer.name;
 
@@ -303,7 +301,7 @@ const registerSwapHandlers = (bot, GlobalState) => {
     const buttons = [];
     for (let i = 0; i < teams.length; i++) {
       if (i !== firstTeamIndex) {
-        const teamColor = teamColors[i] || '⚽';
+        const teamColor = getTeamColor(i);
         buttons.push([
           Markup.button.callback(
             `${teamColor} ${getTeamName(i)}`,
@@ -398,8 +396,7 @@ const registerSwapHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const secondTeamColor = teamColors[secondTeamIndex] || '⚽';
+    const secondTeamColor = getTeamColor(secondTeamIndex);
     const firstPlayer = teams[firstTeamIndex][firstPlayerIndex];
     const firstPlayerName = firstPlayer.username ? firstPlayer.username : firstPlayer.name;
 

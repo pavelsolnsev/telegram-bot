@@ -4,12 +4,11 @@ const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
 const { safeAnswerCallback } = require('../utils/safeAnswerCallback');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 const { getTeamName } = require('../utils/getTeamName');
+const { getTeamColor } = require('../utils/getTeamColor');
 const { manageResultMessage, getPreviousResultMessage, updateResultMessageTimer } = require('../utils/manageUserMessage');
 const { safeTelegramCall } = require('../utils/telegramUtils');
 
 module.exports = (bot, GlobalState) => {
-  const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-
   const formatPlayerLine = (idx, player) => {
     if (!player || typeof player !== 'object') {
       return '';
@@ -55,8 +54,8 @@ module.exports = (bot, GlobalState) => {
     const safeTeamIndex1 = (Number.isInteger(teamIndex1) && teamIndex1 >= 0 && teamIndex1 < 4) ? teamIndex1 : 0;
     const safeTeamIndex2 = (Number.isInteger(teamIndex2) && teamIndex2 >= 0 && teamIndex2 < 4) ? teamIndex2 : 0;
 
-    const color1 = teamColors[safeTeamIndex1] || '⚽';
-    const color2 = teamColors[safeTeamIndex2] || '⚽';
+    const color1 = getTeamColor(safeTeamIndex1);
+    const color2 = getTeamColor(safeTeamIndex2);
     const savedTeamName1 = typeof m.teamName1 === 'string' ? m.teamName1.trim() : '';
     const savedTeamName2 = typeof m.teamName2 === 'string' ? m.teamName2.trim() : '';
     const team1Name = savedTeamName1 || getTeamName(safeTeamIndex1) || 'Команда';

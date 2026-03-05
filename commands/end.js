@@ -8,6 +8,7 @@ const { selectLeaders } = require('../utils/selectLeaders');
 const { selectMvp } = require('../utils/selectMvp');
 const { sendPrivateMessage } = require('../message/sendPrivateMessage');
 const { generatePlayerStats } = require('../utils/generatePlayerStats');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 module.exports = (bot, GlobalState) => {
   // Обработчик pinned_message для удаления системных сообщений
@@ -122,7 +123,6 @@ module.exports = (bot, GlobalState) => {
       const mvpPlayer = selectMvp(allPlayers, { allTeams, teamStats });
 
       const teamMvps = allTeams.map((team) => selectMvp(team)).filter(Boolean);
-      const teamColors = ['🔴', '🔵', '🟢', '🟡'];
 
       let playersWithMvpBonus;
       try {
@@ -219,7 +219,6 @@ module.exports = (bot, GlobalState) => {
                 teamStats,
                 allTeams,
                 mvpPlayer,
-                teamColors,
                 GlobalState.getCollectionDate?.(),
                 teamsBase,
               );
@@ -290,7 +289,7 @@ module.exports = (bot, GlobalState) => {
 
           teamsMessage += '\n<b>Лидеры своих команд</b>\n';
           const teamMvpLines = teamMvps.map((p, idx) => {
-            const color = teamColors[idx] || '⚽';
+            const color = getTeamColor(idx);
             const name = formatTeamMvpName(p);
             return `${color} MVP: ${name}`;
           }).join('\n');

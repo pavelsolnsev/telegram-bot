@@ -5,6 +5,7 @@ const {
 const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay');
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { updateTeamsMessage } = require('../../utils/matchHelpers');
+const { getTeamColor } = require('../../utils/getTeamColor');
 
 // Функция отмены активного матча
 const cancelActiveMatch = async (ctx, GlobalState) => {
@@ -224,7 +225,6 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
 
   if (hasMoreToProcess) {
     // Определяем тексты кнопок в зависимости от следующего действия
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     let continueButtonText = '';
     let stopButtonText = '';
     let currentMatchNumber = 0;
@@ -243,7 +243,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       // Номер завершённого матча = количество завершённых матчей
       const finishedMatchNumber = matchResults.length;
       const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0
-        ? ` ${teamColors[teamIndex1]} vs ${teamColors[teamIndex2]}`
+        ? ` ${getTeamColor(teamIndex1)} vs ${getTeamColor(teamIndex2)}`
         : '';
       continueButtonText = `⏪ Вернуться в прошлый матч №${finishedMatchNumber}${teamMatchInfo}`;
       // Когда есть завершённый матч, вторая кнопка закрывает меню для выбора новых команд
@@ -254,7 +254,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       teamIndex2 = playingTeams.teamIndex2;
       // Номер текущего активного матча = история + 1
       currentMatchNumber = historyLength + 1;
-      const teamMatchInfo = ` ${teamColors[teamIndex1]} vs ${teamColors[teamIndex2]}`;
+      const teamMatchInfo = ` ${getTeamColor(teamIndex1)} vs ${getTeamColor(teamIndex2)}`;
       continueButtonText = `🚫 Отменить этот матч №${currentMatchNumber}${teamMatchInfo}`;
       // После отмены активного матча, если есть история, следующий матч станет завершённым
       // или активным (в зависимости от того, что в истории)
@@ -274,7 +274,7 @@ const offerContinueEnd = async (ctx, chatId, action, GlobalState) => {
       currentMatchNumber = historyLength;
       const historyWord = historyLength === 1 ? 'матч' : historyLength < 5 ? 'матча' : 'матчей';
       const teamMatchInfo = teamIndex1 >= 0 && teamIndex2 >= 0
-        ? ` ${teamColors[teamIndex1]} vs ${teamColors[teamIndex2]}`
+        ? ` ${getTeamColor(teamIndex1)} vs ${getTeamColor(teamIndex2)}`
         : '';
       continueButtonText = `⏪ Откатить следующий матч №${currentMatchNumber}${teamMatchInfo} (осталось ${historyLength} ${historyWord})`;
       // После отката матча из истории, восстановится активный матч

@@ -3,6 +3,7 @@ const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { getTeamName } = require('../../utils/getTeamName');
+const { getTeamColor } = require('../../utils/getTeamColor');
 const { movePlayer } = require('../../utils/movePlayer');
 
 // Регистрация обработчиков для перемещения игроков
@@ -113,13 +114,12 @@ const registerMoveHandlers = (bot, GlobalState) => {
     }
 
     // Показываем список ВСЕХ команд для выбора (откуда переместить игрока)
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     const buttons = [];
     const teamsList = [];
 
     for (let i = 0; i < teams.length; i++) {
       if (teams[i] && teams[i].length > 0) {
-        const teamColor = teamColors[i] || '⚽';
+        const teamColor = getTeamColor(i);
         const teamName = getTeamName(i);
         teamsList.push(`${teamColor} ${teamName} (${teams[i].length} игроков)`);
         buttons.push([
@@ -198,8 +198,7 @@ const registerMoveHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const fromTeamColor = teamColors[fromTeamIndex] || '⚽';
+    const fromTeamColor = getTeamColor(fromTeamIndex);
 
     // Показываем список игроков команды
     const buttons = [];
@@ -297,8 +296,7 @@ const registerMoveHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const fromTeamColor = teamColors[fromTeamIndex] || '⚽';
+    const fromTeamColor = getTeamColor(fromTeamIndex);
     const player = teams[fromTeamIndex][playerIndex];
     const playerName = player.username ? player.username : player.name;
 
@@ -306,7 +304,7 @@ const registerMoveHandlers = (bot, GlobalState) => {
     const buttons = [];
     for (let i = 0; i < teams.length; i++) {
       if (i !== fromTeamIndex && teams[i]) {
-        const teamColor = teamColors[i] || '⚽';
+        const teamColor = getTeamColor(i);
         buttons.push([
           Markup.button.callback(
             `${teamColor} ${getTeamName(i)} (${teams[i].length} игроков)`,

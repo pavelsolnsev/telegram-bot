@@ -1,11 +1,12 @@
 const { selectMvp } = require('./selectMvp');
 const { getTeamName } = require('./getTeamName');
+const { getTeamColor } = require('./getTeamColor');
 
 // Генерация персональной статистики игрока
-const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, teamColors, collectionDate, teamsBase) => {
+const generatePlayerStats = (player, teamIndex, teamStats, allTeams, mvpPlayer, collectionDate, teamsBase) => {
   const teamKey = `team${teamIndex + 1}`;
   const stats = teamStats[teamKey] || { wins: 0, losses: 0, draws: 0, games: 0, goalsScored: 0, goalsConceded: 0 };
-  const color = teamColors[teamIndex] || '⚽';
+  const color = getTeamColor(teamIndex);
   const points = stats.wins * 3 + stats.draws * 1;
 
   // Определяем позицию команды

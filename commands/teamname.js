@@ -1,5 +1,6 @@
 const { GlobalState } = require('../store');
 const { deleteMessageAfterDelay } = require('../utils/deleteMessageAfterDelay');
+const { getTeamColor } = require('../utils/getTeamColor');
 
 module.exports = (bot) => {
   bot.hears(/^tn\s+(\d+)\s+(.+)$/i, async (ctx) => {
@@ -59,8 +60,7 @@ module.exports = (bot) => {
         return deleteMessageAfterDelay(ctx, message.message_id, 6000);
       }
 
-      const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-      const color = teamColors[teamIndex] || '⚽';
+      const color = getTeamColor(teamIndex);
 
       // Устанавливаем название команды
       GlobalState.setTeamName(teamIndex, teamName);

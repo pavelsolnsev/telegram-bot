@@ -3,6 +3,7 @@ const { deleteMessageAfterDelay } = require('../../utils/deleteMessageAfterDelay
 const { safeTelegramCall } = require('../../utils/telegramUtils');
 const { safeAnswerCallback } = require('../../utils/safeAnswerCallback');
 const { getTeamName } = require('../../utils/getTeamName');
+const { getTeamColor } = require('../../utils/getTeamColor');
 const { buildTeamsMessage } = require('../../message/buildTeamsMessage');
 const { createTeamManagementButtons } = require('../../utils/createTeamManagementButtons');
 
@@ -109,12 +110,11 @@ const registerDistributeHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
     const buttons = [];
 
     for (let i = 0; i < teams.length; i++) {
       if (teams[i]) {
-        const teamColor = teamColors[i] || '⚽';
+        const teamColor = getTeamColor(i);
         const teamName = getTeamName(i);
         buttons.push([
           Markup.button.callback(
@@ -171,8 +171,7 @@ const registerDistributeHandlers = (bot, GlobalState) => {
       return;
     }
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const targetTeamColor = teamColors[targetTeamIndex] || '⚽';
+    const targetTeamColor = getTeamColor(targetTeamIndex);
     const targetTeamName = getTeamName(targetTeamIndex);
     const buttons = [];
 
@@ -283,8 +282,7 @@ const registerDistributeHandlers = (bot, GlobalState) => {
     const queue = GlobalState.getQueue();
     const available = getPlayersAvailableForTeam(teams, queue, toTeamIndex);
 
-    const teamColors = ['🔴', '🔵', '🟢', '🟡'];
-    const targetTeamColor = teamColors[toTeamIndex] || '⚽';
+    const targetTeamColor = getTeamColor(toTeamIndex);
     const targetTeamName = getTeamName(toTeamIndex);
     const buttons = [];
 
