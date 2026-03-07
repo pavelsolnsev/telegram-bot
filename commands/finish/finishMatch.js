@@ -11,6 +11,7 @@ const {
   updateTeamsMessage,
   updateMatchHistory,
 } = require('../../utils/matchHelpers');
+const { getTeamColor } = require('../../utils/getTeamColor');
 
 // Функция завершения матча
 const finishMatch = async (ctx, GlobalState) => {
@@ -63,6 +64,8 @@ const finishMatch = async (ctx, GlobalState) => {
     teamIndex2,
     teamName1,
     teamName2,
+    color1: getTeamColor(teamIndex1),
+    color2: getTeamColor(teamIndex2),
     score1: team1Goals,
     score2: team2Goals,
     players1: team1.map((p) => ({
@@ -221,6 +224,8 @@ const executeKskCommand = async (ctx, GlobalState, checkAdminRights, checkMatchS
     teamIndex2,
     teamName1,
     teamName2,
+    color1: getTeamColor(teamIndex1),
+    color2: getTeamColor(teamIndex2),
     score1: team1Goals,
     score2: team2Goals,
     players1: team1.map((p) => ({

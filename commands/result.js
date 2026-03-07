@@ -54,8 +54,9 @@ module.exports = (bot, GlobalState) => {
     const safeTeamIndex1 = (Number.isInteger(teamIndex1) && teamIndex1 >= 0 && teamIndex1 < 4) ? teamIndex1 : 0;
     const safeTeamIndex2 = (Number.isInteger(teamIndex2) && teamIndex2 >= 0 && teamIndex2 < 4) ? teamIndex2 : 0;
 
-    const color1 = getTeamColor(safeTeamIndex1);
-    const color2 = getTeamColor(safeTeamIndex2);
+    // Цвета: из сохранённого результата матча (как при завершении) или текущие из настроек
+    const color1 = (typeof m.color1 === 'string' && m.color1) ? m.color1 : getTeamColor(safeTeamIndex1);
+    const color2 = (typeof m.color2 === 'string' && m.color2) ? m.color2 : getTeamColor(safeTeamIndex2);
     const savedTeamName1 = typeof m.teamName1 === 'string' ? m.teamName1.trim() : '';
     const savedTeamName2 = typeof m.teamName2 === 'string' ? m.teamName2.trim() : '';
     const team1Name = savedTeamName1 || getTeamName(safeTeamIndex1) || 'Команда';
