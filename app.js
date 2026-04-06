@@ -22,7 +22,7 @@ bot.hears(/^id$/i, async (ctx) => {
   const username = ctx.from.username
     ? `@${ctx.from.username}`
     : ctx.from.first_name || 'Без имени';
-  await ctx.reply(`Ваш ID11: ${userId}\nИмя: ${username}`);
+  await ctx.reply(`Ваш ID11привет: ${userId}\nИмя: ${username}`);
 });
 
 bot.hears(/^gr$/i, async (ctx) => {
@@ -52,6 +52,7 @@ require('./commands/end')(bot, GlobalState); // Команда e! для отм�
 require('./commands/update')(bot, GlobalState); // Команда /update для сброса состояния без БД
 require('./commands/limit')(bot, GlobalState); // Команда l для изменения лимита игроков
 require('./commands/reset')(bot, GlobalState); // Обнуление статистики игроков в БД
+require('./commands/send')(bot, GlobalState); // Рассылка в ЛС из БД (только админ, только ЛС)
 require('./commands/add')(bot, GlobalState); // Добавление и удаление игроков
 require('./buttons/reshuffle_callback')(bot, GlobalState); // Обработчик кнопки перемешивания
 require('./buttons/select_teams_callback')(bot, GlobalState); // Обработчик кнопки выбора команд
