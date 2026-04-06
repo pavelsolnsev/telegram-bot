@@ -5,8 +5,8 @@ const getAllPlayersForBroadcast = require('../database/getAllPlayersForBroadcast
 
 const VK_BROADCAST_TEXT =
   'Привет! Футбольная группа переезжает в VK\n\n' +
-  '👉 https://vk.cc/cWcUyc\n\n' +
-  'Если не подписан на сообщество — зайди через него:\n' +
+  '👉 https://vk.me/join/D/st103iIqXvHn2Y2tU1H1mHa2tomwwydbw=\n\n' +
+  'Или через сообщество:\n' +
   'https://vk.com/rmsfootball\n\n' +
   'Присоединяйся, там теперь вся активность!\n\n' +
   'Telegram группу не удаляй — ждём лучших времён 🤝';
